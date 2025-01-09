@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:ziichat_todo/constants.dart';
-import 'folder/folder_detail.dart';
-import 'folder/folder_item.dart';
+import 'package:ziichat_todo/screens/buttons/add_item.dart';
+import '../folder/folder_detail.dart';
+import '../folder/folder_item.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -50,10 +51,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(Icons.add),
-      ),
+      floatingActionButton: AddItemButton(),
     );
   }
 
