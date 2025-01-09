@@ -2,6 +2,38 @@
 
 A new Flutter project.
 
+Phase 1 -------------------
+Create, Edit, Delete FOLDER item.
+Create, Edit, Delete TODO item.
+
+    * FOLDER item
+        luôn có 1 folder default, trường hợp tạo TODO item nhưng không chọn Folder sẽ đưa vào folder mặc định này
+        todo app có thể thêm sửa xoá folder (trừ folder mặc định)
+        mỗi folder có thể có nhiều todo item
+        chỉ có thể xoá folder rỗng
+
+    * TODO item
+        mỗi todo item cần ghi được thời gian nhập vào, chỉnh sửa, và thể hiện đang ở folder nào
+        có trạng thái (todo, inprogress, pending, done) và note (optional)
+        có thể di chuyển sang folder khác
+        có ghi lại thời gian edit cuối cùng
+
+Phase 2 -------------------
+Lưu data ở SharedPreferences
+Cho phép sort theo trạng thái và thời gian edit
+i18n
+Pagination:
+mỗi trang chỉ hiển thị (n) item
+hiển thị skeleton khi vuốt chuyển trang khác
+
+Phase 3 -------------------
+Run được trên desktop (responsive)
+Có thể import / export file excel
+Có file import mẫu
+Cho export file theo 2 cách
+Export tất cả TODO item được chọn
+Export theo FOLDER được chọn
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
