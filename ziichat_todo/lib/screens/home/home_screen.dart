@@ -51,9 +51,7 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Add your logic here
-        },
+        onPressed: () {},
         child: Icon(Icons.add),
       ),
     );
