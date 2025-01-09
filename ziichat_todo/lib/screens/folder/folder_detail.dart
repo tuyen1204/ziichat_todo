@@ -96,14 +96,6 @@ class TodoDetail extends StatelessWidget {
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.w600),
                           ),
-                          ListView.builder(
-                            itemCount: 4,
-                            itemBuilder: (context, index) {
-                              return Column(
-                                children: [Text("data")],
-                              );
-                            },
-                          ),
                         ],
                       )
                     ],
