@@ -3,12 +3,31 @@ import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/screens/buttons/add_item.dart';
 import 'folder_item.dart';
 
-class TodoDetail extends StatelessWidget {
+class TodoDetail extends StatefulWidget {
   const TodoDetail({super.key});
 
   @override
+  State<TodoDetail> createState() => _TodoDetailState();
+}
+
+class TodoItem {
+  final String title;
+  final String time;
+  final String? category;
+
+  const TodoItem({
+    required this.title,
+    this.time = '',
+    this.category = '',
+  });
+}
+
+class _TodoDetailState extends State<TodoDetail> {
+  int? groupValue;
+
+  @override
   Widget build(BuildContext context) {
-    final folder = ModalRoute.of(context)!.settings.arguments as FolderItem;
+    final folder = ModalRoute.of(context)!.settings.arguments as TodoItemDta;
 
     return Scaffold(
       backgroundColor: primaryColor,
@@ -85,16 +104,33 @@ class TodoDetail extends StatelessWidget {
                   ],
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(32),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 32, horizontal: defaultPadding),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    spacing: 16,
                     children: [
+                      Text(
+                        "Late",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w800),
+                      ),
                       Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          Text(
-                            "Late",
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w600),
+                          ListView.builder(
+                            scrollDirection: Axis.vertical,
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemBuilder: (BuildContext context, int index) {
+                              return _radioTodoItem(
+                                index: index,
+                                todoItem: dataFolder[index],
+                              );
+                            },
+                            itemCount: dataFolder.length,
                           ),
                         ],
                       )
@@ -107,6 +143,53 @@ class TodoDetail extends StatelessWidget {
         ),
       ),
       floatingActionButton: AddItemButton(),
+    );
+  }
+
+  Card _radioTodoItem({required int index, required TodoItemDta todoItem}) {
+    return Card(
+      elevation: 0.4,
+      color: Colors.white,
+      clipBehavior: Clip.hardEdge,
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            groupValue = index;
+          });
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      todoItem.title,
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: groupValue == index
+                              ? primaryColor
+                              : Colors.black),
+                    ),
+                    Text(
+                      todoItem.time,
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                groupValue == index ? Icons.task_alt : Icons.circle_outlined,
+                size: 20,
+                color: groupValue == index ? primaryColor : Colors.grey,
+              )
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

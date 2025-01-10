@@ -39,11 +39,16 @@ class HomeScreen extends StatelessWidget {
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
                   ),
-                  itemBuilder: (context, index) => _folderItem(
-                    context,
-                    index: index,
-                    folderItem: dataFolder[index],
-                  ),
+                  itemBuilder: (context, index) {
+                    final folderItem = dataFolder[index];
+                    return _folderItem(
+                      context,
+                      index: index,
+                      folderItem: folderItem,
+                    );
+
+                    // return dataFolder.where((folderItem) => folderItem.category == 'music').toList();
+                  },
                   itemCount: dataFolder.length,
                 ),
               ],
@@ -56,7 +61,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _folderItem(BuildContext context,
-      {required int index, required FolderItem folderItem}) {
+      {required int index, required TodoItemDta folderItem}) {
     return Card(
       color: Colors.white,
       clipBehavior: Clip.hardEdge,
@@ -84,7 +89,7 @@ class HomeScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    folderItem.title,
+                    folderItem.category,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                   ),
                   Text(
@@ -102,30 +107,3 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-
-List<FolderItem> dataFolder = [
-  FolderItem(
-    title: "All",
-    iconName: "All",
-    category: "All",
-    isDefault: true,
-  ),
-  FolderItem(
-    title: "Work",
-    task: 10,
-    iconName: "work",
-    category: "work",
-  ),
-  FolderItem(
-    title: "Music",
-    task: 3,
-    iconName: "music",
-    category: "music",
-  ),
-  FolderItem(
-    title: "Travel",
-    task: 5,
-    iconName: "travel",
-    category: "music",
-  ),
-];
