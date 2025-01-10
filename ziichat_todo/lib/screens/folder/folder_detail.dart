@@ -27,7 +27,8 @@ class _TodoDetailState extends State<TodoDetail> {
 
   @override
   Widget build(BuildContext context) {
-    final folder = ModalRoute.of(context)!.settings.arguments as TodoItemDta;
+    final folder = ModalRoute.of(context)!.settings.arguments as String;
+    final List<TodoItemDta> listToDo = dataFolder.where((toDo) => toDo.category ==folder).toList();
 
     return Scaffold(
       backgroundColor: primaryColor,
@@ -67,16 +68,17 @@ class _TodoDetailState extends State<TodoDetail> {
                     ),
                     SizedBox(height: 12),
                     Text(
-                      folder.title,
+                      folder,
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 24,
                           fontWeight: FontWeight.w700),
                     ),
                     Text(
-                      folder.isDefault == false
-                          ? '${folder.task.toString()} task'
-                          : ' task',
+                      // folder.isDefault == false
+                      //     ? '${folder.task.toString()} task'
+                      //     : ' task',
+                      '${listToDo.length} task',
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -127,10 +129,10 @@ class _TodoDetailState extends State<TodoDetail> {
                             itemBuilder: (BuildContext context, int index) {
                               return _radioTodoItem(
                                 index: index,
-                                todoItem: dataFolder[index],
+                                todoItem: listToDo[index],
                               );
                             },
-                            itemCount: dataFolder.length,
+                            itemCount: listToDo.length,
                           ),
                         ],
                       )

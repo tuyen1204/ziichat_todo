@@ -9,6 +9,9 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+     //TODO Xu ly du lieu
+    final danhSachDanhMuc = dataFolder.map((item) => item.category).toSet().toList();
+
     return Scaffold(
       appBar: AppBar(
         leading: Icon(
@@ -40,16 +43,25 @@ class HomeScreen extends StatelessWidget {
                     crossAxisSpacing: 12,
                   ),
                   itemBuilder: (context, index) {
-                    final folderItem = dataFolder[index];
+
+                    // Lấy danh mục hiện tại
+                    final category = danhSachDanhMuc[index];
+
+                    // Đếm số lượng task thuộc danh mục này
+                    final taskCount = dataFolder
+                        .where((item) => item.category == category)
+                        .length;
+
                     return _folderItem(
                       context,
                       index: index,
-                      folderItem: folderItem,
+                      category: category,
+                      taskCount: taskCount,
                     );
 
                     // return dataFolder.where((folderItem) => folderItem.category == 'music').toList();
                   },
-                  itemCount: dataFolder.length,
+                  itemCount: danhSachDanhMuc.length,
                 ),
               ],
             ),
@@ -61,7 +73,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _folderItem(BuildContext context,
-      {required int index, required TodoItemDta folderItem}) {
+      {required int index, required String category, required int taskCount}) {
     return Card(
       color: Colors.white,
       clipBehavior: Clip.hardEdge,
@@ -72,7 +84,7 @@ class HomeScreen extends StatelessWidget {
               context,
               MaterialPageRoute(
                   builder: (context) => const TodoDetail(),
-                  settings: RouteSettings(arguments: folderItem)));
+                  settings: RouteSettings(arguments: category)));
         },
         child: Container(
           padding: EdgeInsets.all(defaultPadding),
@@ -89,13 +101,11 @@ class HomeScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    folderItem.category,
+                    category,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                   ),
                   Text(
-                    folderItem.isDefault == false
-                        ? '${folderItem.task.toString()} task'
-                        : '${dataFolder.fold(0, (sum, item) => sum + item.task)} task',
+                    '$taskCount task',
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                   ),
                 ],
