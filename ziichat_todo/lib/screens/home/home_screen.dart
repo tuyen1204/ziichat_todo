@@ -9,8 +9,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     //TODO Xu ly du lieu
-    final danhSachDanhMuc = dataFolder.map((item) => item.category).toSet().toList();
+    final danhSachDanhMuc =
+        dataFolder.map((item) => item.category).toSet().toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -43,23 +43,16 @@ class HomeScreen extends StatelessWidget {
                     crossAxisSpacing: 12,
                   ),
                   itemBuilder: (context, index) {
-
-                    // Lấy danh mục hiện tại
                     final category = danhSachDanhMuc[index];
-
-                    // Đếm số lượng task thuộc danh mục này
                     final taskCount = dataFolder
                         .where((item) => item.category == category)
                         .length;
-
                     return _folderItem(
                       context,
                       index: index,
                       category: category,
                       taskCount: taskCount,
                     );
-
-                    // return dataFolder.where((folderItem) => folderItem.category == 'music').toList();
                   },
                   itemCount: danhSachDanhMuc.length,
                 ),
