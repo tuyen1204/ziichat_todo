@@ -24,26 +24,24 @@ List<TodoItemDta> dataFolder = [
     category: "All",
     categorySlug: "all",
     time: "10:00",
+    isDefault: true,
   ),
   TodoItemDta(
     title: "Todo 1",
     category: "Work",
     categorySlug: "work",
-    isDefault: false,
     time: "10:00",
   ),
   TodoItemDta(
     title: "Todo 2",
     category: "Music",
     categorySlug: "music",
-    isDefault: false,
     time: "13:00",
   ),
   TodoItemDta(
     title: "Todo 3",
     category: "Music",
     categorySlug: "music",
-    isDefault: false,
     time: "11:00",
   ),
 ];

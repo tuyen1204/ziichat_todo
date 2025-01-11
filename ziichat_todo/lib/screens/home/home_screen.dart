@@ -11,13 +11,12 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final danhSachDanhMuc =
         dataFolder.map((item) => item.category).toSet().toList();
-
+    final paddingNotch = MediaQuery.of(context).padding.top;
     return Scaffold(
       appBar: AppBar(
-        leading: Icon(
-          Icons.menu,
-          color: Theme.of(context).colorScheme.primary,
-          size: 32,
+        leading: IconButton(
+          icon: Icon(Icons.menu, color: Colors.black),
+          onPressed: () => {},
         ),
       ),
       body: SafeArea(
@@ -47,11 +46,13 @@ class HomeScreen extends StatelessWidget {
                     final taskCount = dataFolder
                         .where((item) => item.category == category)
                         .length;
+                    final totalTask = dataFolder.length;
                     return _folderItem(
                       context,
                       index: index,
                       category: category,
                       taskCount: taskCount,
+                      totalTaskCount: totalTask,
                     );
                   },
                   itemCount: danhSachDanhMuc.length,
@@ -61,12 +62,17 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      floatingActionButton: AddItemButton(),
+      floatingActionButton: AddItemButton(
+        paddingNotch: paddingNotch,
+      ),
     );
   }
 
   Widget _folderItem(BuildContext context,
-      {required int index, required String category, required int taskCount}) {
+      {required int index,
+      required String category,
+      required int taskCount,
+      required int totalTaskCount}) {
     return Card(
       color: Colors.white,
       clipBehavior: Clip.hardEdge,
@@ -98,7 +104,9 @@ class HomeScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                   ),
                   Text(
-                    '$taskCount task',
+                    category == "all"
+                        ? '$totalTaskCount tasks'
+                        : '$taskCount task',
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                   ),
                 ],
