@@ -12,6 +12,7 @@ class HomeScreen extends StatelessWidget {
     final danhSachDanhMuc =
         dataFolder.map((item) => item.category).toSet().toList();
     final paddingNotch = MediaQuery.of(context).padding.top;
+    final paddingBottom = MediaQuery.of(context).padding.bottom;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -62,9 +63,10 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      floatingActionButton: AddItemButton(
-        paddingNotch: paddingNotch,
-      ),
+      // floatingActionButton: AddItemButton(
+      //   paddingNotch: paddingNotch,
+      //   paddingBottom: paddingBottom,
+      // ),
     );
   }
 

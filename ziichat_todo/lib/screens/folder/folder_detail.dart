@@ -28,9 +28,11 @@ class _TodoDetailState extends State<TodoDetail> {
   @override
   Widget build(BuildContext context) {
     final folder = ModalRoute.of(context)!.settings.arguments as String;
-    final List<TodoItemDta> listToDo =
+    final List<TodoItemData> listToDo =
         dataFolder.where((toDo) => toDo.category == folder).toList();
     final paddingNotch = MediaQuery.of(context).padding.top;
+    final paddingBottom = MediaQuery.of(context).padding.bottom;
+
     return Scaffold(
       backgroundColor: primaryColor,
       appBar: AppBar(
@@ -109,11 +111,11 @@ class _TodoDetailState extends State<TodoDetail> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   spacing: 16,
                   children: [
-                    Text(
-                      "Late",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-                    ),
+                    // Text(
+                    //   "Late",
+                    //   style:
+                    //       TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                    // ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -141,17 +143,19 @@ class _TodoDetailState extends State<TodoDetail> {
       ),
       floatingActionButton: AddItemButton(
         paddingNotch: paddingNotch,
+        paddingBottom: paddingBottom,
       ),
     );
   }
 
-  Card _radioTodoItem({required int index, required TodoItemDta todoItem}) {
+  Card _radioTodoItem({required int index, required TodoItemData todoItem}) {
     return Card(
       elevation: 0.4,
       color: Colors.white,
       clipBehavior: Clip.hardEdge,
       child: InkWell(
         onTap: () {
+          print(todoItem.title);
           setState(() {
             groupValue = index;
           });
@@ -174,7 +178,7 @@ class _TodoDetailState extends State<TodoDetail> {
                               : Colors.black),
                     ),
                     Text(
-                      todoItem.time,
+                      todoItem.createdTime,
                       style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],

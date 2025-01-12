@@ -1,47 +1,79 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 
-class TodoItemDta {
+enum ItemStatus { todo, inprogress, pending, done }
+
+class TodoItemData {
+  final String idTodo;
   final String title;
   final int task;
   final String category;
   final bool isDefault;
-  final String time;
+  final String createdTime;
+  final String editedTime;
   final String categorySlug;
+  final ItemStatus status;
+  final String note;
 
-  const TodoItemDta({
+  const TodoItemData({
+    required this.idTodo,
     required this.title,
-    this.category = '',
-    this.time = '',
+    this.category = 'All',
+    this.createdTime = '',
+    this.editedTime = '',
     this.task = 0,
+    this.status = ItemStatus.todo,
+    this.note = '',
     this.isDefault = false,
-    required this.categorySlug,
+    this.categorySlug = '',
   });
+
+  static void onCreateTodoItem(String formatDate, String nameTodo) async {
+    try {
+      var random = Random();
+      final idTodoRandom = 'todo-${random.nextInt(100)}';
+      final newTodoItemData = TodoItemData(
+          idTodo: idTodoRandom,
+          title: nameTodo,
+          createdTime: formatDate,
+          category: "Work");
+      dataFolder.add(newTodoItemData);
+      print("success");
+    } catch (error) {
+      print(error);
+    }
+  }
 }
 
-List<TodoItemDta> dataFolder = [
-  TodoItemDta(
+List<TodoItemData> dataFolder = [
+  TodoItemData(
+    idTodo: "todo-4",
     title: "Todo 4",
     category: "All",
     categorySlug: "all",
-    time: "10:00",
+    createdTime: "10:00",
     isDefault: true,
   ),
-  TodoItemDta(
+  TodoItemData(
+    idTodo: "todo-1",
     title: "Todo 1",
     category: "Work",
     categorySlug: "work",
-    time: "10:00",
+    createdTime: "10:00",
   ),
-  TodoItemDta(
+  TodoItemData(
+    idTodo: "todo-2",
     title: "Todo 2",
     category: "Music",
     categorySlug: "music",
-    time: "13:00",
+    createdTime: "13:00",
   ),
-  TodoItemDta(
+  TodoItemData(
+    idTodo: "todo-3",
     title: "Todo 3",
     category: "Music",
     categorySlug: "music",
-    time: "11:00",
+    createdTime: "11:00",
   ),
 ];

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ziichat_todo/screens/bottom_sheet/bottom_sheet_create_todo_item.dart';
 
 class BottomSheetUtil {
   static void showDefaultBottomSheet({
@@ -38,10 +39,12 @@ class BottomSheetUtil {
     bool isDismissible = true,
     VoidCallback? onClose,
     required double paddingNotch,
+    required double paddingBottom,
   }) {
     final innerBottomSheet =
         (MediaQuery.of(context).size.height - paddingNotch) /
             MediaQuery.of(context).size.height;
+
     showDefaultBottomSheet(
       context: context,
       enableDrag: enableDrag,
@@ -61,52 +64,8 @@ class BottomSheetUtil {
         ),
         child: FractionallySizedBox(
           heightFactor: innerBottomSheet,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 8, bottom: 8),
-                child: SizedBox(
-                  width: 36,
-                  height: 5,
-                  child: DecoratedBox(
-                      decoration: BoxDecoration(
-                    color: Colors.grey,
-                    borderRadius: BorderRadius.circular(10),
-                  )),
-                ),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        width: 1,
-                      ),
-                    ),
-                    Text(
-                      "New Task",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Icon(
-                          Icons.close,
-                          size: 24,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Column(
-                children: [],
-              ),
-            ],
+          child: BottomSheetCreateTodoItem(
+            paddingBottom: paddingBottom,
           ),
         ),
       ),
