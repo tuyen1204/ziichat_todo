@@ -3,13 +3,34 @@ import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/screens/buttons/add_item.dart';
 import 'folder_item.dart';
 
-class TodoDetail extends StatelessWidget {
+class TodoDetail extends StatefulWidget {
   const TodoDetail({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final folder = ModalRoute.of(context)!.settings.arguments as FolderItem;
+  State<TodoDetail> createState() => _TodoDetailState();
+}
 
+class TodoItem {
+  final String title;
+  final String time;
+  final String? category;
+
+  const TodoItem({
+    required this.title,
+    this.time = '',
+    this.category = '',
+  });
+}
+
+class _TodoDetailState extends State<TodoDetail> {
+  int? groupValue;
+
+  @override
+  Widget build(BuildContext context) {
+    final folder = ModalRoute.of(context)!.settings.arguments as String;
+    final List<TodoItemDta> listToDo =
+        dataFolder.where((toDo) => toDo.category == folder).toList();
+    final paddingNotch = MediaQuery.of(context).padding.top;
     return Scaffold(
       backgroundColor: primaryColor,
       appBar: AppBar(
@@ -25,88 +46,151 @@ class TodoDetail extends StatelessWidget {
           )
         ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(40),
+                    color: Colors.white,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(Icons.ballot, size: 32, color: primaryColor),
+                  ),
+                ),
+                SizedBox(height: 12),
+                Text(
+                  folder,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  '${listToDo.length} task',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30.0),
+                  topRight: Radius.circular(30.0),
+                ),
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    spreadRadius: 5,
+                    blurRadius: 7,
+                    offset: Offset(0, 3), // changes position of shadow
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 32, horizontal: defaultPadding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  spacing: 16,
+                  children: [
+                    Text(
+                      "Late",
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        ListView.builder(
+                          scrollDirection: Axis.vertical,
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemBuilder: (BuildContext context, int index) {
+                            return _radioTodoItem(
+                              index: index,
+                              todoItem: listToDo[index],
+                            );
+                          },
+                          itemCount: listToDo.length,
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: AddItemButton(
+        paddingNotch: paddingNotch,
+      ),
+    );
+  }
+
+  Card _radioTodoItem({required int index, required TodoItemDta todoItem}) {
+    return Card(
+      elevation: 0.4,
+      color: Colors.white,
+      clipBehavior: Clip.hardEdge,
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            groupValue = index;
+          });
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(32),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(40),
-                        color: Colors.white,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8),
-                        child:
-                            Icon(Icons.ballot, size: 32, color: primaryColor),
-                      ),
-                    ),
-                    SizedBox(height: 12),
                     Text(
-                      folder.title,
+                      todoItem.title,
                       style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700),
-                    ),
-                    Text(
-                      folder.isDefault == false
-                          ? '${folder.task.toString()} task'
-                          : ' task',
-                      style: TextStyle(
-                          color: Colors.white,
                           fontSize: 16,
-                          fontWeight: FontWeight.w500),
+                          fontWeight: FontWeight.w800,
+                          color: groupValue == index
+                              ? primaryColor
+                              : Colors.black),
+                    ),
+                    Text(
+                      todoItem.time,
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.all(16),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30.0),
-                    topRight: Radius.circular(30.0),
-                  ),
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      spreadRadius: 5,
-                      blurRadius: 7,
-                      offset: Offset(0, 3), // changes position of shadow
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Column(
-                        children: [
-                          Text(
-                            "Late",
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
+              Icon(
+                groupValue == index
+                    ? Icons.check_box
+                    : Icons.check_box_outline_blank,
+                size: 24,
+                color: groupValue == index ? primaryColor : Colors.grey,
               ),
             ],
           ),
         ),
       ),
-      floatingActionButton: AddItemButton(),
     );
   }
 }

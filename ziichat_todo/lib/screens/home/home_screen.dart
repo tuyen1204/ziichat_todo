@@ -9,12 +9,14 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final danhSachDanhMuc =
+        dataFolder.map((item) => item.category).toSet().toList();
+    final paddingNotch = MediaQuery.of(context).padding.top;
     return Scaffold(
       appBar: AppBar(
-        leading: Icon(
-          Icons.menu,
-          color: Theme.of(context).colorScheme.primary,
-          size: 32,
+        leading: IconButton(
+          icon: Icon(Icons.menu, color: Colors.black),
+          onPressed: () => {},
         ),
       ),
       body: SafeArea(
@@ -39,24 +41,38 @@ class HomeScreen extends StatelessWidget {
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
                   ),
-                  itemBuilder: (context, index) => _folderItem(
-                    context,
-                    index: index,
-                    folderItem: dataFolder[index],
-                  ),
-                  itemCount: dataFolder.length,
+                  itemBuilder: (context, index) {
+                    final category = danhSachDanhMuc[index];
+                    final taskCount = dataFolder
+                        .where((item) => item.category == category)
+                        .length;
+                    final totalTask = dataFolder.length;
+                    return _folderItem(
+                      context,
+                      index: index,
+                      category: category,
+                      taskCount: taskCount,
+                      totalTaskCount: totalTask,
+                    );
+                  },
+                  itemCount: danhSachDanhMuc.length,
                 ),
               ],
             ),
           ),
         ),
       ),
-      floatingActionButton: AddItemButton(),
+      floatingActionButton: AddItemButton(
+        paddingNotch: paddingNotch,
+      ),
     );
   }
 
   Widget _folderItem(BuildContext context,
-      {required int index, required FolderItem folderItem}) {
+      {required int index,
+      required String category,
+      required int taskCount,
+      required int totalTaskCount}) {
     return Card(
       color: Colors.white,
       clipBehavior: Clip.hardEdge,
@@ -67,7 +83,7 @@ class HomeScreen extends StatelessWidget {
               context,
               MaterialPageRoute(
                   builder: (context) => const TodoDetail(),
-                  settings: RouteSettings(arguments: folderItem)));
+                  settings: RouteSettings(arguments: category)));
         },
         child: Container(
           padding: EdgeInsets.all(defaultPadding),
@@ -84,13 +100,13 @@ class HomeScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    folderItem.title,
+                    category,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                   ),
                   Text(
-                    folderItem.isDefault == false
-                        ? '${folderItem.task.toString()} task'
-                        : '${dataFolder.fold(0, (sum, item) => sum + item.task)} task',
+                    category == "all"
+                        ? '$totalTaskCount tasks'
+                        : '$taskCount task',
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                   ),
                 ],
@@ -102,30 +118,3 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-
-List<FolderItem> dataFolder = [
-  FolderItem(
-    title: "All",
-    iconName: "All",
-    category: "All",
-    isDefault: true,
-  ),
-  FolderItem(
-    title: "Work",
-    task: 10,
-    iconName: "work",
-    category: "work",
-  ),
-  FolderItem(
-    title: "Music",
-    task: 3,
-    iconName: "music",
-    category: "music",
-  ),
-  FolderItem(
-    title: "Travel",
-    task: 5,
-    iconName: "travel",
-    category: "music",
-  ),
-];
