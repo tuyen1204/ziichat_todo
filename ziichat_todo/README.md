@@ -29,7 +29,9 @@ Create, Edit, Delete TODO item.
 
         - Screen Folder detail
             + UI folder detail
-            + Get data item in folder
+            + Get data item in folder (All, Single)
+            + Handle Create Item:
+                + Create (chưa thêm Category)
 
 Phrase 2 -------------------
 Lưu data ở SharedPreferences

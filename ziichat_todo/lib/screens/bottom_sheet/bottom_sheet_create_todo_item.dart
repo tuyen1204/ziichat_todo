@@ -2,11 +2,16 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:intl/intl.dart';
+import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
 
 class BottomSheetCreateTodoItem extends StatefulWidget {
-  const BottomSheetCreateTodoItem({super.key, required this.paddingBottom});
+  const BottomSheetCreateTodoItem(
+      {super.key,
+      required this.paddingBottom,
+      required this.showCurrentCategory});
   final double paddingBottom;
+  final String showCurrentCategory;
 
   @override
   State<BottomSheetCreateTodoItem> createState() =>
@@ -20,11 +25,22 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
   final editedTodo = TextEditingController();
   final noteTodo = TextEditingController();
   final listTodoItem = dataFolder;
+  final categoryList = dataFolder.map((data) => data.category).toList().toSet();
+  late String? categoryTodo;
+  String? selectedCategory;
+  TextEditingController choiceCategory = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    categoryTodo = widget.showCurrentCategory;
+    selectedCategory = categoryTodo;
+    choiceCategory.text = selectedCategory!;
+  }
 
   @override
   Widget build(BuildContext context) {
     String formattedDate = DateFormat('MMM dd yyyy, HH:MM').format(currentDate);
-
     return Padding(
       padding: EdgeInsets.only(bottom: widget.paddingBottom),
       child: Column(
@@ -59,6 +75,8 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                   child: Align(
                     alignment: Alignment.centerRight,
                     child: IconButton(
+                      style: IconButton.styleFrom(
+                          backgroundColor: Colors.grey[100]),
                       icon: Icon(Icons.close),
                       onPressed: () => Navigator.pop(context),
                     ),
@@ -94,10 +112,19 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                         onTapOutside: (event) {
                           FocusManager.instance.primaryFocus?.unfocus();
                         },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Name task is required';
+                          }
+                          return null;
+                        },
                       ),
                       Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           TextFormField(
+                            style: TextStyle(fontWeight: FontWeight.w600),
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
                                   borderSide: BorderSide.none),
@@ -118,14 +145,46 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                             onSaved: (String? value) {},
                           ),
                           TextFormField(
+                            controller: choiceCategory,
+                            style: TextStyle(fontWeight: FontWeight.w600),
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
                                   borderSide: BorderSide.none),
                               icon: Icon(CupertinoIcons.tags),
-                              hintText: "Category",
                             ),
                             readOnly: true,
                             onSaved: (String? value) {},
+                          ),
+                          DropdownMenu<String>(
+                            initialSelection: widget.showCurrentCategory,
+                            width: MediaQuery.of(context).size.width,
+                            onSelected: (String? value) {
+                              setState(() {
+                                categoryTodo = value;
+                                selectedCategory = value;
+                                choiceCategory.text = value!;
+                              });
+                            },
+                            hintText: widget.showCurrentCategory,
+                            inputDecorationTheme: InputDecorationTheme(
+                              isDense: true,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              constraints: BoxConstraints.tightFor(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: 48), //
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            dropdownMenuEntries:
+                                categoryList.map((String value) {
+                              return DropdownMenuEntry<String>(
+                                value: value,
+                                label: value,
+                                leadingIcon: Icon(Icons.import_contacts),
+                              );
+                            }).toList(),
                           ),
                         ],
                       )
@@ -141,9 +200,13 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: TextButton(
-                  onPressed: () {
-                    // formKey.currentState?.save();
-                    TodoItemData.onCreateTodoItem(formattedDate, nameTodo.text);
+                  onPressed: () => {
+                    if (formKey.currentState!.validate())
+                      {
+                        TodoItemData.onCreateTodoItem(
+                            formattedDate, nameTodo.text, categoryTodo!),
+                        Navigator.pop(context),
+                      }
                   },
                   style: ButtonStyle(
                     backgroundColor: WidgetStatePropertyAll(primaryColor),

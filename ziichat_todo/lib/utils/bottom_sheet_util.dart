@@ -40,6 +40,7 @@ class BottomSheetUtil {
     VoidCallback? onClose,
     required double paddingNotch,
     required double paddingBottom,
+    required String showCurrentCategory,
   }) {
     final innerBottomSheet =
         (MediaQuery.of(context).size.height - paddingNotch) /
@@ -66,6 +67,7 @@ class BottomSheetUtil {
           heightFactor: innerBottomSheet,
           child: BottomSheetCreateTodoItem(
             paddingBottom: paddingBottom,
+            showCurrentCategory: showCurrentCategory,
           ),
         ),
       ),

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
+import 'package:ziichat_todo/data/folder_data.dart';
 
 enum ItemStatus { todo, inprogress, pending, done }
 
@@ -29,7 +30,8 @@ class TodoItemData {
     this.categorySlug = '',
   });
 
-  static void onCreateTodoItem(String formatDate, String nameTodo) async {
+  static void onCreateTodoItem(
+      String formatDate, String nameTodo, String categoryTodo) async {
     try {
       var random = Random();
       final idTodoRandom = 'todo-${random.nextInt(100)}';
@@ -37,7 +39,7 @@ class TodoItemData {
           idTodo: idTodoRandom,
           title: nameTodo,
           createdTime: formatDate,
-          category: "Work");
+          category: categoryTodo);
       dataFolder.add(newTodoItemData);
       print("success");
     } catch (error) {
@@ -45,35 +47,3 @@ class TodoItemData {
     }
   }
 }
-
-List<TodoItemData> dataFolder = [
-  TodoItemData(
-    idTodo: "todo-4",
-    title: "Todo 4",
-    category: "All",
-    categorySlug: "all",
-    createdTime: "10:00",
-    isDefault: true,
-  ),
-  TodoItemData(
-    idTodo: "todo-1",
-    title: "Todo 1",
-    category: "Work",
-    categorySlug: "work",
-    createdTime: "10:00",
-  ),
-  TodoItemData(
-    idTodo: "todo-2",
-    title: "Todo 2",
-    category: "Music",
-    categorySlug: "music",
-    createdTime: "13:00",
-  ),
-  TodoItemData(
-    idTodo: "todo-3",
-    title: "Todo 3",
-    category: "Music",
-    categorySlug: "music",
-    createdTime: "11:00",
-  ),
-];
