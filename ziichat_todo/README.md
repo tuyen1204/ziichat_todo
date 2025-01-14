@@ -2,7 +2,7 @@
 
 A new Flutter project.
 
-Phrase 1 -------------------
+Phase 1 -------------------
 Create, Edit, Delete FOLDER item.
 Create, Edit, Delete TODO item.
 
@@ -29,9 +29,11 @@ Create, Edit, Delete TODO item.
 
         - Screen Folder detail
             + UI folder detail
-            + Get data item in folder
+            + Get data item in folder (All, Single)
+            + Handle Create Item:
+                + Create (chưa thêm Category)
 
-Phrase 2 -------------------
+Phase 2 -------------------
 Lưu data ở SharedPreferences
 Cho phép sort theo trạng thái và thời gian edit
 i18n
@@ -39,7 +41,7 @@ Pagination:
 mỗi trang chỉ hiển thị (n) item
 hiển thị skeleton khi vuốt chuyển trang khác
 
-Phrase 3 -------------------
+Phase 3 -------------------
 Run được trên desktop (responsive)
 Có thể import / export file excel
 Có file import mẫu

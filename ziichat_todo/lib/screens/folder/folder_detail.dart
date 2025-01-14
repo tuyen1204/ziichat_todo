@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:ziichat_todo/constants.dart';
+import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/screens/buttons/add_item.dart';
+import 'package:ziichat_todo/screens/item/item_detail_screen.dart';
 import 'folder_item.dart';
 
 class TodoDetail extends StatefulWidget {
-  const TodoDetail({super.key});
-
+  const TodoDetail({super.key, required this.currentCategory});
+  final String currentCategory;
   @override
   State<TodoDetail> createState() => _TodoDetailState();
 }
@@ -23,14 +25,20 @@ class TodoItem {
 }
 
 class _TodoDetailState extends State<TodoDetail> {
-  int? groupValue;
+  Set<int> selectedItems = {};
 
   @override
   Widget build(BuildContext context) {
-    final folder = ModalRoute.of(context)!.settings.arguments as String;
-    final List<TodoItemDta> listToDo =
-        dataFolder.where((toDo) => toDo.category == folder).toList();
+    // final folder = ModalRoute.of(context)!.settings.arguments as String; //* Cách khác
+
+    final List<TodoItemData> listToDo = dataFolder
+        .where((toDo) => toDo.category == widget.currentCategory)
+        .toList();
+    final totals = dataFolder.length;
     final paddingNotch = MediaQuery.of(context).padding.top;
+    final paddingBottom = MediaQuery.of(context).padding.bottom;
+    final List<TodoItemData> listToDoAll = List.from(dataFolder);
+
     return Scaffold(
       backgroundColor: primaryColor,
       appBar: AppBar(
@@ -66,14 +74,16 @@ class _TodoDetailState extends State<TodoDetail> {
                 ),
                 SizedBox(height: 12),
                 Text(
-                  folder,
+                  widget.currentCategory,
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.w700),
                 ),
                 Text(
-                  '${listToDo.length} task',
+                  widget.currentCategory == "All"
+                      ? '$totals tasks'
+                      : '${listToDo.length} task',
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -101,38 +111,54 @@ class _TodoDetailState extends State<TodoDetail> {
                   ),
                 ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 32, horizontal: defaultPadding),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  spacing: 16,
-                  children: [
-                    Text(
-                      "Late",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        ListView.builder(
-                          scrollDirection: Axis.vertical,
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemBuilder: (BuildContext context, int index) {
-                            return _radioTodoItem(
-                              index: index,
-                              todoItem: listToDo[index],
-                            );
-                          },
-                          itemCount: listToDo.length,
-                        ),
-                      ],
-                    )
-                  ],
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 32, bottom: 64),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    spacing: 16,
+                    children: [
+                      // Text(
+                      //   "Late",
+                      //   style:
+                      //       TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                      // ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Column(
+                            spacing: 8,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: List.generate(
+                                widget.currentCategory == "All"
+                                    ? listToDoAll.length
+                                    : listToDo.length, (index) {
+                              final todoItem = widget.currentCategory == "All"
+                                  ? listToDoAll[index]
+                                  : listToDo[index];
+                              return TodoItemCard(
+                                index: index,
+                                todoItem: todoItem,
+                                isSelected: selectedItems.contains(index),
+                                onSelected: (selectedIndex) {
+                                  setState(() {
+                                    if (selectedItems.contains(selectedIndex)) {
+                                      selectedItems.remove(selectedIndex);
+                                    } else {
+                                      selectedItems.add(selectedIndex);
+                                    }
+                                  });
+                                },
+                              );
+                            }),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -141,25 +167,55 @@ class _TodoDetailState extends State<TodoDetail> {
       ),
       floatingActionButton: AddItemButton(
         paddingNotch: paddingNotch,
+        paddingBottom: paddingBottom,
+        getCurrentCategory: widget.currentCategory,
       ),
     );
   }
+}
 
-  Card _radioTodoItem({required int index, required TodoItemDta todoItem}) {
+class TodoItemCard extends StatelessWidget {
+  final int index;
+  final TodoItemData todoItem;
+  final bool isSelected;
+  final ValueChanged<int> onSelected;
+
+  const TodoItemCard({
+    super.key,
+    required this.index,
+    required this.todoItem,
+    required this.isSelected,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
-      elevation: 0.4,
+      elevation: 0.2,
       color: Colors.white,
       clipBehavior: Clip.hardEdge,
       child: InkWell(
-        onTap: () {
-          setState(() {
-            groupValue = index;
-          });
+        onTap: () => {
+          onSelected(index),
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) {
+                return ItemDetailScreen();
+              },
+            ),
+          ),
         },
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
+            spacing: 12,
             children: [
+              Icon(
+                isSelected ? Icons.check_circle_rounded : Icons.circle_outlined,
+                size: 24,
+                color: isSelected ? primaryColor : Colors.grey,
+              ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,23 +225,28 @@ class _TodoDetailState extends State<TodoDetail> {
                       style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
-                          color: groupValue == index
-                              ? primaryColor
-                              : Colors.black),
+                          color: isSelected ? primaryColor : Colors.black),
                     ),
-                    Text(
-                      todoItem.time,
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    Row(
+                      children: [
+                        Text(
+                          '${todoItem.category} - ',
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black45,
+                              fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          todoItem.createdTime,
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black45,
+                              fontWeight: FontWeight.w500),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ),
-              Icon(
-                groupValue == index
-                    ? Icons.check_box
-                    : Icons.check_box_outline_blank,
-                size: 24,
-                color: groupValue == index ? primaryColor : Colors.grey,
               ),
             ],
           ),

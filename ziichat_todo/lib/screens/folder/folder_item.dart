@@ -1,47 +1,47 @@
-import 'package:flutter/foundation.dart';
+import 'dart:math';
+import 'package:ziichat_todo/data/folder_data.dart';
 
-class TodoItemDta {
+enum ItemStatus { todo, inprogress, pending, done }
+
+class TodoItemData {
+  final String idTodo;
   final String title;
   final int task;
   final String category;
   final bool isDefault;
-  final String time;
+  final String createdTime;
+  final String editedTime;
   final String categorySlug;
+  final ItemStatus status;
+  final String note;
 
-  const TodoItemDta({
+  const TodoItemData({
+    required this.idTodo,
     required this.title,
-    this.category = '',
-    this.time = '',
+    this.category = 'All',
+    this.createdTime = '',
+    this.editedTime = '',
     this.task = 0,
+    this.status = ItemStatus.todo,
+    this.note = '',
     this.isDefault = false,
-    required this.categorySlug,
+    this.categorySlug = '',
   });
-}
 
-List<TodoItemDta> dataFolder = [
-  TodoItemDta(
-    title: "Todo 4",
-    category: "All",
-    categorySlug: "all",
-    time: "10:00",
-    isDefault: true,
-  ),
-  TodoItemDta(
-    title: "Todo 1",
-    category: "Work",
-    categorySlug: "work",
-    time: "10:00",
-  ),
-  TodoItemDta(
-    title: "Todo 2",
-    category: "Music",
-    categorySlug: "music",
-    time: "13:00",
-  ),
-  TodoItemDta(
-    title: "Todo 3",
-    category: "Music",
-    categorySlug: "music",
-    time: "11:00",
-  ),
-];
+  static void onCreateTodoItem(
+      String formatDate, String nameTodo, String categoryTodo) async {
+    try {
+      var random = Random();
+      final idTodoRandom = 'todo-${random.nextInt(100)}';
+      final newTodoItemData = TodoItemData(
+          idTodo: idTodoRandom,
+          title: nameTodo,
+          createdTime: formatDate,
+          category: categoryTodo);
+      dataFolder.add(newTodoItemData);
+      print("success");
+    } catch (error) {
+      print(error);
+    }
+  }
+}
