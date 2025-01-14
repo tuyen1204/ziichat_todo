@@ -69,7 +69,7 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                 ),
                 Text(
                   "New Task",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
                 ),
                 Expanded(
                   child: Align(
@@ -128,7 +128,7 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
                                   borderSide: BorderSide.none),
-                              icon: Icon(CupertinoIcons.bell),
+                              prefixIcon: Icon(CupertinoIcons.bell),
                               hintText: formattedDate,
                             ),
                             readOnly: true,
@@ -139,7 +139,8 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
                                   borderSide: BorderSide.none),
-                              icon: Icon(CupertinoIcons.conversation_bubble),
+                              prefixIcon:
+                                  Icon(CupertinoIcons.conversation_bubble),
                               hintText: "Add Note",
                             ),
                             onSaved: (String? value) {},
@@ -150,7 +151,12 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
                                   borderSide: BorderSide.none),
-                              icon: Icon(CupertinoIcons.tags),
+                              prefixIcon: Icon(CupertinoIcons.tags),
+                              suffixIcon: Icon(
+                                CupertinoIcons.arrowtriangle_down_circle_fill,
+                                color: primaryColor,
+                                size: 14,
+                              ),
                             ),
                             readOnly: true,
                             onSaved: (String? value) {},
@@ -205,6 +211,7 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                       {
                         TodoItemData.onCreateTodoItem(
                             formattedDate, nameTodo.text, categoryTodo!),
+                        setState(() {}),
                         Navigator.pop(context),
                       }
                   },

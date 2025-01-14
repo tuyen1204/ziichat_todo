@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/screens/buttons/add_item.dart';
+import 'package:ziichat_todo/screens/item/item_detail_screen.dart';
 import 'folder_item.dart';
 
 class TodoDetail extends StatefulWidget {
@@ -194,7 +195,17 @@ class TodoItemCard extends StatelessWidget {
       color: Colors.white,
       clipBehavior: Clip.hardEdge,
       child: InkWell(
-        onTap: () => onSelected(index),
+        onTap: () => {
+          onSelected(index),
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) {
+                return ItemDetailScreen();
+              },
+            ),
+          ),
+        },
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
@@ -220,11 +231,17 @@ class TodoItemCard extends StatelessWidget {
                       children: [
                         Text(
                           '${todoItem.category} - ',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black45,
+                              fontWeight: FontWeight.w500),
                         ),
                         Text(
                           todoItem.createdTime,
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black45,
+                              fontWeight: FontWeight.w500),
                         ),
                       ],
                     ),

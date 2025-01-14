@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:ziichat_todo/component/title_section_large.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/color_pallet.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
-import '../folder/folder_detail.dart';
+import 'package:ziichat_todo/screens/folder/folder_detail.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -14,9 +15,13 @@ class HomeScreen extends StatelessWidget {
         inputColorItems.map((item) => item.category).toSet().toList();
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.menu, color: Colors.black),
-          onPressed: () => {},
+        title: Column(
+          children: [
+            Text(
+              'ZiiChat Todo',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+            ),
+          ],
         ),
       ),
       body: SafeArea(
@@ -26,14 +31,11 @@ class HomeScreen extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(defaultPadding),
               child: Column(
-                spacing: defaultPadding,
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Lists',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
-                  ),
+                  TitleSectionLarge(title: "Folders"),
+                  SizedBox(height: defaultPadding),
                   SizedBox(
                     width: double.infinity,
                     child: Column(
@@ -61,6 +63,8 @@ class HomeScreen extends StatelessWidget {
                       }),
                     ),
                   ),
+                  SizedBox(height: 32),
+                  TitleSectionLarge(title: "Processign tasks"),
                 ],
               ),
             ),
