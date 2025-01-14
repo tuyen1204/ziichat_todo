@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
 
 enum ItemStatus { todo, progressing, pending, done }
@@ -43,5 +44,31 @@ class TodoItemData {
     } catch (error) {
       print(error);
     }
+  }
+}
+
+String statusToReadableString(ItemStatus status) {
+  switch (status) {
+    case ItemStatus.todo:
+      return 'To Do';
+    case ItemStatus.progressing:
+      return 'In Progress';
+    case ItemStatus.pending:
+      return 'Pending';
+    case ItemStatus.done:
+      return 'Done';
+  }
+}
+
+Color statusColor(ItemStatus status) {
+  switch (status) {
+    case ItemStatus.todo:
+      return Colors.blue;
+    case ItemStatus.progressing:
+      return Colors.orange;
+    case ItemStatus.pending:
+      return Colors.grey;
+    case ItemStatus.done:
+      return Colors.green;
   }
 }

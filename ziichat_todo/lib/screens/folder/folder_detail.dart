@@ -1,15 +1,16 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/screens/buttons/add_item.dart';
-import 'package:ziichat_todo/screens/item/item_detail_screen.dart';
+import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
 import 'folder_item.dart';
 
-class TodoDetail extends StatefulWidget {
-  const TodoDetail({super.key, required this.currentCategory});
+class ItemsTodoDetail extends StatefulWidget {
+  const ItemsTodoDetail({super.key, required this.currentCategory});
   final String currentCategory;
   @override
-  State<TodoDetail> createState() => _TodoDetailState();
+  State<ItemsTodoDetail> createState() => _ItemsTodoDetailState();
 }
 
 class TodoItem {
@@ -26,7 +27,7 @@ class TodoItem {
   });
 }
 
-class _TodoDetailState extends State<TodoDetail> {
+class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   Set<int> selectedItems = {};
 
   @override
@@ -96,7 +97,9 @@ class _TodoDetailState extends State<TodoDetail> {
           ),
           Expanded(
             child: Container(
-              padding: const EdgeInsets.all(16),
+              clipBehavior: Clip.hardEdge,
+              padding: const EdgeInsets.only(
+                  left: defaultPadding, right: defaultPadding, bottom: 48),
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.only(
@@ -188,7 +191,7 @@ class TodoItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 0.2,
+      elevation: 0.4,
       color: Colors.white,
       clipBehavior: Clip.hardEdge,
       child: InkWell(
@@ -198,12 +201,10 @@ class TodoItemCard extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) {
-                return ItemDetailScreen(
-                  nameTodo: todoItem.title,
-                  dateCreated: todoItem.createdTime,
-                  category: todoItem.category,
-                  note: todoItem.note,
-                  status: todoItem.status,
+                return TodoDetailScreen(
+                  idTodo: todoItem.idTodo,
+                  initStatus: statusToReadableString(todoItem.status),
+                  initCategory: todoItem.category,
                 );
               },
             ),
@@ -251,9 +252,14 @@ class TodoItemCard extends StatelessWidget {
                   ],
                 ),
               ),
-              // Chip(
-              //   label: Text(todoItem.status.toString()),
-              // ),
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: statusColor(todoItem.status), // border color
+                  shape: BoxShape.circle,
+                ),
+              ),
             ],
           ),
         ),

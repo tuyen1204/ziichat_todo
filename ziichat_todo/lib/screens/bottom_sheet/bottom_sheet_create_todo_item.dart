@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:ziichat_todo/component/title_section_large.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:intl/intl.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
@@ -67,9 +68,8 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                     width: 1,
                   ),
                 ),
-                Text(
-                  "New Task",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
+                TitleSectionLarge(
+                  title: "New task",
                 ),
                 Expanded(
                   child: Align(
