@@ -1,11 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:ziichat_todo/constants.dart';
+import 'package:ziichat_todo/data/folder_data.dart';
+import 'package:ziichat_todo/screens/folder/folder_item.dart';
 
-class ItemDetailScreen extends StatelessWidget {
-  const ItemDetailScreen({super.key});
+class ItemDetailScreen extends StatefulWidget {
+  const ItemDetailScreen({
+    super.key,
+    required this.nameTodo,
+    required this.dateCreated,
+    required this.category,
+    this.note = "",
+    required this.status,
+  });
+  final String nameTodo;
+  final String dateCreated;
+  final String category;
+  final String note;
+  final ItemStatus status;
+
+  @override
+  State<ItemDetailScreen> createState() => _ItemDetailScreenState();
+}
+
+class _ItemDetailScreenState extends State<ItemDetailScreen> {
+  late String? categorySelected = "All";
+
+  @override
+  void initState() {
+    super.initState();
+    categorySelected = widget.category;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final folders = dataFolder.map((item) => item.category).toSet().toList();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -29,7 +57,7 @@ class ItemDetailScreen extends StatelessWidget {
                     Text(
                       "Todo detail",
                       style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
                     ),
                     IconButton(
                       style: IconButton.styleFrom(
@@ -50,6 +78,7 @@ class ItemDetailScreen extends StatelessWidget {
                   children: [
                     TextFormField(
                       cursorColor: primaryColor,
+                      initialValue: widget.nameTodo,
                       decoration: InputDecoration(
                         labelText: "Title",
                         labelStyle: TextStyle(color: Colors.grey),
@@ -70,6 +99,7 @@ class ItemDetailScreen extends StatelessWidget {
                       },
                     ),
                     TextFormField(
+                      initialValue: widget.dateCreated,
                       cursorColor: primaryColor,
                       decoration: InputDecoration(
                         labelText: "Date",
@@ -91,6 +121,7 @@ class ItemDetailScreen extends StatelessWidget {
                       },
                     ),
                     TextFormField(
+                      initialValue: widget.note,
                       cursorColor: primaryColor,
                       decoration: InputDecoration(
                         labelText: "Note",
@@ -116,23 +147,48 @@ class ItemDetailScreen extends StatelessWidget {
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 8,
                       children: [
-                        Text("Category"),
+                        Text("Category",
+                            style: TextStyle(
+                                color: Color(0xff727272),
+                                fontWeight: FontWeight.w500)),
                         Wrap(
-                          children: [
-                            ListTile(
-                              title: Text("Category 1"),
-                            ),
-                            ListTile(
-                              title: Text("Category 2"),
-                            ),
-                            ListTile(
-                              title: Text("Category 3"),
-                            ),
-                          ],
-                        )
+                          spacing: 8.0,
+                          children: folders.map((item) {
+                            return ChoiceChip(
+                              label: Text(item),
+                              selected: categorySelected == item,
+                              onSelected: (value) {
+                                setState(() {
+                                  categorySelected = item;
+                                });
+                              },
+                            );
+                          }).toList(),
+                        ),
                       ],
-                    )
+                    ),
+                    TextButton(
+                      onPressed: () => {},
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(primaryColor),
+                        shape: WidgetStatePropertyAll(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                        ),
+                        minimumSize:
+                            WidgetStatePropertyAll(Size(double.infinity, 48)),
+                      ),
+                      child: Text(
+                        "Save changes",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ],
                 )
               ],

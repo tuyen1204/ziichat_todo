@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: primaryColor),
           useMaterial3: true,
-          fontFamily: 'Barlow'),
+          fontFamily: 'FilsonPro'),
       home: const MyHomePage(title: 'ZiiChat TodoList'),
     );
   }

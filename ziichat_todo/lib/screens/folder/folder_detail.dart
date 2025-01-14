@@ -16,11 +16,13 @@ class TodoItem {
   final String title;
   final String time;
   final String? category;
+  final String status;
 
   const TodoItem({
     required this.title,
     this.time = '',
     this.category = '',
+    required this.status,
   });
 }
 
@@ -78,7 +80,7 @@ class _TodoDetailState extends State<TodoDetail> {
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
-                      fontWeight: FontWeight.w700),
+                      fontWeight: FontWeight.w500),
                 ),
                 Text(
                   widget.currentCategory == "All"
@@ -119,11 +121,6 @@ class _TodoDetailState extends State<TodoDetail> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     spacing: 16,
                     children: [
-                      // Text(
-                      //   "Late",
-                      //   style:
-                      //       TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-                      // ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -201,7 +198,13 @@ class TodoItemCard extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) {
-                return ItemDetailScreen();
+                return ItemDetailScreen(
+                  nameTodo: todoItem.title,
+                  dateCreated: todoItem.createdTime,
+                  category: todoItem.category,
+                  note: todoItem.note,
+                  status: todoItem.status,
+                );
               },
             ),
           ),
@@ -248,6 +251,9 @@ class TodoItemCard extends StatelessWidget {
                   ],
                 ),
               ),
+              // Chip(
+              //   label: Text(todoItem.status.toString()),
+              // ),
             ],
           ),
         ),

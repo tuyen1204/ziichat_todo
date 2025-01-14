@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:ziichat_todo/data/folder_data.dart';
 
-enum ItemStatus { todo, inprogress, pending, done }
+enum ItemStatus { todo, progressing, pending, done }
 
 class TodoItemData {
   final String idTodo;

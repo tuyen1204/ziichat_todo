@@ -87,6 +87,11 @@ flutter:
         - asset: assets/fonts/Rubik/Rubik-Medium.ttf
         - asset: assets/fonts/Rubik/Rubik-SemiBold.ttf
         - asset: assets/fonts/Rubik/Rubik-Bold.ttf
+    - family: FilsonPro
+      fonts:
+        - asset: assets/fonts/FilsonPro/FilsonProRegular.otf
+        - asset: assets/fonts/FilsonPro/FilsonProMedium.otf
+        - asset: assets/fonts/FilsonPro/FilsonProBold.otf
 
   # - family: Trajan Pro
   #     fonts:

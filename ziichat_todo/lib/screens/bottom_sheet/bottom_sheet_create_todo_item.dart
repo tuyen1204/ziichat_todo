@@ -69,7 +69,7 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                 ),
                 Text(
                   "New Task",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
                 ),
                 Expanded(
                   child: Align(
