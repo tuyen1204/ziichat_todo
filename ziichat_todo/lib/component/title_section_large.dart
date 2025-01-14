@@ -12,7 +12,7 @@ class TitleSectionLarge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
     );
   }
 }
