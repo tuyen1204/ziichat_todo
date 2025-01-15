@@ -10,13 +10,11 @@ class TodoDetailScreen extends StatefulWidget {
     required this.idTodo,
     required this.initStatus,
     required this.initCategory,
-    // required this.onDeleteTodoItem,
   });
 
   final String idTodo;
   final String initStatus;
   final String initCategory;
-  // final void Function(String id) onDeleteTodoItem;
 
   @override
   State<TodoDetailScreen> createState() => _TodoDetailScreenState();
@@ -93,8 +91,8 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                   ],
                 ),
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   spacing: 16,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     TextFormField(
                       readOnly: edited == true ? false : true,
@@ -240,84 +238,83 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                         ),
                       ],
                     ),
-                    Row(
-                      spacing: 12,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: TextButton(
-                            onPressed: () => {},
-                            style: ButtonStyle(
-                              backgroundColor: edited == true
-                                  ? WidgetStatePropertyAll(primaryColor)
-                                  : WidgetStatePropertyAll(Colors.grey),
-                              shape: WidgetStatePropertyAll(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(24),
-                                ),
-                              ),
-                            ),
-                            child: Text(
-                              "Save changes",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold),
+                  ],
+                ),
+                Row(
+                  spacing: 12,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => {},
+                        style: ButtonStyle(
+                          backgroundColor: edited == true
+                              ? WidgetStatePropertyAll(primaryColor)
+                              : WidgetStatePropertyAll(Colors.grey),
+                          shape: WidgetStatePropertyAll(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
                             ),
                           ),
                         ),
-                        IconButton(
-                            onPressed: () {
-                              showCupertinoDialog<void>(
-                                context: context,
-                                builder: (BuildContext context) =>
-                                    CupertinoAlertDialog(
-                                  title: const Text('Delete todo'),
-                                  content: RichText(
-                                    textAlign: TextAlign.center,
-                                    text: TextSpan(
-                                      text: 'Yor\' are going to delete the ',
-                                      style: TextStyle(color: Colors.black),
-                                      children: <TextSpan>[
-                                        TextSpan(
-                                          text: todoDetailData.title,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        TextSpan(text: ' todo. Are you sure?'),
-                                      ],
+                        child: Text(
+                          "Save changes",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                        onPressed: () {
+                          showCupertinoDialog<void>(
+                            context: context,
+                            builder: (BuildContext context) =>
+                                CupertinoAlertDialog(
+                              title: const Text('Delete todo'),
+                              content: RichText(
+                                textAlign: TextAlign.center,
+                                text: TextSpan(
+                                  text: 'Yor\' are going to delete the ',
+                                  style: TextStyle(color: Colors.black),
+                                  children: <TextSpan>[
+                                    TextSpan(
+                                      text: todoDetailData.title,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                                  actions: <CupertinoDialogAction>[
-                                    CupertinoDialogAction(
-                                      isDefaultAction: true,
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      child: const Text('No'),
-                                    ),
-                                    CupertinoDialogAction(
-                                      isDestructiveAction: true,
-                                      onPressed: () {
-                                        _handleDeleteTodo(
-                                            todoDetailData.idTodo);
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: const Text('Yes'),
-                                    ),
+                                    TextSpan(text: ' todo. Are you sure?'),
                                   ],
                                 ),
-                              );
-                            },
-                            style: IconButton.styleFrom(
-                                backgroundColor: Colors.red),
-                            icon: Icon(
-                              Icons.delete_outline,
-                              color: Colors.white,
-                            )),
-                      ],
-                    ),
+                              ),
+                              actions: <CupertinoDialogAction>[
+                                CupertinoDialogAction(
+                                  isDefaultAction: true,
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text('No'),
+                                ),
+                                CupertinoDialogAction(
+                                  isDestructiveAction: true,
+                                  onPressed: () {
+                                    _handleDeleteTodo(todoDetailData.idTodo);
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text('Yes'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        style:
+                            IconButton.styleFrom(backgroundColor: Colors.red),
+                        icon: Icon(
+                          Icons.delete_outline,
+                          color: Colors.white,
+                        )),
                   ],
                 )
               ],

@@ -28,8 +28,12 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
   final listTodoItem = dataFolder;
   final categoryList = dataFolder.map((data) => data.category).toList().toSet();
   late String? categoryTodo;
+
   String? selectedCategory;
   TextEditingController choiceCategory = TextEditingController();
+
+  late String? categorySelected = categoryTodo;
+  late String? statusSelected = "To Do";
 
   @override
   void initState() {
@@ -42,6 +46,7 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
   @override
   Widget build(BuildContext context) {
     String formattedDate = DateFormat('MMM dd yyyy, HH:MM').format(currentDate);
+    final status = dataFolder.map((item) => item.status).toSet().toList();
     return Padding(
       padding: EdgeInsets.only(bottom: widget.paddingBottom),
       child: Column(
@@ -87,79 +92,127 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-            child: Column(
-              children: [
-                Form(
-                  key: formKey,
-                  child: Column(
-                    spacing: 20,
-                    children: [
-                      TextFormField(
-                        controller: nameTodo,
-                        cursorColor: primaryColor,
-                        decoration: InputDecoration(
-                          labelText: "What are you planning?",
-                          labelStyle: TextStyle(color: Colors.grey),
-                          contentPadding: EdgeInsets.zero,
-                          alignLabelWithHint: true,
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: primaryColor),
-                          ),
-                        ),
-                        minLines: 6,
-                        keyboardType: TextInputType.multiline,
-                        maxLines: null,
-                        onTapOutside: (event) {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Name task is required';
-                          }
-                          return null;
-                        },
-                      ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height - 250),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Form(
+                      key: formKey,
+                      child: Column(
+                        spacing: 16,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           TextFormField(
-                            style: TextStyle(fontWeight: FontWeight.w600),
+                            controller: nameTodo,
+                            cursorColor: primaryColor,
                             decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                  borderSide: BorderSide.none),
-                              prefixIcon: Icon(CupertinoIcons.bell),
-                              hintText: formattedDate,
+                              labelText: "Title",
+                              labelStyle: TextStyle(color: Colors.grey),
+                              alignLabelWithHint: true,
+                              focusedBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(color: primaryColor),
+                              ),
                             ),
-                            readOnly: true,
-                            onSaved: (String? value) {},
+                            minLines: 4,
+                            keyboardType: TextInputType.multiline,
+                            maxLines: null,
+                            onTapOutside: (event) {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                            },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Name task is required';
+                              }
+                              return null;
+                            },
+                          ),
+                          TextFormField(
+                            initialValue: formattedDate,
+                            cursorColor: primaryColor,
+                            decoration: InputDecoration(
+                              labelText: "Date",
+                              labelStyle: TextStyle(color: Colors.grey),
+                              alignLabelWithHint: true,
+                              focusedBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(color: primaryColor),
+                              ),
+                            ),
+                            keyboardType: TextInputType.multiline,
+                            onTapOutside: (event) {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                            },
                           ),
                           TextFormField(
                             controller: noteTodo,
+                            cursorColor: primaryColor,
                             decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                  borderSide: BorderSide.none),
-                              prefixIcon:
-                                  Icon(CupertinoIcons.conversation_bubble),
-                              hintText: "Add Note",
-                            ),
-                            onSaved: (String? value) {},
-                          ),
-                          TextFormField(
-                            controller: choiceCategory,
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                  borderSide: BorderSide.none),
-                              prefixIcon: Icon(CupertinoIcons.tags),
-                              suffixIcon: Icon(
-                                CupertinoIcons.arrowtriangle_down_circle_fill,
-                                color: primaryColor,
-                                size: 14,
+                              labelText: "Note",
+                              labelStyle: TextStyle(color: Colors.grey),
+                              contentPadding: EdgeInsets.zero,
+                              alignLabelWithHint: true,
+                              focusedBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(color: primaryColor),
                               ),
                             ),
-                            readOnly: true,
-                            onSaved: (String? value) {},
+                            minLines: 4,
+                            keyboardType: TextInputType.multiline,
+                            maxLines: null,
+                            onTapOutside: (event) {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                            },
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            spacing: 8,
+                            children: [
+                              Text("Status",
+                                  style: TextStyle(
+                                      color: Color(0xff727272),
+                                      fontWeight: FontWeight.w500)),
+                              Wrap(
+                                spacing: 8.0,
+                                children: status.map((item) {
+                                  return ChoiceChip(
+                                    label: Text(
+                                      statusToReadableString(item),
+                                    ),
+                                    selected: statusSelected ==
+                                        statusToReadableString(item),
+                                    onSelected: (value) {},
+                                  );
+                                }).toList(),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            spacing: 8,
+                            children: [
+                              Text("Category",
+                                  style: TextStyle(
+                                      color: Color(0xff727272),
+                                      fontWeight: FontWeight.w500)),
+                              Wrap(
+                                spacing: 8.0,
+                                children: categoryList.map((item) {
+                                  return ChoiceChip(
+                                    label: Text(item),
+                                    selected: categorySelected == item,
+                                    labelStyle: TextStyle(
+                                      color: Colors.black87,
+                                    ),
+                                    onSelected: (value) {
+                                      setState(() {
+                                        categorySelected = item;
+                                        print(categorySelected);
+                                      });
+                                    },
+                                  );
+                                }).toList(),
+                              ),
+                            ],
                           ),
                           DropdownMenu<String>(
                             initialSelection: widget.showCurrentCategory,
@@ -191,13 +244,13 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                                 leadingIcon: Icon(Icons.import_contacts),
                               );
                             }).toList(),
-                          ),
+                          )
                         ],
-                      )
-                    ],
-                  ),
-                )
-              ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
             ),
           ),
           Expanded(
@@ -209,8 +262,8 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                   onPressed: () => {
                     if (formKey.currentState!.validate())
                       {
-                        TodoItemData.onCreateTodoItem(
-                            formattedDate, nameTodo.text, categoryTodo!),
+                        TodoItemData.onCreateTodoItem(formattedDate,
+                            nameTodo.text, categorySelected!, noteTodo.text),
                         setState(() {}),
                         Navigator.pop(context),
                       }

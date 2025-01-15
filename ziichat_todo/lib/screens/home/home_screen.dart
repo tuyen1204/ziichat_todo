@@ -157,7 +157,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       idTodo: idTodo,
                       initStatus: status,
                       initCategory: category,
-                      // onDeleteTodoItem: (id) {},
                     );
                   },
                 ),

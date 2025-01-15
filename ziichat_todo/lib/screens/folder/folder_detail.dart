@@ -37,11 +37,14 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   @override
   void initState() {
     super.initState();
-    listToDo = dataFolder
-        .where((toDo) => toDo.category == widget.currentCategory)
-        .toList();
-    listToDoAll = List.from(dataFolder);
-    totals = dataFolder.length;
+
+    setState(() {
+      listToDo = dataFolder
+          .where((toDo) => toDo.category == widget.currentCategory)
+          .toList();
+      listToDoAll = List.from(dataFolder);
+      totals = dataFolder.length;
+    });
 
     Future.delayed(Duration(milliseconds: 1000), () {
       setState(() {
@@ -160,12 +163,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                                         todoItem: todoItem,
                                         isSelected:
                                             selectedItems.contains(index),
-                                        onDeleteTodoItem: (id) {
-                                          setState(() {
-                                            TodoItemData.onDeleteTodoItem(id);
-                                          });
-                                          Navigator.pop(context);
-                                        },
                                         onSelected: (selectedIndex) {
                                           setState(() {
                                             if (selectedItems
@@ -182,12 +179,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                                       index: index,
                                       todoItem: todoItem,
                                       isSelected: selectedItems.contains(index),
-                                      onDeleteTodoItem: (id) {
-                                        setState(() {
-                                          TodoItemData.onDeleteTodoItem(id);
-                                        });
-                                        Navigator.pop(context);
-                                      },
                                       onSelected: (selectedIndex) {
                                         setState(() {
                                           if (selectedItems
@@ -225,7 +216,6 @@ class TodoItemCard extends StatelessWidget {
   final TodoItemData todoItem;
   final bool isSelected;
   final ValueChanged<int> onSelected;
-  final Function(String id) onDeleteTodoItem;
 
   const TodoItemCard({
     super.key,
@@ -233,7 +223,6 @@ class TodoItemCard extends StatelessWidget {
     required this.todoItem,
     required this.isSelected,
     required this.onSelected,
-    required this.onDeleteTodoItem,
   });
 
   @override
@@ -253,7 +242,6 @@ class TodoItemCard extends StatelessWidget {
                   idTodo: todoItem.idTodo,
                   initStatus: statusToReadableString(todoItem.status),
                   initCategory: todoItem.category,
-                  // onDeleteTodoItem: onDeleteTodoItem,
                 );
               },
             ),
