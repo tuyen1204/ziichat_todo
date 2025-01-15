@@ -130,6 +130,8 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   Text(
                     nameTodo,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                   ),
                   Text(

@@ -240,6 +240,8 @@ class TodoItemCard extends StatelessWidget {
                   children: [
                     Text(
                       todoItem.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,

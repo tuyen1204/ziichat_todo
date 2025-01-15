@@ -10,12 +10,14 @@ List<TodoItemData> dataFolder = [
     status: ItemStatus.done,
   ),
   TodoItemData(
-      idTodo: "todo-1",
-      title: "Todo 1",
-      category: "Work",
-      createdTime: "10:00",
-      status: ItemStatus.pending,
-      note: "Lorem ipsum dolor sit amet, consectet"),
+    idTodo: "todo-1",
+    title:
+        "[Research]: Flutter documentation - Assets, Navigation, Routing (cnt)",
+    category: "Work",
+    createdTime: "10:00",
+    status: ItemStatus.progressing,
+    note: "Lorem ipsum dolor sit amet, consectet",
+  ),
   TodoItemData(
     idTodo: "todo-2",
     title: "Todo 2",

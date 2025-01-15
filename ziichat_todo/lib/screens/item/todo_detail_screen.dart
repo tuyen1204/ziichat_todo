@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
@@ -24,11 +25,13 @@ class TodoDetailScreen extends StatefulWidget {
 class _TodoDetailScreenState extends State<TodoDetailScreen> {
   late String? categorySelected = "All";
   late String? statusSelected = "To Do";
+  bool edited = false;
 
   @override
   void initState() {
     statusSelected = widget.initStatus;
     categorySelected = widget.initCategory;
+    edited;
     super.initState();
   }
 
@@ -66,14 +69,19 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                     ),
                     IconButton(
                       style: IconButton.styleFrom(
-                          backgroundColor:
-                              primaryColor.withValues(alpha: 0.15)),
+                          backgroundColor: edited == true
+                              ? primaryColor
+                              : primaryColor.withValues(alpha: 0.15)),
                       icon: Icon(
                         Icons.edit_outlined,
-                        color: primaryColor,
+                        color: edited == true ? Colors.white : primaryColor,
                         size: 20,
                       ),
-                      onPressed: () => {},
+                      onPressed: () => {
+                        setState(() {
+                          edited = !edited;
+                        })
+                      },
                     )
                   ],
                 ),
@@ -82,6 +90,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                   spacing: 16,
                   children: [
                     TextFormField(
+                      readOnly: edited == true ? false : true,
                       cursorColor: primaryColor,
                       initialValue: todoDetailData.title,
                       decoration: InputDecoration(
@@ -92,7 +101,9 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                           borderSide: BorderSide(color: primaryColor),
                         ),
                       ),
+                      minLines: 4,
                       keyboardType: TextInputType.multiline,
+                      maxLines: null,
                       onTapOutside: (event) {
                         FocusManager.instance.primaryFocus?.unfocus();
                       },
@@ -104,6 +115,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       },
                     ),
                     TextFormField(
+                      readOnly: edited == true ? false : true,
                       initialValue: todoDetailData.createdTime,
                       cursorColor: primaryColor,
                       decoration: InputDecoration(
@@ -126,6 +138,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       },
                     ),
                     TextFormField(
+                      readOnly: edited == true ? false : true,
                       initialValue: todoDetailData.note,
                       cursorColor: primaryColor,
                       decoration: InputDecoration(
@@ -180,7 +193,10 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                                   statusToReadableString(item),
                               onSelected: (value) {
                                 setState(() {
-                                  statusSelected = statusToReadableString(item);
+                                  edited == true
+                                      ? statusSelected =
+                                          statusToReadableString(item)
+                                      : null;
                                 });
                               },
                             );
@@ -207,7 +223,9 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                               ),
                               onSelected: (value) {
                                 setState(() {
-                                  categorySelected = item;
+                                  edited == true
+                                      ? categorySelected = item
+                                      : null;
                                 });
                               },
                             );
@@ -223,8 +241,9 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                           child: TextButton(
                             onPressed: () => {},
                             style: ButtonStyle(
-                              backgroundColor:
-                                  WidgetStatePropertyAll(primaryColor),
+                              backgroundColor: edited == true
+                                  ? WidgetStatePropertyAll(primaryColor)
+                                  : WidgetStatePropertyAll(Colors.grey),
                               shape: WidgetStatePropertyAll(
                                 RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(24),
@@ -242,7 +261,47 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                         ),
                         IconButton(
                             onPressed: () {
-                              widget.onDeleteTodoItem(todoDetailData.idTodo);
+                              showCupertinoDialog<void>(
+                                context: context,
+                                builder: (BuildContext context) =>
+                                    CupertinoAlertDialog(
+                                  title: const Text('Delete todo'),
+                                  content: RichText(
+                                    textAlign: TextAlign.center,
+                                    text: TextSpan(
+                                      text: 'Yor\' are going to delete the ',
+                                      style: TextStyle(color: Colors.black),
+                                      children: <TextSpan>[
+                                        TextSpan(
+                                          text: todoDetailData.title,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        TextSpan(text: ' todo. Are you sure?'),
+                                      ],
+                                    ),
+                                  ),
+                                  actions: <CupertinoDialogAction>[
+                                    CupertinoDialogAction(
+                                      isDefaultAction: true,
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('No'),
+                                    ),
+                                    CupertinoDialogAction(
+                                      isDestructiveAction: true,
+                                      onPressed: () {
+                                        widget.onDeleteTodoItem(
+                                            todoDetailData.idTodo);
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('Yes'),
+                                    ),
+                                  ],
+                                ),
+                              );
                             },
                             style: IconButton.styleFrom(
                                 backgroundColor: Colors.red),
