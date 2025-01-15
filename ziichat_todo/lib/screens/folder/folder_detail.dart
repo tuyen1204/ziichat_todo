@@ -3,7 +3,7 @@ import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/screens/buttons/add_item.dart';
 import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
-import 'package:ziichat_todo/screens/shimmer_effect.dart';
+import 'package:ziichat_todo/component/shimmer_effect.dart';
 import 'folder_item.dart';
 
 class ItemsTodoDetail extends StatefulWidget {
@@ -253,7 +253,7 @@ class TodoItemCard extends StatelessWidget {
                   idTodo: todoItem.idTodo,
                   initStatus: statusToReadableString(todoItem.status),
                   initCategory: todoItem.category,
-                  onDeleteTodoItem: onDeleteTodoItem,
+                  // onDeleteTodoItem: onDeleteTodoItem,
                 );
               },
             ),

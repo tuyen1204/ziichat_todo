@@ -10,13 +10,13 @@ class TodoDetailScreen extends StatefulWidget {
     required this.idTodo,
     required this.initStatus,
     required this.initCategory,
-    required this.onDeleteTodoItem,
+    // required this.onDeleteTodoItem,
   });
 
   final String idTodo;
   final String initStatus;
   final String initCategory;
-  final void Function(String id) onDeleteTodoItem;
+  // final void Function(String id) onDeleteTodoItem;
 
   @override
   State<TodoDetailScreen> createState() => _TodoDetailScreenState();
@@ -26,6 +26,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
   late String? categorySelected = "All";
   late String? statusSelected = "To Do";
   bool edited = false;
+  // final List<TodoItemData> dataFolderNew = [];
 
   @override
   void initState() {
@@ -33,6 +34,12 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     categorySelected = widget.initCategory;
     edited;
     super.initState();
+  }
+
+  void _handleDeleteTodo(String id) {
+    dataFolder.removeWhere((item) {
+      return item.idTodo == id;
+    });
   }
 
   @override
@@ -293,9 +300,9 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                                     CupertinoDialogAction(
                                       isDestructiveAction: true,
                                       onPressed: () {
-                                        widget.onDeleteTodoItem(
+                                        _handleDeleteTodo(
                                             todoDetailData.idTodo);
-                                        Navigator.pop(context);
+                                        Navigator.of(context).pop();
                                       },
                                       child: const Text('Yes'),
                                     ),

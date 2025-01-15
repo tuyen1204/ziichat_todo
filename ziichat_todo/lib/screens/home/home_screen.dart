@@ -5,7 +5,7 @@ import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/screens/folder/folder_detail.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
 import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
-import 'package:ziichat_todo/screens/shimmer_effect.dart';
+import 'package:ziichat_todo/component/shimmer_effect.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -157,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       idTodo: idTodo,
                       initStatus: status,
                       initCategory: category,
-                      onDeleteTodoItem: (id) {},
+                      // onDeleteTodoItem: (id) {},
                     );
                   },
                 ),
