@@ -9,11 +9,14 @@ class TodoDetailScreen extends StatefulWidget {
     required this.idTodo,
     required this.initStatus,
     required this.initCategory,
+    required this.onDeleteTodoItem,
   });
 
   final String idTodo;
   final String initStatus;
   final String initCategory;
+  final void Function(String id) onDeleteTodoItem;
+
   @override
   State<TodoDetailScreen> createState() => _TodoDetailScreenState();
 }
@@ -240,7 +243,10 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                           ),
                         ),
                         IconButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              widget.onDeleteTodoItem(todoDetailData.idTodo);
+                              // Navigator.pop(context);
+                            },
                             style: IconButton.styleFrom(
                                 backgroundColor: Colors.red),
                             icon: Icon(

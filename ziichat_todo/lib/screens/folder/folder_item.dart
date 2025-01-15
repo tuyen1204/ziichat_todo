@@ -45,6 +45,19 @@ class TodoItemData {
       print(error);
     }
   }
+
+  static void onDeleteTodoItem(String idTodo) async {
+    try {
+      final todoItemIndex =
+          dataFolder.indexWhere((item) => item.idTodo == idTodo);
+      if (todoItemIndex != -1) {
+        dataFolder.removeAt(todoItemIndex);
+        print("Deleted id: $idTodo");
+      }
+    } catch (error) {
+      print("Error");
+    }
+  }
 }
 
 String statusToReadableString(ItemStatus status) {

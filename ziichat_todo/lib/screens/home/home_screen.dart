@@ -121,6 +121,7 @@ class HomeScreen extends StatelessWidget {
                       idTodo: idTodo,
                       initStatus: status,
                       initCategory: category,
+                      onDeleteTodoItem: (id) {},
                     );
                   },
                 ),

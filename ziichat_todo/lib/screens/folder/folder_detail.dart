@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
@@ -28,19 +27,27 @@ class TodoItem {
 }
 
 class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
+  late final List<TodoItemData> listToDo;
+  late final List<TodoItemData> listToDoAll;
+  late int totals;
   Set<int> selectedItems = {};
+
+  @override
+  void initState() {
+    super.initState();
+    listToDo = dataFolder
+        .where((toDo) => toDo.category == widget.currentCategory)
+        .toList();
+    listToDoAll = List.from(dataFolder);
+    totals = dataFolder.length;
+  }
 
   @override
   Widget build(BuildContext context) {
     // final folder = ModalRoute.of(context)!.settings.arguments as String; //* Cách khác
 
-    final List<TodoItemData> listToDo = dataFolder
-        .where((toDo) => toDo.category == widget.currentCategory)
-        .toList();
-    final totals = dataFolder.length;
     final paddingNotch = MediaQuery.of(context).padding.top;
     final paddingBottom = MediaQuery.of(context).padding.bottom;
-    final List<TodoItemData> listToDoAll = List.from(dataFolder);
 
     return Scaffold(
       backgroundColor: primaryColor,
@@ -143,6 +150,12 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                                 index: index,
                                 todoItem: todoItem,
                                 isSelected: selectedItems.contains(index),
+                                onDeleteTodoItem: (id) {
+                                  setState(() {
+                                    TodoItemData.onDeleteTodoItem(id);
+                                  });
+                                  Navigator.pop(context);
+                                },
                                 onSelected: (selectedIndex) {
                                   setState(() {
                                     if (selectedItems.contains(selectedIndex)) {
@@ -179,6 +192,7 @@ class TodoItemCard extends StatelessWidget {
   final TodoItemData todoItem;
   final bool isSelected;
   final ValueChanged<int> onSelected;
+  final Function(String id) onDeleteTodoItem;
 
   const TodoItemCard({
     super.key,
@@ -186,6 +200,7 @@ class TodoItemCard extends StatelessWidget {
     required this.todoItem,
     required this.isSelected,
     required this.onSelected,
+    required this.onDeleteTodoItem,
   });
 
   @override
@@ -205,6 +220,7 @@ class TodoItemCard extends StatelessWidget {
                   idTodo: todoItem.idTodo,
                   initStatus: statusToReadableString(todoItem.status),
                   initCategory: todoItem.category,
+                  onDeleteTodoItem: onDeleteTodoItem,
                 );
               },
             ),
