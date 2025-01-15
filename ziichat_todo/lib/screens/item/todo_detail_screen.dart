@@ -230,8 +230,6 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                                   borderRadius: BorderRadius.circular(24),
                                 ),
                               ),
-                              // minimumSize: WidgetStatePropertyAll(
-                              //     Size(MediaQuery.of(context).size.width, 48)),
                             ),
                             child: Text(
                               "Save changes",
@@ -245,7 +243,6 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                         IconButton(
                             onPressed: () {
                               widget.onDeleteTodoItem(todoDetailData.idTodo);
-                              // Navigator.pop(context);
                             },
                             style: IconButton.styleFrom(
                                 backgroundColor: Colors.red),

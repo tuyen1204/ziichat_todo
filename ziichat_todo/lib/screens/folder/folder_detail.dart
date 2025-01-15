@@ -44,8 +44,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
 
   @override
   Widget build(BuildContext context) {
-    // final folder = ModalRoute.of(context)!.settings.arguments as String; //* Cách khác
-
     final paddingNotch = MediaQuery.of(context).padding.top;
     final paddingBottom = MediaQuery.of(context).padding.bottom;
 

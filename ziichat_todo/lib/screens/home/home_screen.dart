@@ -87,10 +87,6 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      // floatingActionButton: AddItemButton(
-      //   paddingNotch: paddingNotch,
-      //   paddingBottom: paddingBottom,
-      // ),
     );
   }
 
