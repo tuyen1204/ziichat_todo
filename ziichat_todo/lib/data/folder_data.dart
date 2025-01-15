@@ -10,12 +10,12 @@ List<TodoItemData> dataFolder = [
     status: ItemStatus.done,
   ),
   TodoItemData(
-    idTodo: "todo-1",
-    title: "Todo 1",
-    category: "Work",
-    createdTime: "10:00",
-    status: ItemStatus.pending,
-  ),
+      idTodo: "todo-1",
+      title: "Todo 1",
+      category: "Work",
+      createdTime: "10:00",
+      status: ItemStatus.pending,
+      note: "Lorem ipsum dolor sit amet, consectet"),
   TodoItemData(
     idTodo: "todo-2",
     title: "Todo 2",
@@ -44,5 +44,13 @@ List<TodoItemData> dataFolder = [
     createdTime: "11:00",
     note: "Note 1234567",
     status: ItemStatus.todo,
+  ),
+  TodoItemData(
+    idTodo: "todo-7",
+    title: "Todo 7 ne",
+    category: "Code",
+    createdTime: "11:00",
+    note: "Note 1234567",
+    status: ItemStatus.progressing,
   ),
 ];

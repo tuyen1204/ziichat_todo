@@ -3,37 +3,39 @@ import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
 
-class ItemDetailScreen extends StatefulWidget {
-  const ItemDetailScreen({
+class TodoDetailScreen extends StatefulWidget {
+  const TodoDetailScreen({
     super.key,
-    required this.nameTodo,
-    required this.dateCreated,
-    required this.category,
-    this.note = "",
-    required this.status,
+    required this.idTodo,
+    required this.initStatus,
+    required this.initCategory,
   });
-  final String nameTodo;
-  final String dateCreated;
-  final String category;
-  final String note;
-  final ItemStatus status;
 
+  final String idTodo;
+  final String initStatus;
+  final String initCategory;
   @override
-  State<ItemDetailScreen> createState() => _ItemDetailScreenState();
+  State<TodoDetailScreen> createState() => _TodoDetailScreenState();
 }
 
-class _ItemDetailScreenState extends State<ItemDetailScreen> {
+class _TodoDetailScreenState extends State<TodoDetailScreen> {
   late String? categorySelected = "All";
+  late String? statusSelected = "To Do";
 
   @override
   void initState() {
+    statusSelected = widget.initStatus;
+    categorySelected = widget.initCategory;
     super.initState();
-    categorySelected = widget.category;
   }
 
   @override
   Widget build(BuildContext context) {
     final folders = dataFolder.map((item) => item.category).toSet().toList();
+    final todoDetailData =
+        dataFolder.where((item) => item.idTodo == widget.idTodo).toList().first;
+    final status = dataFolder.map((item) => item.status).toSet().toList();
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -78,7 +80,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                   children: [
                     TextFormField(
                       cursorColor: primaryColor,
-                      initialValue: widget.nameTodo,
+                      initialValue: todoDetailData.title,
                       decoration: InputDecoration(
                         labelText: "Title",
                         labelStyle: TextStyle(color: Colors.grey),
@@ -99,7 +101,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                       },
                     ),
                     TextFormField(
-                      initialValue: widget.dateCreated,
+                      initialValue: todoDetailData.createdTime,
                       cursorColor: primaryColor,
                       decoration: InputDecoration(
                         labelText: "Date",
@@ -121,7 +123,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                       },
                     ),
                     TextFormField(
-                      initialValue: widget.note,
+                      initialValue: todoDetailData.note,
                       cursorColor: primaryColor,
                       decoration: InputDecoration(
                         labelText: "Note",
@@ -149,6 +151,44 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       spacing: 8,
                       children: [
+                        Text("Status",
+                            style: TextStyle(
+                                color: Color(0xff727272),
+                                fontWeight: FontWeight.w500)),
+                        Wrap(
+                          spacing: 8.0,
+                          children: status.map((item) {
+                            return ChoiceChip(
+                              label: Text(
+                                statusToReadableString(item),
+                              ),
+                              labelStyle: TextStyle(
+                                color: statusSelected ==
+                                        statusToReadableString(item)
+                                    ? Colors.white
+                                    : Colors.black87,
+                              ),
+                              checkmarkColor:
+                                  statusSelected == statusToReadableString(item)
+                                      ? Colors.white
+                                      : Colors.grey,
+                              selectedColor: statusColor(item),
+                              selected: statusSelected ==
+                                  statusToReadableString(item),
+                              onSelected: (value) {
+                                setState(() {
+                                  statusSelected = statusToReadableString(item);
+                                });
+                              },
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 8,
+                      children: [
                         Text("Category",
                             style: TextStyle(
                                 color: Color(0xff727272),
@@ -159,6 +199,9 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                             return ChoiceChip(
                               label: Text(item),
                               selected: categorySelected == item,
+                              labelStyle: TextStyle(
+                                color: Colors.black87,
+                              ),
                               onSelected: (value) {
                                 setState(() {
                                   categorySelected = item;
@@ -169,25 +212,42 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                         ),
                       ],
                     ),
-                    TextButton(
-                      onPressed: () => {},
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(primaryColor),
-                        shape: WidgetStatePropertyAll(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
+                    Row(
+                      spacing: 12,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => {},
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  WidgetStatePropertyAll(primaryColor),
+                              shape: WidgetStatePropertyAll(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                              ),
+                              // minimumSize: WidgetStatePropertyAll(
+                              //     Size(MediaQuery.of(context).size.width, 48)),
+                            ),
+                            child: Text(
+                              "Save changes",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ),
-                        minimumSize:
-                            WidgetStatePropertyAll(Size(double.infinity, 48)),
-                      ),
-                      child: Text(
-                        "Save changes",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
-                      ),
+                        IconButton(
+                            onPressed: () {},
+                            style: IconButton.styleFrom(
+                                backgroundColor: Colors.red),
+                            icon: Icon(
+                              Icons.delete_outline,
+                              color: Colors.white,
+                            )),
+                      ],
                     ),
                   ],
                 )
