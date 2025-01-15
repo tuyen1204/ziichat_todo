@@ -3,6 +3,7 @@ import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/screens/buttons/add_item.dart';
 import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
+import 'package:ziichat_todo/screens/shimmer_effect.dart';
 import 'folder_item.dart';
 
 class ItemsTodoDetail extends StatefulWidget {
@@ -31,6 +32,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   late final List<TodoItemData> listToDoAll;
   late int totals;
   Set<int> selectedItems = {};
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -40,6 +42,12 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         .toList();
     listToDoAll = List.from(dataFolder);
     totals = dataFolder.length;
+
+    Future.delayed(Duration(milliseconds: 1000), () {
+      setState(() {
+        isLoading = false;
+      });
+    });
   }
 
   @override
@@ -144,26 +152,53 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                               final todoItem = widget.currentCategory == "All"
                                   ? listToDoAll[index]
                                   : listToDo[index];
-                              return TodoItemCard(
-                                index: index,
-                                todoItem: todoItem,
-                                isSelected: selectedItems.contains(index),
-                                onDeleteTodoItem: (id) {
-                                  setState(() {
-                                    TodoItemData.onDeleteTodoItem(id);
-                                  });
-                                  Navigator.pop(context);
-                                },
-                                onSelected: (selectedIndex) {
-                                  setState(() {
-                                    if (selectedItems.contains(selectedIndex)) {
-                                      selectedItems.remove(selectedIndex);
-                                    } else {
-                                      selectedItems.add(selectedIndex);
-                                    }
-                                  });
-                                },
-                              );
+                              return isLoading
+                                  ? ShimmerLoading(
+                                      isLoading: isLoading,
+                                      child: TodoItemCard(
+                                        index: index,
+                                        todoItem: todoItem,
+                                        isSelected:
+                                            selectedItems.contains(index),
+                                        onDeleteTodoItem: (id) {
+                                          setState(() {
+                                            TodoItemData.onDeleteTodoItem(id);
+                                          });
+                                          Navigator.pop(context);
+                                        },
+                                        onSelected: (selectedIndex) {
+                                          setState(() {
+                                            if (selectedItems
+                                                .contains(selectedIndex)) {
+                                              selectedItems
+                                                  .remove(selectedIndex);
+                                            } else {
+                                              selectedItems.add(selectedIndex);
+                                            }
+                                          });
+                                        },
+                                      ))
+                                  : TodoItemCard(
+                                      index: index,
+                                      todoItem: todoItem,
+                                      isSelected: selectedItems.contains(index),
+                                      onDeleteTodoItem: (id) {
+                                        setState(() {
+                                          TodoItemData.onDeleteTodoItem(id);
+                                        });
+                                        Navigator.pop(context);
+                                      },
+                                      onSelected: (selectedIndex) {
+                                        setState(() {
+                                          if (selectedItems
+                                              .contains(selectedIndex)) {
+                                            selectedItems.remove(selectedIndex);
+                                          } else {
+                                            selectedItems.add(selectedIndex);
+                                          }
+                                        });
+                                      },
+                                    );
                             }),
                           ),
                         ],
