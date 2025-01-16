@@ -5,9 +5,27 @@ import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/screens/folder/folder_detail.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
 import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
+import 'package:ziichat_todo/component/shimmer_effect.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration(milliseconds: 1000), () {
+      setState(() {
+        isLoading = false;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +35,8 @@ class HomeScreen extends StatelessWidget {
     final totalTask = dataFolder.length;
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        centerTitle: true,
         title: Column(
           children: [
             Text(
@@ -50,12 +70,13 @@ class HomeScreen extends StatelessWidget {
                       final taskCount = dataFolder
                           .where((item) => item.category == category)
                           .length;
-                      return _folderItem(context,
-                          index: index,
-                          category: category,
-                          taskCount: taskCount,
-                          totalTaskCount: totalTask,
-                          length: folders.length);
+                      return isLoading
+                          ? ShimmerLoading(
+                              isLoading: isLoading,
+                              child: _innerFolderItem(context, index, category,
+                                  taskCount, totalTask, folders))
+                          : _innerFolderItem(context, index, category,
+                              taskCount, totalTask, folders);
                     },
                   ),
                 ),
@@ -72,14 +93,12 @@ class HomeScreen extends StatelessWidget {
                   physics: NeverScrollableScrollPhysics(),
                   itemCount: processingFolders.length,
                   itemBuilder: (context, index) {
-                    return _todoItem(context,
-                        index: index,
-                        idTodo: processingFolders.elementAt(index).idTodo,
-                        nameTodo: processingFolders.elementAt(index).title,
-                        date: processingFolders.elementAt(index).createdTime,
-                        status: statusToReadableString(
-                            processingFolders.elementAt(index).status),
-                        category: processingFolders.elementAt(index).category);
+                    return isLoading
+                        ? ShimmerLoading(
+                            isLoading: isLoading,
+                            child: _innerTodoItem(
+                                context, index, processingFolders))
+                        : _innerTodoItem(context, index, processingFolders);
                   },
                 ),
               ],
@@ -87,11 +106,28 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      // floatingActionButton: AddItemButton(
-      //   paddingNotch: paddingNotch,
-      //   paddingBottom: paddingBottom,
-      // ),
     );
+  }
+
+  Widget _innerFolderItem(BuildContext context, int index, String category,
+      int taskCount, int totalTask, List<String> folders) {
+    return _folderItem(context,
+        index: index,
+        category: category,
+        taskCount: taskCount,
+        totalTaskCount: totalTask,
+        length: folders.length);
+  }
+
+  SizedBox _innerTodoItem(BuildContext context, int index,
+      Iterable<TodoItemData> processingFolders) {
+    return _todoItem(context,
+        index: index,
+        idTodo: processingFolders.elementAt(index).idTodo,
+        nameTodo: processingFolders.elementAt(index).title,
+        date: processingFolders.elementAt(index).createdTime,
+        status: processingFolders.elementAt(index).status,
+        category: processingFolders.elementAt(index).category);
   }
 
   SizedBox _todoItem(BuildContext context,
@@ -99,7 +135,7 @@ class HomeScreen extends StatelessWidget {
       required String idTodo,
       required String nameTodo,
       required String date,
-      required String status,
+      required ItemStatus status,
       required String category}) {
     return SizedBox(
       child: Padding(
@@ -133,6 +169,8 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   Text(
                     nameTodo,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                   ),
                   Text(

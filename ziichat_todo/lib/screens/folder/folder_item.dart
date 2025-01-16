@@ -29,8 +29,8 @@ class TodoItemData {
     this.categorySlug = '',
   });
 
-  static void onCreateTodoItem(
-      String formatDate, String nameTodo, String categoryTodo) async {
+  static void onCreateTodoItem(String formatDate, String nameTodo,
+      String categoryTodo, String noteTodo) async {
     try {
       var random = Random();
       final idTodoRandom = 'todo-${random.nextInt(100)}';
@@ -38,11 +38,25 @@ class TodoItemData {
           idTodo: idTodoRandom,
           title: nameTodo,
           createdTime: formatDate,
-          category: categoryTodo);
+          category: categoryTodo,
+          note: noteTodo);
       dataFolder.add(newTodoItemData);
       print("success");
     } catch (error) {
       print(error);
+    }
+  }
+
+  static void onDeleteTodoItem(String idTodo) async {
+    try {
+      final todoItemIndex =
+          dataFolder.indexWhere((item) => item.idTodo == idTodo);
+      if (todoItemIndex != -1) {
+        dataFolder.removeAt(todoItemIndex);
+        print("Deleted id: $idTodo");
+      }
+    } catch (error) {
+      print("Error");
     }
   }
 }

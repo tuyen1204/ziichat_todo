@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:ziichat_todo/screens/onboarding/onboarding_scrreen.dart';
 import 'constants.dart';
-import 'screens/home/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -9,8 +8,6 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -36,6 +33,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    return HomeScreen();
+    return OnboardingScreen();
   }
 }
