@@ -29,8 +29,8 @@ class TodoItemData {
     this.categorySlug = '',
   });
 
-  static void onCreateTodoItem(
-      String formatDate, String nameTodo, String categoryTodo) async {
+  static void onCreateTodoItem(String formatDate, String nameTodo,
+      String categoryTodo, String noteTodo) async {
     try {
       var random = Random();
       final idTodoRandom = 'todo-${random.nextInt(100)}';
@@ -38,7 +38,8 @@ class TodoItemData {
           idTodo: idTodoRandom,
           title: nameTodo,
           createdTime: formatDate,
-          category: categoryTodo);
+          category: categoryTodo,
+          note: noteTodo);
       dataFolder.add(newTodoItemData);
       print("success");
     } catch (error) {

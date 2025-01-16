@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
@@ -9,13 +11,11 @@ class TodoDetailScreen extends StatefulWidget {
     required this.idTodo,
     required this.initStatus,
     required this.initCategory,
-    required this.onDeleteTodoItem,
   });
 
   final String idTodo;
-  final String initStatus;
+  final ItemStatus initStatus;
   final String initCategory;
-  final void Function(String id) onDeleteTodoItem;
 
   @override
   State<TodoDetailScreen> createState() => _TodoDetailScreenState();
@@ -23,22 +23,119 @@ class TodoDetailScreen extends StatefulWidget {
 
 class _TodoDetailScreenState extends State<TodoDetailScreen> {
   late String? categorySelected = "All";
-  late String? statusSelected = "To Do";
+  late ItemStatus? statusSelected = ItemStatus.done;
+  bool edited = false;
+  final folders = dataFolder.map((item) => item.category).toSet().toList();
+  late TodoItemData todoDetailData;
+
+  final status = dataFolder.map((item) => item.status).toSet().toList();
+  late TextEditingController newTitle;
+  late TextEditingController newNote;
 
   @override
   void initState() {
     statusSelected = widget.initStatus;
     categorySelected = widget.initCategory;
+    edited;
     super.initState();
+    todoDetailData =
+        dataFolder.where((item) => item.idTodo == widget.idTodo).toList().first;
+    newTitle = TextEditingController(text: todoDetailData.title);
+    newNote = TextEditingController(text: todoDetailData.note);
+  }
+
+  void _handleDeleteTodo(String id, BuildContext context) {
+    dataFolder.removeWhere((item) {
+      return item.idTodo == id;
+    });
+
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: const Text('Delete todo'),
+        content: RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            text: 'Yor\' are going to delete the ',
+            style: TextStyle(color: Colors.black),
+            children: <TextSpan>[
+              TextSpan(
+                text: todoDetailData.title,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextSpan(text: ' todo. Are you sure?'),
+            ],
+          ),
+        ),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('No'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleEditTodo({
+    required TodoItemData currentTodo,
+    String? title,
+    String? category,
+    ItemStatus? status,
+    String? note,
+    String? createdTime,
+  }) {
+    try {
+      final index =
+          dataFolder.indexWhere((item) => item.idTodo == widget.idTodo);
+      if (index != -1) {
+        setState(() {
+          dataFolder[index] = TodoItemData(
+              idTodo: dataFolder[index].idTodo,
+              title: title ?? dataFolder[index].title,
+              category: category ?? dataFolder[index].category,
+              status: status ?? dataFolder[index].status,
+              createdTime: dataFolder[index].createdTime,
+              note: note ?? dataFolder[index].note);
+        });
+
+        showCupertinoDialog(
+            context: context,
+            builder: (BuildContext context) => CupertinoAlertDialog(
+                  title: const Text('Todo update successfully'),
+                  actions: <CupertinoDialogAction>[
+                    CupertinoDialogAction(
+                      isDestructiveAction: true,
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Yes'),
+                    ),
+                  ],
+                ));
+      } else {
+        print('ID Todo not found');
+      }
+      print('Success');
+    } catch (e) {
+      return;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final folders = dataFolder.map((item) => item.category).toSet().toList();
-    final todoDetailData =
-        dataFolder.where((item) => item.idTodo == widget.idTodo).toList().first;
-    final status = dataFolder.map((item) => item.status).toSet().toList();
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -66,24 +163,30 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                     ),
                     IconButton(
                       style: IconButton.styleFrom(
-                          backgroundColor:
-                              primaryColor.withValues(alpha: 0.15)),
+                          backgroundColor: edited == true
+                              ? primaryColor
+                              : primaryColor.withValues(alpha: 0.15)),
                       icon: Icon(
                         Icons.edit_outlined,
-                        color: primaryColor,
+                        color: edited == true ? Colors.white : primaryColor,
                         size: 20,
                       ),
-                      onPressed: () => {},
+                      onPressed: () => {
+                        setState(() {
+                          edited = !edited;
+                        })
+                      },
                     )
                   ],
                 ),
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   spacing: 16,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     TextFormField(
+                      controller: newTitle,
+                      readOnly: edited == true ? false : true,
                       cursorColor: primaryColor,
-                      initialValue: todoDetailData.title,
                       decoration: InputDecoration(
                         labelText: "Title",
                         labelStyle: TextStyle(color: Colors.grey),
@@ -92,7 +195,9 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                           borderSide: BorderSide(color: primaryColor),
                         ),
                       ),
+                      minLines: 4,
                       keyboardType: TextInputType.multiline,
+                      maxLines: null,
                       onTapOutside: (event) {
                         FocusManager.instance.primaryFocus?.unfocus();
                       },
@@ -104,7 +209,9 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       },
                     ),
                     TextFormField(
-                      initialValue: todoDetailData.createdTime,
+                      readOnly: true,
+                      initialValue: DateFormat('yyyy MMM dd, HH:MM')
+                          .format(DateTime.parse(todoDetailData.createdTime)),
                       cursorColor: primaryColor,
                       decoration: InputDecoration(
                         labelText: "Date",
@@ -126,12 +233,13 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       },
                     ),
                     TextFormField(
-                      initialValue: todoDetailData.note,
+                      controller: newNote,
+                      readOnly: edited == true ? false : true,
                       cursorColor: primaryColor,
                       decoration: InputDecoration(
                         labelText: "Note",
                         labelStyle: TextStyle(color: Colors.grey),
-                        contentPadding: EdgeInsets.zero,
+                        contentPadding: EdgeInsets.only(bottom: defaultPadding),
                         alignLabelWithHint: true,
                         focusedBorder: UnderlineInputBorder(
                           borderSide: BorderSide(color: primaryColor),
@@ -166,21 +274,18 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                                 statusToReadableString(item),
                               ),
                               labelStyle: TextStyle(
-                                color: statusSelected ==
-                                        statusToReadableString(item)
+                                color: statusSelected == item
                                     ? Colors.white
                                     : Colors.black87,
                               ),
-                              checkmarkColor:
-                                  statusSelected == statusToReadableString(item)
-                                      ? Colors.white
-                                      : Colors.grey,
+                              checkmarkColor: statusSelected == item
+                                  ? Colors.white
+                                  : Colors.grey,
                               selectedColor: statusColor(item),
-                              selected: statusSelected ==
-                                  statusToReadableString(item),
+                              selected: statusSelected == item,
                               onSelected: (value) {
                                 setState(() {
-                                  statusSelected = statusToReadableString(item);
+                                  edited == true ? statusSelected = item : null;
                                 });
                               },
                             );
@@ -207,7 +312,9 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                               ),
                               onSelected: (value) {
                                 setState(() {
-                                  categorySelected = item;
+                                  edited == true
+                                      ? categorySelected = item
+                                      : null;
                                 });
                               },
                             );
@@ -215,42 +322,51 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                         ),
                       ],
                     ),
-                    Row(
-                      spacing: 12,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: TextButton(
-                            onPressed: () => {},
-                            style: ButtonStyle(
-                              backgroundColor:
-                                  WidgetStatePropertyAll(primaryColor),
-                              shape: WidgetStatePropertyAll(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(24),
-                                ),
-                              ),
-                            ),
-                            child: Text(
-                              "Save changes",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold),
+                  ],
+                ),
+                SizedBox(height: 32),
+                Row(
+                  spacing: 12,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          _handleEditTodo(
+                            title: newTitle.text,
+                            currentTodo: todoDetailData,
+                            note: newNote.text,
+                            status: statusSelected,
+                            category: categorySelected,
+                          );
+                        },
+                        style: ButtonStyle(
+                          backgroundColor: edited == true
+                              ? WidgetStatePropertyAll(primaryColor)
+                              : WidgetStatePropertyAll(Colors.grey),
+                          shape: WidgetStatePropertyAll(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
                             ),
                           ),
                         ),
-                        IconButton(
-                            onPressed: () {
-                              widget.onDeleteTodoItem(todoDetailData.idTodo);
-                            },
-                            style: IconButton.styleFrom(
-                                backgroundColor: Colors.red),
-                            icon: Icon(
-                              Icons.delete_outline,
+                        child: Text(
+                          "Save changes",
+                          style: TextStyle(
                               color: Colors.white,
-                            )),
-                      ],
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () =>
+                          _handleDeleteTodo(todoDetailData.idTodo, context),
+                      style: IconButton.styleFrom(backgroundColor: Colors.red),
+                      icon: Icon(
+                        Icons.delete_outline,
+                        color: Colors.white,
+                      ),
                     ),
                   ],
                 )
