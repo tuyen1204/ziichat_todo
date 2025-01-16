@@ -206,7 +206,6 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                                     onSelected: (value) {
                                       setState(() {
                                         categorySelected = item;
-                                        print(categorySelected);
                                       });
                                     },
                                   );
@@ -231,7 +230,7 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                   onPressed: () => {
                     if (formKey.currentState!.validate())
                       {
-                        TodoItemData.onCreateTodoItem(formattedDate,
+                        TodoItemData.onCreateTodoItem(currentDate.toString(),
                             nameTodo.text, categorySelected!, noteTodo.text),
                         setState(() {}),
                         Navigator.pop(context),

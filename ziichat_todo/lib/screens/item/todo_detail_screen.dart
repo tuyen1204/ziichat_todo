@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
@@ -209,7 +210,8 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                     ),
                     TextFormField(
                       readOnly: true,
-                      initialValue: todoDetailData.createdTime,
+                      initialValue: DateFormat('yyyy MMM dd, HH:MM')
+                          .format(DateTime.parse(todoDetailData.createdTime)),
                       cursorColor: primaryColor,
                       decoration: InputDecoration(
                         labelText: "Date",

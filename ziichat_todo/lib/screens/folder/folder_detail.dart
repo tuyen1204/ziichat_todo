@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/screens/buttons/add_item.dart';
@@ -33,6 +34,13 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   late int totals;
   Set<int> selectedItems = {};
   bool isLoading = true;
+  final currentDate = DateTime.now();
+  List<String> sortList = [
+    "Alphabetically",
+    "Oldest",
+    "Latest",
+  ];
+  String currentSort = "Alphabetically";
 
   @override
   void initState() {
@@ -44,6 +52,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
           .toList();
       listToDoAll = List.from(dataFolder);
       totals = dataFolder.length;
+      currentSort;
     });
 
     Future.delayed(Duration(milliseconds: 1000), () {
@@ -57,6 +66,26 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   Widget build(BuildContext context) {
     final paddingNotch = MediaQuery.of(context).padding.top;
     final paddingBottom = MediaQuery.of(context).padding.bottom;
+    final sortedListByAlpha = (widget.currentCategory == "All"
+        ? listToDoAll
+        : listToDo)
+      ..sort((a, b) {
+        if (currentSort == "Alphabetically") {
+          return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+        } else if (currentSort == "Latest") {
+          return DateTime.parse(a.createdTime)
+              .difference(currentDate)
+              .inDays
+              .abs()
+              .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
+                  .inDays
+                  .abs());
+        } else if (currentSort == "Oldest") {
+          return DateTime.parse(a.createdTime)
+              .compareTo(DateTime.parse(b.createdTime));
+        }
+        return 0; // Add this line to return a default value.
+      });
 
     return Scaffold(
       backgroundColor: primaryColor,
@@ -138,44 +167,46 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.start,
-                    spacing: 16,
                     children: [
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: sortList.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                left: 12,
+                                right: index == sortList.length - 1 ? 12 : 0,
+                              ),
+                              child: ChoiceChip(
+                                  showCheckmark: false,
+                                  label: Text(sortList[index]),
+                                  selected: currentSort == sortList[index],
+                                  onSelected: (value) {
+                                    setState(() {
+                                      currentSort = sortList[index];
+                                    });
+                                  }),
+                            );
+                          },
+                        ),
+                      ),
                       Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 8,
                         mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Column(
-                            spacing: 8,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: List.generate(
-                                widget.currentCategory == "All"
-                                    ? listToDoAll.length
-                                    : listToDo.length, (index) {
-                              final todoItem = widget.currentCategory == "All"
-                                  ? listToDoAll[index]
-                                  : listToDo[index];
-                              return isLoading
-                                  ? ShimmerLoading(
-                                      isLoading: isLoading,
-                                      child: TodoItemCard(
-                                        index: index,
-                                        todoItem: todoItem,
-                                        isSelected:
-                                            selectedItems.contains(index),
-                                        onSelected: (selectedIndex) {
-                                          setState(() {
-                                            if (selectedItems
-                                                .contains(selectedIndex)) {
-                                              selectedItems
-                                                  .remove(selectedIndex);
-                                            } else {
-                                              selectedItems.add(selectedIndex);
-                                            }
-                                          });
-                                        },
-                                      ))
-                                  : TodoItemCard(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: List.generate(
+                          sortedListByAlpha.length,
+                          (index) {
+                            final todoItem = widget.currentCategory == "All"
+                                ? listToDoAll[index]
+                                : listToDo[index];
+                            return isLoading
+                                ? ShimmerLoading(
+                                    isLoading: isLoading,
+                                    child: TodoItemCard(
                                       index: index,
                                       todoItem: todoItem,
                                       isSelected: selectedItems.contains(index),
@@ -189,11 +220,28 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                                           }
                                         });
                                       },
-                                    );
-                            }),
-                          ),
-                        ],
-                      )
+                                    ),
+                                  )
+                                : TodoItemCard(
+                                    index: index,
+                                    todoItem: todoItem,
+                                    isSelected: selectedItems.contains(index),
+                                    onSelected: (selectedIndex) {
+                                      setState(
+                                        () {
+                                          if (selectedItems
+                                              .contains(selectedIndex)) {
+                                            selectedItems.remove(selectedIndex);
+                                          } else {
+                                            selectedItems.add(selectedIndex);
+                                          }
+                                        },
+                                      );
+                                    },
+                                  );
+                          },
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -280,7 +328,8 @@ class TodoItemCard extends StatelessWidget {
                               fontWeight: FontWeight.w500),
                         ),
                         Text(
-                          todoItem.createdTime,
+                          DateFormat('yyyy MMM dd, HH:MM')
+                              .format(DateTime.parse(todoItem.createdTime)),
                           style: TextStyle(
                               fontSize: 14,
                               color: Colors.black45,
