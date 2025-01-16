@@ -322,6 +322,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                     ),
                   ],
                 ),
+                SizedBox(height: 32),
                 Row(
                   spacing: 12,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
