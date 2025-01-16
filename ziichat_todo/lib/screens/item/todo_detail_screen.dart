@@ -109,6 +109,21 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
               createdTime: dataFolder[index].createdTime,
               note: note ?? dataFolder[index].note);
         });
+
+        showCupertinoDialog(
+            context: context,
+            builder: (BuildContext context) => CupertinoAlertDialog(
+                  title: const Text('Todo update successfully'),
+                  actions: <CupertinoDialogAction>[
+                    CupertinoDialogAction(
+                      isDestructiveAction: true,
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Yes'),
+                    ),
+                  ],
+                ));
       } else {
         print('ID Todo not found');
       }
