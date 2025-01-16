@@ -24,7 +24,11 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
   late String? categorySelected = "All";
   late String? statusSelected = "To Do";
   bool edited = false;
-  // final List<TodoItemData> dataFolderNew = [];
+  final folders = dataFolder.map((item) => item.category).toSet().toList();
+  late TodoItemData todoDetailData;
+
+  final status = dataFolder.map((item) => item.status).toSet().toList();
+  late TextEditingController newTitle;
 
   @override
   void initState() {
@@ -32,6 +36,9 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     categorySelected = widget.initCategory;
     edited;
     super.initState();
+    todoDetailData =
+        dataFolder.where((item) => item.idTodo == widget.idTodo).toList().first;
+    newTitle = TextEditingController(text: todoDetailData.title);
   }
 
   void _handleDeleteTodo(String id) {
@@ -40,13 +47,41 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     });
   }
 
+  void _handleEditTodo({
+    required TodoItemData currentTodo,
+    String? title,
+    String? category,
+    String? createdTime,
+    ItemStatus? status,
+    String? note,
+  }) {
+    try {
+      final index =
+          dataFolder.indexWhere((item) => item.idTodo == widget.idTodo);
+      if (index != -1) {
+        setState(() {
+          dataFolder[index] = TodoItemData(
+              idTodo: dataFolder[index].idTodo,
+              title: title ?? dataFolder[index].title,
+              category: category ?? dataFolder[index].category,
+              createdTime: dataFolder[index].createdTime,
+              status: status ?? dataFolder[index].status,
+              note: note ?? dataFolder[index].note);
+        });
+      } else {
+        print('id not found');
+      }
+
+      print('sucess');
+      print(todoDetailData.title);
+    } catch (e) {
+      print("Error in editTodoItem: $e");
+      return;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final folders = dataFolder.map((item) => item.category).toSet().toList();
-    final todoDetailData =
-        dataFolder.where((item) => item.idTodo == widget.idTodo).toList().first;
-    final status = dataFolder.map((item) => item.status).toSet().toList();
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -95,9 +130,10 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     TextFormField(
+                      controller: newTitle,
                       readOnly: edited == true ? false : true,
                       cursorColor: primaryColor,
-                      initialValue: todoDetailData.title,
+                      // initialValue: todoDetailData.title,
                       decoration: InputDecoration(
                         labelText: "Title",
                         labelStyle: TextStyle(color: Colors.grey),
@@ -120,7 +156,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       },
                     ),
                     TextFormField(
-                      readOnly: edited == true ? false : true,
+                      readOnly: true,
                       initialValue: todoDetailData.createdTime,
                       cursorColor: primaryColor,
                       decoration: InputDecoration(
@@ -246,7 +282,13 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                   children: [
                     Expanded(
                       child: TextButton(
-                        onPressed: () => {},
+                        onPressed: () {
+                          print('onPressed');
+                          _handleEditTodo(
+                            title: newTitle.text,
+                            currentTodo: todoDetailData,
+                          );
+                        },
                         style: ButtonStyle(
                           backgroundColor: edited == true
                               ? WidgetStatePropertyAll(primaryColor)

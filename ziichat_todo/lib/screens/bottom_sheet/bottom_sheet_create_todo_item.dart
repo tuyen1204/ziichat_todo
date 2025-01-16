@@ -214,37 +214,6 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                               ),
                             ],
                           ),
-                          DropdownMenu<String>(
-                            initialSelection: widget.showCurrentCategory,
-                            width: MediaQuery.of(context).size.width,
-                            onSelected: (String? value) {
-                              setState(() {
-                                categoryTodo = value;
-                                selectedCategory = value;
-                                choiceCategory.text = value!;
-                              });
-                            },
-                            hintText: widget.showCurrentCategory,
-                            inputDecorationTheme: InputDecorationTheme(
-                              isDense: true,
-                              contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              constraints: BoxConstraints.tightFor(
-                                  width: MediaQuery.of(context).size.width,
-                                  height: 48), //
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            dropdownMenuEntries:
-                                categoryList.map((String value) {
-                              return DropdownMenuEntry<String>(
-                                value: value,
-                                label: value,
-                                leadingIcon: Icon(Icons.import_contacts),
-                              );
-                            }).toList(),
-                          )
                         ],
                       ),
                     )
