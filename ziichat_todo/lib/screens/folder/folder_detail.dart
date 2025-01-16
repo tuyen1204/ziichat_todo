@@ -41,7 +41,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     "Latest",
   ];
   String currentSort = "Alphabetically";
-  String choiceCategory = "All";
   late final List<TodoItemData> filteredFolders;
 
   @override
@@ -54,7 +53,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
           .toList();
       listToDoAll = List.from(dataFolder);
       totals = dataFolder.length;
-      choiceCategory;
     });
 
     Future.delayed(Duration(milliseconds: 1000), () {
@@ -62,16 +60,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         isLoading = false;
       });
     });
-  }
-
-  void _handleUpdateFolders() {
-    filteredFolders = choiceCategory == "All"
-        ? List.from(dataFolder)
-        : filteredFolders
-            .where((toDo) => toDo.category == choiceCategory)
-            .toList();
-    print("$choiceCategory choice");
-    print("${filteredFolders.length} length");
   }
 
   @override
@@ -98,8 +86,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         }
         return 0;
       });
-
-    final allFolder = dataFolder.map((item) => item.category).toSet().toList();
 
     return Scaffold(
       backgroundColor: primaryColor,
@@ -136,9 +122,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 ),
                 SizedBox(height: 12),
                 Text(
-                  choiceCategory == ""
-                      ? choiceCategory
-                      : widget.currentCategory,
+                  "All",
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -210,32 +194,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                             },
                           ),
                         ),
-                      if (widget.currentCategory == "All")
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: allFolder.length,
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: index == 0 ? 12 : 6),
-                                child: ChoiceChip(
-                                  showCheckmark: false,
-                                  label: Text(allFolder[index]),
-                                  selected: choiceCategory == allFolder[index],
-                                  onSelected: (value) {
-                                    setState(() {
-                                      choiceCategory = allFolder[index];
-                                      _handleUpdateFolders();
-                                    });
-                                  },
-                                ),
-                              );
-                            },
-                          ),
-                        ),
                       Column(
                         spacing: 8,
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -246,12 +204,12 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                             final todoItem = widget.currentCategory == "All"
                                 ? listToDoAll[index]
                                 : listToDo[index];
-                            return choiceCategory != "All"
+                            return isLoading
                                 ? ShimmerLoading(
                                     isLoading: isLoading,
                                     child: TodoItemCard(
                                       index: index,
-                                      todoItem: filteredFolders[index],
+                                      todoItem: todoItem,
                                       isSelected: selectedItems.contains(index),
                                       onSelected: (selectedIndex) {
                                         setState(() {
@@ -265,48 +223,23 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                                       },
                                     ),
                                   )
-                                : isLoading
-                                    ? ShimmerLoading(
-                                        isLoading: isLoading,
-                                        child: TodoItemCard(
-                                          index: index,
-                                          todoItem: todoItem,
-                                          isSelected:
-                                              selectedItems.contains(index),
-                                          onSelected: (selectedIndex) {
-                                            setState(() {
-                                              if (selectedItems
-                                                  .contains(selectedIndex)) {
-                                                selectedItems
-                                                    .remove(selectedIndex);
-                                              } else {
-                                                selectedItems
-                                                    .add(selectedIndex);
-                                              }
-                                            });
-                                          },
-                                        ),
-                                      )
-                                    : TodoItemCard(
-                                        index: index,
-                                        todoItem: todoItem,
-                                        isSelected:
-                                            selectedItems.contains(index),
-                                        onSelected: (selectedIndex) {
-                                          setState(
-                                            () {
-                                              if (selectedItems
-                                                  .contains(selectedIndex)) {
-                                                selectedItems
-                                                    .remove(selectedIndex);
-                                              } else {
-                                                selectedItems
-                                                    .add(selectedIndex);
-                                              }
-                                            },
-                                          );
+                                : TodoItemCard(
+                                    index: index,
+                                    todoItem: todoItem,
+                                    isSelected: selectedItems.contains(index),
+                                    onSelected: (selectedIndex) {
+                                      setState(
+                                        () {
+                                          if (selectedItems
+                                              .contains(selectedIndex)) {
+                                            selectedItems.remove(selectedIndex);
+                                          } else {
+                                            selectedItems.add(selectedIndex);
+                                          }
                                         },
                                       );
+                                    },
+                                  );
                           },
                         ),
                       ),
