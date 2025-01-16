@@ -126,8 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
         idTodo: processingFolders.elementAt(index).idTodo,
         nameTodo: processingFolders.elementAt(index).title,
         date: processingFolders.elementAt(index).createdTime,
-        status:
-            statusToReadableString(processingFolders.elementAt(index).status),
+        status: processingFolders.elementAt(index).status,
         category: processingFolders.elementAt(index).category);
   }
 
@@ -136,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
       required String idTodo,
       required String nameTodo,
       required String date,
-      required String status,
+      required ItemStatus status,
       required String category}) {
     return SizedBox(
       child: Padding(

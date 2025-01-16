@@ -13,7 +13,7 @@ class TodoDetailScreen extends StatefulWidget {
   });
 
   final String idTodo;
-  final String initStatus;
+  final ItemStatus initStatus;
   final String initCategory;
 
   @override
@@ -22,13 +22,14 @@ class TodoDetailScreen extends StatefulWidget {
 
 class _TodoDetailScreenState extends State<TodoDetailScreen> {
   late String? categorySelected = "All";
-  late String? statusSelected = "To Do";
+  late ItemStatus? statusSelected = ItemStatus.done;
   bool edited = false;
   final folders = dataFolder.map((item) => item.category).toSet().toList();
   late TodoItemData todoDetailData;
 
   final status = dataFolder.map((item) => item.status).toSet().toList();
   late TextEditingController newTitle;
+  late TextEditingController newNote;
 
   @override
   void initState() {
@@ -39,21 +40,61 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     todoDetailData =
         dataFolder.where((item) => item.idTodo == widget.idTodo).toList().first;
     newTitle = TextEditingController(text: todoDetailData.title);
+    newNote = TextEditingController(text: todoDetailData.note);
   }
 
-  void _handleDeleteTodo(String id) {
+  void _handleDeleteTodo(String id, BuildContext context) {
     dataFolder.removeWhere((item) {
       return item.idTodo == id;
     });
+
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: const Text('Delete todo'),
+        content: RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            text: 'Yor\' are going to delete the ',
+            style: TextStyle(color: Colors.black),
+            children: <TextSpan>[
+              TextSpan(
+                text: todoDetailData.title,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextSpan(text: ' todo. Are you sure?'),
+            ],
+          ),
+        ),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('No'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _handleEditTodo({
     required TodoItemData currentTodo,
     String? title,
     String? category,
-    String? createdTime,
     ItemStatus? status,
     String? note,
+    String? createdTime,
   }) {
     try {
       final index =
@@ -64,18 +105,15 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
               idTodo: dataFolder[index].idTodo,
               title: title ?? dataFolder[index].title,
               category: category ?? dataFolder[index].category,
-              createdTime: dataFolder[index].createdTime,
               status: status ?? dataFolder[index].status,
+              createdTime: dataFolder[index].createdTime,
               note: note ?? dataFolder[index].note);
         });
       } else {
-        print('id not found');
+        print('ID Todo not found');
       }
-
-      print('sucess');
-      print(todoDetailData.title);
+      print('Success');
     } catch (e) {
-      print("Error in editTodoItem: $e");
       return;
     }
   }
@@ -133,7 +171,6 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       controller: newTitle,
                       readOnly: edited == true ? false : true,
                       cursorColor: primaryColor,
-                      // initialValue: todoDetailData.title,
                       decoration: InputDecoration(
                         labelText: "Title",
                         labelStyle: TextStyle(color: Colors.grey),
@@ -179,13 +216,13 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       },
                     ),
                     TextFormField(
+                      controller: newNote,
                       readOnly: edited == true ? false : true,
-                      initialValue: todoDetailData.note,
                       cursorColor: primaryColor,
                       decoration: InputDecoration(
                         labelText: "Note",
                         labelStyle: TextStyle(color: Colors.grey),
-                        contentPadding: EdgeInsets.zero,
+                        contentPadding: EdgeInsets.only(bottom: defaultPadding),
                         alignLabelWithHint: true,
                         focusedBorder: UnderlineInputBorder(
                           borderSide: BorderSide(color: primaryColor),
@@ -220,24 +257,18 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                                 statusToReadableString(item),
                               ),
                               labelStyle: TextStyle(
-                                color: statusSelected ==
-                                        statusToReadableString(item)
+                                color: statusSelected == item
                                     ? Colors.white
                                     : Colors.black87,
                               ),
-                              checkmarkColor:
-                                  statusSelected == statusToReadableString(item)
-                                      ? Colors.white
-                                      : Colors.grey,
+                              checkmarkColor: statusSelected == item
+                                  ? Colors.white
+                                  : Colors.grey,
                               selectedColor: statusColor(item),
-                              selected: statusSelected ==
-                                  statusToReadableString(item),
+                              selected: statusSelected == item,
                               onSelected: (value) {
                                 setState(() {
-                                  edited == true
-                                      ? statusSelected =
-                                          statusToReadableString(item)
-                                      : null;
+                                  edited == true ? statusSelected = item : null;
                                 });
                               },
                             );
@@ -283,10 +314,12 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                     Expanded(
                       child: TextButton(
                         onPressed: () {
-                          print('onPressed');
                           _handleEditTodo(
                             title: newTitle.text,
                             currentTodo: todoDetailData,
+                            note: newNote.text,
+                            status: statusSelected,
+                            category: categorySelected,
                           );
                         },
                         style: ButtonStyle(
@@ -309,54 +342,14 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       ),
                     ),
                     IconButton(
-                        onPressed: () {
-                          showCupertinoDialog<void>(
-                            context: context,
-                            builder: (BuildContext context) =>
-                                CupertinoAlertDialog(
-                              title: const Text('Delete todo'),
-                              content: RichText(
-                                textAlign: TextAlign.center,
-                                text: TextSpan(
-                                  text: 'Yor\' are going to delete the ',
-                                  style: TextStyle(color: Colors.black),
-                                  children: <TextSpan>[
-                                    TextSpan(
-                                      text: todoDetailData.title,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    TextSpan(text: ' todo. Are you sure?'),
-                                  ],
-                                ),
-                              ),
-                              actions: <CupertinoDialogAction>[
-                                CupertinoDialogAction(
-                                  isDefaultAction: true,
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  child: const Text('No'),
-                                ),
-                                CupertinoDialogAction(
-                                  isDestructiveAction: true,
-                                  onPressed: () {
-                                    _handleDeleteTodo(todoDetailData.idTodo);
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text('Yes'),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        style:
-                            IconButton.styleFrom(backgroundColor: Colors.red),
-                        icon: Icon(
-                          Icons.delete_outline,
-                          color: Colors.white,
-                        )),
+                      onPressed: () =>
+                          _handleDeleteTodo(todoDetailData.idTodo, context),
+                      style: IconButton.styleFrom(backgroundColor: Colors.red),
+                      icon: Icon(
+                        Icons.delete_outline,
+                        color: Colors.white,
+                      ),
+                    ),
                   ],
                 )
               ],

@@ -17,7 +17,7 @@ class TodoItem {
   final String title;
   final String time;
   final String? category;
-  final String status;
+  final ItemStatus status;
 
   const TodoItem({
     required this.title,
@@ -240,7 +240,7 @@ class TodoItemCard extends StatelessWidget {
               builder: (context) {
                 return TodoDetailScreen(
                   idTodo: todoItem.idTodo,
-                  initStatus: statusToReadableString(todoItem.status),
+                  initStatus: todoItem.status,
                   initCategory: todoItem.category,
                 );
               },
