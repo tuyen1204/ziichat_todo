@@ -1,8 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/screens/buttons/add_item.dart';
+import 'package:ziichat_todo/screens/home/home_screen.dart';
 import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
 import 'package:ziichat_todo/component/shimmer_effect.dart';
 import 'folder_item.dart';
@@ -28,7 +30,7 @@ class TodoItem {
   });
 }
 
-enum SampleItem { deleteFolder }
+enum SampleItem { deleteFolder, editNameFolder }
 
 class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   late final List<TodoItemData> listToDo;
@@ -47,6 +49,8 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   List<TodoItemData> sortByStatus = [...dataFolder];
 
   String currentStatus = statusToReadableString(ItemStatus.all);
+
+  String categoryToDelete = "";
 
   @override
   void initState() {
@@ -71,6 +75,8 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         isLoading = false;
       });
     });
+
+    categoryToDelete = widget.currentCategory;
   }
 
   void handleUpdateFolders() {
@@ -88,6 +94,40 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                   statusToReadableString(toDo.status) == currentStatus)
               .toList();
     });
+  }
+
+  void handleDeleteFolder(BuildContext context) {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: const Text('You want to delete this folder'),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('No'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              setState(() {
+                dataFolder
+                    .removeWhere((item) => item.category == categoryToDelete);
+              });
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HomeScreen(),
+                ),
+              );
+            },
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -129,15 +169,24 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
             onSelected: (SampleItem item) {
               switch (item) {
                 case SampleItem.deleteFolder:
-                  print('Item 1 selected');
+                  handleDeleteFolder(context);
+                  break;
+
+                case SampleItem.editNameFolder:
+                  handleDeleteFolder(context);
                   break;
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<SampleItem>>[
               PopupMenuItem<SampleItem>(
                 value: SampleItem.deleteFolder,
-                child: Text('Delete Folder'),
+                child: Text('Edit Folder'),
               ),
+              if (widget.currentCategory != "All")
+                PopupMenuItem<SampleItem>(
+                  value: SampleItem.deleteFolder,
+                  child: Text('Delete Folder'),
+                )
             ],
           )
         ],
