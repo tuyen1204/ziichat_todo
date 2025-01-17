@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
+import 'package:ziichat_todo/screens/folder/folder_detail.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
 
 class TodoDetailScreen extends StatefulWidget {
@@ -51,7 +52,8 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     // _updateTime();
   }
 
-  void _handleDeleteTodo(String id, BuildContext context) {
+  void _handleDeleteTodo(
+      String id, BuildContext context, String itemInCategory) {
     dataFolder.removeWhere((item) {
       return item.idTodo == id;
     });
@@ -87,7 +89,15 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
           CupertinoDialogAction(
             isDestructiveAction: true,
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) {
+                        return ItemsTodoDetail(
+                          currentCategory: itemInCategory,
+                        );
+                      },
+                      settings: RouteSettings(arguments: itemInCategory)));
             },
             child: const Text('Yes'),
           ),
@@ -387,8 +397,8 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       ),
                     ),
                     IconButton(
-                      onPressed: () =>
-                          _handleDeleteTodo(todoDetailData.idTodo, context),
+                      onPressed: () => _handleDeleteTodo(todoDetailData.idTodo,
+                          context, todoDetailData.category),
                       style: IconButton.styleFrom(backgroundColor: Colors.red),
                       icon: Icon(
                         Icons.delete_outline,

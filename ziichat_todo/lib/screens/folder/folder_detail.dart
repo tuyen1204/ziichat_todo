@@ -182,7 +182,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 value: SampleItem.deleteFolder,
                 child: Text('Edit Folder'),
               ),
-              if (widget.currentCategory != "All")
+              if (widget.currentCategory != "All" && listToDo.isEmpty)
                 PopupMenuItem<SampleItem>(
                   value: SampleItem.deleteFolder,
                   child: Text('Delete Folder'),
