@@ -3,7 +3,7 @@ import 'package:ziichat_todo/screens/folder/folder_item.dart';
 List<TodoItemData> dataFolder = [
   TodoItemData(
     idTodo: "todo-4",
-    title: "Todo 4",
+    title: "C Todo 4",
     category: "All",
     createdTime: "2024-09-20 10:27:21.240752",
     isDefault: true,
@@ -34,7 +34,21 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-5",
-    title: "Todo 5",
+    title: "A Todo 5",
+    category: "Travel",
+    createdTime: "2024-09-20 10:27:21.240752",
+    status: ItemStatus.done,
+  ),
+  TodoItemData(
+    idTodo: "travel-2",
+    title: "Travel 2",
+    category: "Travel",
+    createdTime: "2022-09-20 10:27:21.240752",
+    status: ItemStatus.pending,
+  ),
+  TodoItemData(
+    idTodo: "travel-3",
+    title: "Travel 3",
     category: "Travel",
     createdTime: "2022-09-20 10:27:21.240752",
     status: ItemStatus.done,
