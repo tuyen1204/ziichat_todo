@@ -1,8 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/screens/buttons/add_item.dart';
+import 'package:ziichat_todo/screens/home/home_screen.dart';
 import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
 import 'package:ziichat_todo/component/shimmer_effect.dart';
 import 'folder_item.dart';
@@ -28,7 +30,7 @@ class TodoItem {
   });
 }
 
-enum SampleItem { deleteFolder }
+enum ActionInFolder { deleteFolder, editNameFolder }
 
 class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   late final List<TodoItemData> listToDo;
@@ -47,6 +49,10 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   List<TodoItemData> sortByStatus = [...dataFolder];
 
   String currentStatus = statusToReadableString(ItemStatus.all);
+
+  String categoryToDelete = "";
+
+  late final TextEditingController newCategory;
 
   @override
   void initState() {
@@ -71,6 +77,10 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         isLoading = false;
       });
     });
+
+    categoryToDelete = widget.currentCategory;
+
+    newCategory = TextEditingController(text: widget.currentCategory);
   }
 
   void handleUpdateFolders() {
@@ -88,6 +98,72 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                   statusToReadableString(toDo.status) == currentStatus)
               .toList();
     });
+  }
+
+  void handleEditFolder(BuildContext context) {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: Column(
+          spacing: 12,
+          children: [
+            CupertinoTextField(
+              prefix: Text('Name'),
+              controller: newCategory,
+              decoration: BoxDecoration(),
+            ),
+          ],
+        ),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('No'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () {},
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void handleDeleteFolder(BuildContext context) {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: const Text('You want to delete this folder'),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('No'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              setState(() {
+                dataFolder
+                    .removeWhere((item) => item.category == categoryToDelete);
+              });
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HomeScreen(),
+                ),
+              );
+            },
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -120,26 +196,43 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const HomeScreen(),
+            ),
+          ),
         ),
         backgroundColor: Colors.transparent,
         actions: [
-          PopupMenuButton<SampleItem>(
-            icon: Icon(Icons.more_vert, color: Colors.white),
-            onSelected: (SampleItem item) {
-              switch (item) {
-                case SampleItem.deleteFolder:
-                  print('Item 1 selected');
-                  break;
-              }
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<SampleItem>>[
-              PopupMenuItem<SampleItem>(
-                value: SampleItem.deleteFolder,
-                child: Text('Delete Folder'),
-              ),
-            ],
-          )
+          widget.currentCategory == "All"
+              ? SizedBox()
+              : PopupMenuButton<ActionInFolder>(
+                  icon: Icon(Icons.more_vert, color: Colors.white),
+                  onSelected: (ActionInFolder item) {
+                    switch (item) {
+                      case ActionInFolder.deleteFolder:
+                        handleDeleteFolder(context);
+                        break;
+
+                      case ActionInFolder.editNameFolder:
+                        handleEditFolder(context);
+                        break;
+                    }
+                  },
+                  itemBuilder: (BuildContext context) =>
+                      <PopupMenuEntry<ActionInFolder>>[
+                    PopupMenuItem<ActionInFolder>(
+                      value: ActionInFolder.editNameFolder,
+                      child: Text('Edit Folder'),
+                    ),
+                    if (listToDo.isEmpty)
+                      PopupMenuItem<ActionInFolder>(
+                        value: ActionInFolder.deleteFolder,
+                        child: Text('Delete Folder'),
+                      )
+                  ],
+                ),
         ],
       ),
       body: Column(
@@ -264,15 +357,15 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                       todoItem: todoItem,
                       isSelected: selectedItems.contains(index),
                       onSelected: (selectedIndex) {
-                        setState(
-                          () {
-                            if (selectedItems.contains(selectedIndex)) {
-                              selectedItems.remove(selectedIndex);
-                            } else {
-                              selectedItems.add(selectedIndex);
-                            }
-                          },
-                        );
+                        // setState(
+                        //   () {
+                        //     if (selectedItems.contains(selectedIndex)) {
+                        //       selectedItems.remove(selectedIndex);
+                        //     } else {
+                        //       selectedItems.add(selectedIndex);
+                        //     }
+                        //   },
+                        // );
                       },
                     );
             })
@@ -446,13 +539,23 @@ class TodoItemCard extends StatelessWidget {
                               fontWeight: FontWeight.w500),
                         ),
                         Text(
-                          DateFormat('yyyy MMM dd, HH:MM')
-                              .format(DateTime.parse(todoItem.createdTime)),
+                          todoItem.editedTime.isEmpty
+                              ? DateFormat('yyyy MMM dd, HH:MM')
+                                  .format(DateTime.parse(todoItem.createdTime))
+                              : DateFormat('yyyy MMM dd, HH:MM')
+                                  .format(DateTime.parse(todoItem.editedTime)),
                           style: TextStyle(
                               fontSize: 14,
                               color: Colors.black45,
                               fontWeight: FontWeight.w500),
                         ),
+                        SizedBox(width: 4),
+                        if (todoItem.editedTime.isNotEmpty)
+                          Icon(
+                            Icons.edit,
+                            size: 12,
+                            color: Colors.grey,
+                          ),
                       ],
                     ),
                   ],
