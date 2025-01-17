@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -33,6 +35,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
   late TextEditingController newNote;
 
   final currentDate = DateTime.now();
+  String formattedDate = '';
 
   @override
   void initState() {
@@ -44,6 +47,8 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
         dataFolder.where((item) => item.idTodo == widget.idTodo).toList().first;
     newTitle = TextEditingController(text: todoDetailData.title);
     newNote = TextEditingController(text: todoDetailData.note);
+
+    _updateTime();
   }
 
   void _handleDeleteTodo(String id, BuildContext context) {
@@ -136,6 +141,15 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     } catch (e) {
       return;
     }
+  }
+
+  void _updateTime() {
+    Timer.periodic(Duration(seconds: 1), (Timer t) {
+      setState(() {
+        DateTime now = DateTime.now();
+        formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+      });
+    });
   }
 
   @override

@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
 
-enum ItemStatus { todo, progressing, pending, done }
+enum ItemStatus { todo, progressing, pending, done, all }
 
 class TodoItemData {
   final String idTodo;
@@ -63,6 +63,8 @@ class TodoItemData {
 
 String statusToReadableString(ItemStatus status) {
   switch (status) {
+    case ItemStatus.all:
+      return 'All';
     case ItemStatus.todo:
       return 'To Do';
     case ItemStatus.progressing:
@@ -76,6 +78,8 @@ String statusToReadableString(ItemStatus status) {
 
 Color statusColor(ItemStatus status) {
   switch (status) {
+    case ItemStatus.all:
+      return Colors.black;
     case ItemStatus.todo:
       return Colors.blue;
     case ItemStatus.progressing:

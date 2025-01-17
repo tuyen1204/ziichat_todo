@@ -41,10 +41,9 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     "Latest",
   ];
   String currentSort = "";
-  late final List<ItemStatus> listStatus;
+  late List<ItemStatus> listStatus = [ItemStatus.all];
   List<TodoItemData> filteredFolders = [...dataFolder];
-
-  String currentStatus = "";
+  String currentStatus = statusToReadableString(ItemStatus.all);
 
   @override
   void initState() {
@@ -57,7 +56,13 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
       listToDoAll = List.from(dataFolder);
       totals = dataFolder.length;
 
-      listStatus = dataFolder.map((item) => item.status).toSet().toList();
+      // listStatus = dataFolder.map((item) => item.status).toSet().toList();
+      listStatus.addAll(dataFolder
+          .map((item) => item.status)
+          .toSet()
+          .where((status) => status != ItemStatus.all)
+          .toList());
+
       filteredFolders = currentStatus.isNotEmpty
           ? dataFolder
               .where((toDo) =>
@@ -247,15 +252,21 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: List.generate(
-                          currentStatus.isNotEmpty
-                              ? filteredFolders.length
-                              : sortedList.length,
+                          currentStatus ==
+                                  statusToReadableString(ItemStatus.all)
+                              ? listToDoAll.length
+                              : currentStatus.isNotEmpty
+                                  ? filteredFolders.length
+                                  : sortedList.length,
                           (index) {
-                            final todoItem = currentStatus.isNotEmpty
-                                ? filteredFolders[index]
-                                : widget.currentCategory == "All"
-                                    ? listToDoAll[index]
-                                    : listToDo[index];
+                            final todoItem = currentStatus ==
+                                    statusToReadableString(ItemStatus.all)
+                                ? listToDoAll[index]
+                                : currentStatus.isNotEmpty
+                                    ? filteredFolders[index]
+                                    : widget.currentCategory == "All"
+                                        ? listToDoAll[index]
+                                        : listToDo[index];
                             return isLoading
                                 ? ShimmerLoading(
                                     isLoading: isLoading,

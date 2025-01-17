@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ziichat_todo/component/title_section_large.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
@@ -20,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+
     Future.delayed(Duration(milliseconds: 1000), () {
       setState(() {
         isLoading = false;
@@ -174,7 +178,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                   ),
                   Text(
-                    date,
+                    DateFormat('yyyy MMM dd, HH:MM')
+                        .format(DateTime.parse(date)),
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
