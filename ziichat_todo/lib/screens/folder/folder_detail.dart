@@ -40,8 +40,11 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     "Oldest",
     "Latest",
   ];
-  String currentSort = "Alphabetically";
-  late final List<TodoItemData> filteredFolders;
+  String currentSort = "";
+  late final List<ItemStatus> listStatus;
+  List<TodoItemData> filteredFolders = [...dataFolder];
+
+  String currentStatus = "";
 
   @override
   void initState() {
@@ -53,6 +56,14 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
           .toList();
       listToDoAll = List.from(dataFolder);
       totals = dataFolder.length;
+
+      listStatus = dataFolder.map((item) => item.status).toSet().toList();
+      filteredFolders = currentStatus.isNotEmpty
+          ? dataFolder
+              .where((toDo) =>
+                  statusToReadableString(toDo.status) == currentStatus)
+              .toList()
+          : [...dataFolder];
     });
 
     Future.delayed(Duration(milliseconds: 1000), () {
@@ -62,10 +73,19 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     });
   }
 
+  void handleUpdateFolders() {
+    setState(() {
+      filteredFolders = dataFolder
+          .where((toDo) => statusToReadableString(toDo.status) == currentStatus)
+          .toList();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final paddingNotch = MediaQuery.of(context).padding.top;
     final paddingBottom = MediaQuery.of(context).padding.bottom;
+
     final sortedList = (widget.currentCategory == "All"
         ? listToDoAll
         : listToDo)
@@ -122,7 +142,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 ),
                 SizedBox(height: 12),
                 Text(
-                  "All",
+                  widget.currentCategory,
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -179,7 +199,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                             itemBuilder: (context, index) {
                               return Padding(
                                 padding: EdgeInsets.symmetric(
-                                    horizontal: index == 0 ? 12 : 6),
+                                    horizontal: index == 0 ? 6 : 6),
                                 child: ChoiceChip(
                                   showCheckmark: false,
                                   label: Text(sortList[index]),
@@ -194,16 +214,48 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                             },
                           ),
                         ),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: listStatus.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: index == 0 ? 6 : 6),
+                              child: ChoiceChip(
+                                showCheckmark: false,
+                                label: Text(
+                                    statusToReadableString(listStatus[index])),
+                                selected: currentStatus ==
+                                    statusToReadableString(listStatus[index]),
+                                onSelected: (value) {
+                                  setState(() {
+                                    currentStatus = statusToReadableString(
+                                        listStatus[index]);
+                                  });
+                                  handleUpdateFolders();
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                       Column(
                         spacing: 8,
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: List.generate(
-                          sortedList.length,
+                          currentStatus.isNotEmpty
+                              ? filteredFolders.length
+                              : sortedList.length,
                           (index) {
-                            final todoItem = widget.currentCategory == "All"
-                                ? listToDoAll[index]
-                                : listToDo[index];
+                            final todoItem = currentStatus.isNotEmpty
+                                ? filteredFolders[index]
+                                : widget.currentCategory == "All"
+                                    ? listToDoAll[index]
+                                    : listToDo[index];
                             return isLoading
                                 ? ShimmerLoading(
                                     isLoading: isLoading,

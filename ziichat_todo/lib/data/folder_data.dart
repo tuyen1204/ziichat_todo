@@ -34,9 +34,9 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-5",
-    title: "Todo 5",
+    title: "A Todo 5",
     category: "Travel",
-    createdTime: "2022-09-20 10:27:21.240752",
+    createdTime: "2024-09-20 10:27:21.240752",
     status: ItemStatus.done,
   ),
   TodoItemData(
@@ -44,7 +44,7 @@ List<TodoItemData> dataFolder = [
     title: "Travel 2",
     category: "Travel",
     createdTime: "2022-09-20 10:27:21.240752",
-    status: ItemStatus.done,
+    status: ItemStatus.pending,
   ),
   TodoItemData(
     idTodo: "travel-3",

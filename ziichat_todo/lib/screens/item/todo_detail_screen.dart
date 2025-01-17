@@ -32,6 +32,8 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
   late TextEditingController newTitle;
   late TextEditingController newNote;
 
+  final currentDate = DateTime.now();
+
   @override
   void initState() {
     statusSelected = widget.initStatus;
@@ -103,12 +105,14 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
       if (index != -1) {
         setState(() {
           dataFolder[index] = TodoItemData(
-              idTodo: dataFolder[index].idTodo,
-              title: title ?? dataFolder[index].title,
-              category: category ?? dataFolder[index].category,
-              status: status ?? dataFolder[index].status,
-              createdTime: dataFolder[index].createdTime,
-              note: note ?? dataFolder[index].note);
+            idTodo: dataFolder[index].idTodo,
+            title: title ?? dataFolder[index].title,
+            category: category ?? dataFolder[index].category,
+            status: status ?? dataFolder[index].status,
+            createdTime: dataFolder[index].createdTime,
+            note: note ?? dataFolder[index].note,
+            editedTime: currentDate.toString(),
+          );
         });
 
         showCupertinoDialog(
@@ -136,6 +140,8 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    String formattedDate = DateFormat('yyyy MMM dd, HH:MM').format(currentDate);
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -225,13 +231,26 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       onTapOutside: (event) {
                         FocusManager.instance.primaryFocus?.unfocus();
                       },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Name task is required';
-                        }
-                        return null;
-                      },
                     ),
+                    if (todoDetailData.editedTime.isNotEmpty)
+                      TextFormField(
+                        readOnly: true,
+                        initialValue: DateFormat('yyyy MMM dd, HH:MM')
+                            .format(DateTime.parse(todoDetailData.editedTime)),
+                        cursorColor: primaryColor,
+                        decoration: InputDecoration(
+                          labelText: "Edited Date",
+                          labelStyle: TextStyle(color: Colors.grey),
+                          alignLabelWithHint: true,
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: primaryColor),
+                          ),
+                        ),
+                        keyboardType: TextInputType.multiline,
+                        onTapOutside: (event) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
+                      ),
                     TextFormField(
                       controller: newNote,
                       readOnly: edited == true ? false : true,
@@ -250,12 +269,6 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       maxLines: null,
                       onTapOutside: (event) {
                         FocusManager.instance.primaryFocus?.unfocus();
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Name task is required';
-                        }
-                        return null;
                       },
                     ),
                     Column(
