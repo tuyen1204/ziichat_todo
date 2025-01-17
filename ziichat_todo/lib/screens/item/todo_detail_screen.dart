@@ -1,10 +1,10 @@
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
+import 'package:ziichat_todo/screens/folder/folder_detail.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
 
 class TodoDetailScreen extends StatefulWidget {
@@ -48,10 +48,11 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     newTitle = TextEditingController(text: todoDetailData.title);
     newNote = TextEditingController(text: todoDetailData.note);
 
-    // _updateTime();
+    _updateTime();
   }
 
-  void _handleDeleteTodo(String id, BuildContext context) {
+  void _handleDeleteTodo(
+      String id, BuildContext context, String itemInCategory) {
     dataFolder.removeWhere((item) {
       return item.idTodo == id;
     });
@@ -87,7 +88,15 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
           CupertinoDialogAction(
             isDestructiveAction: true,
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) {
+                        return ItemsTodoDetail(
+                          currentCategory: itemInCategory,
+                        );
+                      },
+                      settings: RouteSettings(arguments: itemInCategory)));
             },
             child: const Text('Yes'),
           ),
@@ -116,7 +125,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
             status: status ?? dataFolder[index].status,
             createdTime: dataFolder[index].createdTime,
             note: note ?? dataFolder[index].note,
-            editedTime: currentDate.toString(),
+            editedTime: formattedDate.toString(),
           );
         });
 
@@ -143,25 +152,31 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     }
   }
 
-  // void _updateTime() {
-  //   Timer.periodic(Duration(seconds: 1), (Timer t) {
-  //     setState(() {
-  //       DateTime now = DateTime.now();
-  //       formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
-  //     });
-  //   });
-  // }
+  void _updateTime() {
+    Timer.periodic(Duration(seconds: 1), (Timer t) {
+      setState(() {
+        DateTime now = DateTime.now();
+        formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    String formattedDate = DateFormat('yyyy MMM dd, HH:MM').format(currentDate);
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new, color: Colors.black),
           onPressed: () => {
-            Navigator.pop(context),
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) {
+                      return ItemsTodoDetail(
+                        currentCategory: categorySelected.toString(),
+                      );
+                    },
+                    settings: RouteSettings(arguments: categorySelected))),
           },
         ),
       ),
@@ -249,8 +264,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                     if (todoDetailData.editedTime.isNotEmpty)
                       TextFormField(
                         readOnly: true,
-                        initialValue: DateFormat('yyyy MMM dd, HH:MM')
-                            .format(DateTime.parse(todoDetailData.editedTime)),
+                        initialValue: todoDetailData.editedTime,
                         cursorColor: primaryColor,
                         decoration: InputDecoration(
                           labelText: "Edited Date",
@@ -387,8 +401,8 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       ),
                     ),
                     IconButton(
-                      onPressed: () =>
-                          _handleDeleteTodo(todoDetailData.idTodo, context),
+                      onPressed: () => _handleDeleteTodo(todoDetailData.idTodo,
+                          context, todoDetailData.category),
                       style: IconButton.styleFrom(backgroundColor: Colors.red),
                       icon: Icon(
                         Icons.delete_outline,
