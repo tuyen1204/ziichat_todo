@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -49,7 +48,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     newTitle = TextEditingController(text: todoDetailData.title);
     newNote = TextEditingController(text: todoDetailData.note);
 
-    // _updateTime();
+    _updateTime();
   }
 
   void _handleDeleteTodo(
@@ -126,7 +125,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
             status: status ?? dataFolder[index].status,
             createdTime: dataFolder[index].createdTime,
             note: note ?? dataFolder[index].note,
-            editedTime: currentDate.toString(),
+            editedTime: formattedDate.toString(),
           );
         });
 
@@ -153,25 +152,31 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     }
   }
 
-  // void _updateTime() {
-  //   Timer.periodic(Duration(seconds: 1), (Timer t) {
-  //     setState(() {
-  //       DateTime now = DateTime.now();
-  //       formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
-  //     });
-  //   });
-  // }
+  void _updateTime() {
+    Timer.periodic(Duration(seconds: 1), (Timer t) {
+      setState(() {
+        DateTime now = DateTime.now();
+        formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    String formattedDate = DateFormat('yyyy MMM dd, HH:MM').format(currentDate);
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new, color: Colors.black),
           onPressed: () => {
-            Navigator.pop(context),
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) {
+                      return ItemsTodoDetail(
+                        currentCategory: categorySelected.toString(),
+                      );
+                    },
+                    settings: RouteSettings(arguments: categorySelected))),
           },
         ),
       ),
@@ -259,8 +264,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                     if (todoDetailData.editedTime.isNotEmpty)
                       TextFormField(
                         readOnly: true,
-                        initialValue: DateFormat('yyyy MMM dd, HH:MM')
-                            .format(DateTime.parse(todoDetailData.editedTime)),
+                        initialValue: todoDetailData.editedTime,
                         cursorColor: primaryColor,
                         decoration: InputDecoration(
                           labelText: "Edited Date",

@@ -52,6 +52,8 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
 
   String categoryToDelete = "";
 
+  late final TextEditingController newCategory;
+
   @override
   void initState() {
     super.initState();
@@ -77,6 +79,8 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     });
 
     categoryToDelete = widget.currentCategory;
+
+    newCategory = TextEditingController(text: widget.currentCategory);
   }
 
   void handleUpdateFolders() {
@@ -94,6 +98,38 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                   statusToReadableString(toDo.status) == currentStatus)
               .toList();
     });
+  }
+
+  void handleEditFolder(BuildContext context) {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: Column(
+          spacing: 12,
+          children: [
+            CupertinoTextField(
+              prefix: Text('Name'),
+              controller: newCategory,
+              decoration: BoxDecoration(),
+            ),
+          ],
+        ),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('No'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () {},
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
   }
 
   void handleDeleteFolder(BuildContext context) {
@@ -160,35 +196,43 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const HomeScreen(),
+            ),
+          ),
         ),
         backgroundColor: Colors.transparent,
         actions: [
-          PopupMenuButton<SampleItem>(
-            icon: Icon(Icons.more_vert, color: Colors.white),
-            onSelected: (SampleItem item) {
-              switch (item) {
-                case SampleItem.deleteFolder:
-                  handleDeleteFolder(context);
-                  break;
+          widget.currentCategory == "All"
+              ? SizedBox()
+              : PopupMenuButton<SampleItem>(
+                  icon: Icon(Icons.more_vert, color: Colors.white),
+                  onSelected: (SampleItem item) {
+                    switch (item) {
+                      case SampleItem.deleteFolder:
+                        handleDeleteFolder(context);
+                        break;
 
-                case SampleItem.editNameFolder:
-                  handleDeleteFolder(context);
-                  break;
-              }
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<SampleItem>>[
-              PopupMenuItem<SampleItem>(
-                value: SampleItem.deleteFolder,
-                child: Text('Edit Folder'),
-              ),
-              if (widget.currentCategory != "All" && listToDo.isEmpty)
-                PopupMenuItem<SampleItem>(
-                  value: SampleItem.deleteFolder,
-                  child: Text('Delete Folder'),
-                )
-            ],
-          )
+                      case SampleItem.editNameFolder:
+                        handleEditFolder(context);
+                        break;
+                    }
+                  },
+                  itemBuilder: (BuildContext context) =>
+                      <PopupMenuEntry<SampleItem>>[
+                    PopupMenuItem<SampleItem>(
+                      value: SampleItem.editNameFolder,
+                      child: Text('Edit Folder'),
+                    ),
+                    if (listToDo.isEmpty)
+                      PopupMenuItem<SampleItem>(
+                        value: SampleItem.deleteFolder,
+                        child: Text('Delete Folder'),
+                      )
+                  ],
+                ),
         ],
       ),
       body: Column(
@@ -313,15 +357,15 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                       todoItem: todoItem,
                       isSelected: selectedItems.contains(index),
                       onSelected: (selectedIndex) {
-                        setState(
-                          () {
-                            if (selectedItems.contains(selectedIndex)) {
-                              selectedItems.remove(selectedIndex);
-                            } else {
-                              selectedItems.add(selectedIndex);
-                            }
-                          },
-                        );
+                        // setState(
+                        //   () {
+                        //     if (selectedItems.contains(selectedIndex)) {
+                        //       selectedItems.remove(selectedIndex);
+                        //     } else {
+                        //       selectedItems.add(selectedIndex);
+                        //     }
+                        //   },
+                        // );
                       },
                     );
             })
@@ -495,13 +539,23 @@ class TodoItemCard extends StatelessWidget {
                               fontWeight: FontWeight.w500),
                         ),
                         Text(
-                          DateFormat('yyyy MMM dd, HH:MM')
-                              .format(DateTime.parse(todoItem.createdTime)),
+                          todoItem.editedTime.isEmpty
+                              ? DateFormat('yyyy MMM dd, HH:MM')
+                                  .format(DateTime.parse(todoItem.createdTime))
+                              : DateFormat('yyyy MMM dd, HH:MM')
+                                  .format(DateTime.parse(todoItem.editedTime)),
                           style: TextStyle(
                               fontSize: 14,
                               color: Colors.black45,
                               fontWeight: FontWeight.w500),
                         ),
+                        SizedBox(width: 4),
+                        if (todoItem.editedTime.isNotEmpty)
+                          Icon(
+                            Icons.edit,
+                            size: 12,
+                            color: Colors.grey,
+                          ),
                       ],
                     ),
                   ],
