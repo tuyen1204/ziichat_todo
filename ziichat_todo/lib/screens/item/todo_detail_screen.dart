@@ -48,7 +48,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     newTitle = TextEditingController(text: todoDetailData.title);
     newNote = TextEditingController(text: todoDetailData.note);
 
-    _updateTime();
+    // _updateTime();
   }
 
   void _handleDeleteTodo(String id, BuildContext context) {
@@ -143,14 +143,14 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     }
   }
 
-  void _updateTime() {
-    Timer.periodic(Duration(seconds: 1), (Timer t) {
-      setState(() {
-        DateTime now = DateTime.now();
-        formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
-      });
-    });
-  }
+  // void _updateTime() {
+  //   Timer.periodic(Duration(seconds: 1), (Timer t) {
+  //     setState(() {
+  //       DateTime now = DateTime.now();
+  //       formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+  //     });
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {

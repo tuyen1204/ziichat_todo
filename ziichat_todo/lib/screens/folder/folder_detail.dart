@@ -43,7 +43,8 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   String currentSort = "";
   late List<ItemStatus> listStatus = [ItemStatus.all];
   List<TodoItemData> sortByStatus = [...dataFolder];
-  String currentStatus = "";
+
+  String currentStatus = statusToReadableString(ItemStatus.all);
 
   @override
   void initState() {
@@ -61,13 +62,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
           .toSet()
           .where((status) => status != ItemStatus.all)
           .toList());
-
-      sortByStatus = currentStatus.isNotEmpty
-          ? dataFolder
-              .where((toDo) =>
-                  statusToReadableString(toDo.status) == currentStatus)
-              .toList()
-          : [...dataFolder];
     });
 
     Future.delayed(Duration(milliseconds: 1000), () {
@@ -79,15 +73,23 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
 
   void handleUpdateFolders() {
     setState(() {
-      sortByStatus = dataFolder
-          .where((toDo) => statusToReadableString(toDo.status) == currentStatus)
-          .toList();
+      sortByStatus = widget.currentCategory == "All"
+          ? dataFolder
+              .where((toDo) =>
+                  statusToReadableString(toDo.status) == currentStatus)
+              .toList()
+          : dataFolder
+              .where((toDo) =>
+                  (widget.currentCategory != "All"
+                      ? toDo.category == widget.currentCategory
+                      : true) &&
+                  statusToReadableString(toDo.status) == currentStatus)
+              .toList();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    print(widget.currentCategory);
     final paddingNotch = MediaQuery.of(context).padding.top;
     final paddingBottom = MediaQuery.of(context).padding.bottom;
 
@@ -219,60 +221,90 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
       spacing: 8,
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: List.generate(
-        widget.currentCategory != "All"
-            ? listToDo.length
-            : currentStatus == statusToReadableString(ItemStatus.all)
-                ? listToDoAll.length
-                : currentStatus.isNotEmpty
-                    ? sortByStatus.length
-                    : sortedList.length,
-        (index) {
-          final todoItem = widget.currentCategory != "All"
-              ? listToDo[index]
-              : currentStatus == statusToReadableString(ItemStatus.all)
+      children: widget.currentCategory == "All"
+          ? List.generate(
+              currentStatus == "All" ? listToDoAll.length : sortByStatus.length,
+              (index) {
+              final todoItem = currentStatus == "All"
                   ? listToDoAll[index]
-                  : currentStatus.isNotEmpty
-                      ? sortByStatus[index]
-                      : widget.currentCategory == "All"
-                          ? listToDoAll[index]
-                          : listToDo[index];
-          return isLoading
-              ? ShimmerLoading(
-                  isLoading: isLoading,
-                  child: TodoItemCard(
-                    index: index,
-                    todoItem: todoItem,
-                    isSelected: selectedItems.contains(index),
-                    onSelected: (selectedIndex) {
-                      setState(() {
-                        if (selectedItems.contains(selectedIndex)) {
-                          selectedItems.remove(selectedIndex);
-                        } else {
-                          selectedItems.add(selectedIndex);
-                        }
-                      });
-                    },
-                  ),
-                )
-              : TodoItemCard(
-                  index: index,
-                  todoItem: todoItem,
-                  isSelected: selectedItems.contains(index),
-                  onSelected: (selectedIndex) {
-                    setState(
-                      () {
-                        if (selectedItems.contains(selectedIndex)) {
-                          selectedItems.remove(selectedIndex);
-                        } else {
-                          selectedItems.add(selectedIndex);
-                        }
+                  : sortByStatus[index];
+              return isLoading
+                  ? ShimmerLoading(
+                      isLoading: isLoading,
+                      child: TodoItemCard(
+                        index: index,
+                        todoItem: todoItem,
+                        isSelected: selectedItems.contains(index),
+                        onSelected: (selectedIndex) {
+                          setState(() {
+                            if (selectedItems.contains(selectedIndex)) {
+                              selectedItems.remove(selectedIndex);
+                            } else {
+                              selectedItems.add(selectedIndex);
+                            }
+                          });
+                        },
+                      ),
+                    )
+                  : TodoItemCard(
+                      index: index,
+                      todoItem: todoItem,
+                      isSelected: selectedItems.contains(index),
+                      onSelected: (selectedIndex) {
+                        setState(
+                          () {
+                            if (selectedItems.contains(selectedIndex)) {
+                              selectedItems.remove(selectedIndex);
+                            } else {
+                              selectedItems.add(selectedIndex);
+                            }
+                          },
+                        );
                       },
                     );
-                  },
-                );
-        },
-      ),
+            })
+          : List.generate(
+              currentStatus == "All" ? listToDo.length : sortByStatus.length,
+              (index) {
+                final todoItem = currentStatus == "All"
+                    ? listToDo[index]
+                    : sortByStatus[index];
+                return isLoading
+                    ? ShimmerLoading(
+                        isLoading: isLoading,
+                        child: TodoItemCard(
+                          index: index,
+                          todoItem: todoItem,
+                          isSelected: selectedItems.contains(index),
+                          onSelected: (selectedIndex) {
+                            setState(() {
+                              if (selectedItems.contains(selectedIndex)) {
+                                selectedItems.remove(selectedIndex);
+                              } else {
+                                selectedItems.add(selectedIndex);
+                              }
+                            });
+                          },
+                        ),
+                      )
+                    : TodoItemCard(
+                        index: index,
+                        todoItem: todoItem,
+                        isSelected: selectedItems.contains(index),
+                        onSelected: (selectedIndex) {
+                          setState(
+                            () {
+                              if (selectedItems.contains(selectedIndex)) {
+                                selectedItems.remove(selectedIndex);
+                              } else {
+                                selectedItems.add(selectedIndex);
+                              }
+                            },
+                          );
+                        },
+                      );
+              },
+            ),
     );
   }
 
