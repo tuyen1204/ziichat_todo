@@ -28,6 +28,8 @@ class TodoItem {
   });
 }
 
+enum SampleItem { deleteFolder }
+
 class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   late final List<TodoItemData> listToDo;
   late final List<TodoItemData> listToDoAll;
@@ -92,7 +94,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   Widget build(BuildContext context) {
     final paddingNotch = MediaQuery.of(context).padding.top;
     final paddingBottom = MediaQuery.of(context).padding.bottom;
-
     final sortedList = (widget.currentCategory == "All"
         ? listToDoAll
         : listToDo)
@@ -123,9 +124,21 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         ),
         backgroundColor: Colors.transparent,
         actions: [
-          IconButton(
+          PopupMenuButton<SampleItem>(
             icon: Icon(Icons.more_vert, color: Colors.white),
-            onPressed: () => {},
+            onSelected: (SampleItem item) {
+              switch (item) {
+                case SampleItem.deleteFolder:
+                  print('Item 1 selected');
+                  break;
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<SampleItem>>[
+              PopupMenuItem<SampleItem>(
+                value: SampleItem.deleteFolder,
+                child: Text('Delete Folder'),
+              ),
+            ],
           )
         ],
       ),
@@ -269,6 +282,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 final todoItem = currentStatus == "All"
                     ? listToDo[index]
                     : sortByStatus[index];
+
                 return isLoading
                     ? ShimmerLoading(
                         isLoading: isLoading,
