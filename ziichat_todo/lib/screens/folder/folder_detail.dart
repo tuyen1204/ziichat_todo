@@ -30,7 +30,7 @@ class TodoItem {
   });
 }
 
-enum SampleItem { deleteFolder, editNameFolder }
+enum ActionInFolder { deleteFolder, editNameFolder }
 
 class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   late final List<TodoItemData> listToDo;
@@ -207,28 +207,28 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         actions: [
           widget.currentCategory == "All"
               ? SizedBox()
-              : PopupMenuButton<SampleItem>(
+              : PopupMenuButton<ActionInFolder>(
                   icon: Icon(Icons.more_vert, color: Colors.white),
-                  onSelected: (SampleItem item) {
+                  onSelected: (ActionInFolder item) {
                     switch (item) {
-                      case SampleItem.deleteFolder:
+                      case ActionInFolder.deleteFolder:
                         handleDeleteFolder(context);
                         break;
 
-                      case SampleItem.editNameFolder:
+                      case ActionInFolder.editNameFolder:
                         handleEditFolder(context);
                         break;
                     }
                   },
                   itemBuilder: (BuildContext context) =>
-                      <PopupMenuEntry<SampleItem>>[
-                    PopupMenuItem<SampleItem>(
-                      value: SampleItem.editNameFolder,
+                      <PopupMenuEntry<ActionInFolder>>[
+                    PopupMenuItem<ActionInFolder>(
+                      value: ActionInFolder.editNameFolder,
                       child: Text('Edit Folder'),
                     ),
                     if (listToDo.isEmpty)
-                      PopupMenuItem<SampleItem>(
-                        value: SampleItem.deleteFolder,
+                      PopupMenuItem<ActionInFolder>(
+                        value: ActionInFolder.deleteFolder,
                         child: Text('Delete Folder'),
                       )
                   ],
