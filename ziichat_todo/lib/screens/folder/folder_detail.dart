@@ -126,7 +126,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
           CupertinoDialogAction(
             isDestructiveAction: true,
             onPressed: () {
-              if (folderNames.contains(newCategory.text.toLowerCase())) {
+              if (folderNames.contains(newCategory.text.toLowerCase().trim())) {
                 showCupertinoDialog(
                   context: context,
                   builder: (context) => CupertinoAlertDialog(
@@ -538,7 +538,7 @@ class TodoItemCard extends StatelessWidget {
                 return TodoDetailScreen(
                   idTodo: todoItem.idTodo,
                   initStatus: todoItem.status,
-                  initCategory: todoItem.category,
+                  initCategory: updateNameFolder,
                 );
               },
             ),
