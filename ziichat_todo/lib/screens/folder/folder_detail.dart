@@ -49,10 +49,11 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   List<TodoItemData> sortByStatus = [...dataFolder];
 
   String currentStatus = statusToReadableString(ItemStatus.all);
-
   String categoryToDelete = "";
-
   late final TextEditingController newCategory;
+
+  final folderNames =
+      dataFolder.map((item) => item.category.toLowerCase()).toSet().toList();
 
   @override
   void initState() {
@@ -125,34 +126,52 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
           CupertinoDialogAction(
             isDestructiveAction: true,
             onPressed: () {
-              setState(() {
-                final updatedData = dataFolder.map((item) {
-                  if (item.category == widget.currentCategory) {
-                    return TodoItemData(
-                      idTodo: item.idTodo,
-                      title: item.title,
-                      category: newCategory.text,
-                      status: item.status,
-                      createdTime: item.createdTime,
-                      editedTime: item.editedTime,
-                    );
-                  }
-                  return item;
-                }).toList();
-
-                dataFolder.clear();
-                dataFolder.addAll(updatedData);
-
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ItemsTodoDetail(
-                      currentCategory: newCategory.text,
-                    ),
+              if (folderNames.contains(newCategory.text.toLowerCase())) {
+                showCupertinoDialog(
+                  context: context,
+                  builder: (context) => CupertinoAlertDialog(
+                    title: Text('Info'),
+                    content: Text('Folder name exists'),
+                    actions: <Widget>[
+                      CupertinoDialogAction(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text('Ok'),
+                      ),
+                    ],
                   ),
                 );
-              });
-              Navigator.of(context).pop();
+              } else {
+                setState(() {
+                  final updatedData = dataFolder.map((item) {
+                    if (item.category == widget.currentCategory) {
+                      return TodoItemData(
+                        idTodo: item.idTodo,
+                        title: item.title,
+                        category: newCategory.text,
+                        status: item.status,
+                        createdTime: item.createdTime,
+                        editedTime: item.editedTime,
+                      );
+                    }
+                    return item;
+                  }).toList();
+
+                  dataFolder.clear();
+                  dataFolder.addAll(updatedData);
+
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ItemsTodoDetail(
+                        currentCategory: newCategory.text,
+                      ),
+                    ),
+                  );
+                  Navigator.of(context).pop();
+                });
+              }
             },
             child: const Text('Save'),
           ),
