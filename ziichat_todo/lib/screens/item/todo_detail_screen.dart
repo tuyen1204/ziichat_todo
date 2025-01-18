@@ -135,11 +135,14 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                   title: const Text('Todo update successfully'),
                   actions: <CupertinoDialogAction>[
                     CupertinoDialogAction(
-                      isDestructiveAction: true,
+                      isDefaultAction: true,
                       onPressed: () {
                         Navigator.pop(context);
                       },
-                      child: const Text('Yes'),
+                      child: const Text(
+                        'Ok',
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
                     ),
                   ],
                 ));
