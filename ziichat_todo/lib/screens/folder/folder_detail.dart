@@ -203,7 +203,9 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const HomeScreen(),
+                  builder: (context) => HomeScreen(
+                    onLanguageChanged: (locale) {},
+                  ),
                 ),
               );
             },
@@ -247,7 +249,9 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
           onPressed: () => Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const HomeScreen(),
+              builder: (context) => HomeScreen(
+                onLanguageChanged: (locale) {},
+              ),
             ),
           ),
         ),

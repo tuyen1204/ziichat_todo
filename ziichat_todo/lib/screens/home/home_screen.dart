@@ -5,13 +5,15 @@ import 'package:intl/intl.dart';
 import 'package:ziichat_todo/component/title_section_large.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
+import 'package:ziichat_todo/i18n/app_localizations.dart';
 import 'package:ziichat_todo/screens/folder/folder_detail.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
 import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
 import 'package:ziichat_todo/component/shimmer_effect.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, required this.onLanguageChanged});
+  final Function(Locale) onLanguageChanged;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -37,18 +39,60 @@ class _HomeScreenState extends State<HomeScreen> {
     final processingFolders =
         dataFolder.where((item) => item.status == ItemStatus.progressing);
     final totalTask = dataFolder.length;
+    final localizations = AppLocalizations.of(context)!;
+
+    Locale selectedLocale = Locale('en');
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        centerTitle: true,
-        title: Column(
-          children: [
-            Text(
-              'ZiiChat Todo',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
-            ),
-          ],
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'ZiiChat Todo',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
+          ),
         ),
+        actions: [
+          ChoiceChip(
+            label: Text(
+              "EN",
+              style: TextStyle(
+                color: selectedLocale.languageCode == 'en'
+                    ? Colors.white
+                    : Colors.black,
+              ),
+            ),
+            selected: selectedLocale.languageCode == 'en',
+            showCheckmark: false,
+            onSelected: (value) {
+              setState(() {
+                selectedLocale = Locale('en');
+              });
+              widget.onLanguageChanged(selectedLocale);
+            },
+          ),
+          SizedBox(width: 8),
+          ChoiceChip(
+            label: Text(
+              "VI",
+              style: TextStyle(
+                color: selectedLocale.languageCode == 'vi'
+                    ? Colors.white
+                    : Colors.black,
+              ),
+            ),
+            selected: selectedLocale.languageCode == 'vi',
+            showCheckmark: false,
+            onSelected: (value) {
+              setState(() {
+                selectedLocale = Locale('vi');
+              });
+              widget.onLanguageChanged(selectedLocale);
+            },
+          ),
+          SizedBox(width: 16),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -60,7 +104,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: defaultPadding),
-                  child: TitleSectionLarge(title: "Folders"),
+                  child: TitleSectionLarge(
+                      title: localizations.translate('folders')),
                 ),
                 SizedBox(height: defaultPadding),
                 SizedBox(
