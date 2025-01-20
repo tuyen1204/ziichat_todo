@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:intl/intl.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
@@ -62,8 +63,11 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
       dataFolder.map((item) => item.category.toLowerCase()).toSet().toList();
 
   late AppLocalizations? localizations;
-
   late DateFormat dateTimeFormat;
+
+  static const _pageSize = 2;
+  final PagingController<int, TodoItemData> _pagingController =
+      PagingController(firstPageKey: 0);
 
   @override
   void initState() {
@@ -89,10 +93,30 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
       setState(() {
         isLoading = false;
       });
+
+      _pagingController.addPageRequestListener((pageKey) {
+        fetchPage(pageKey);
+      });
     });
 
     categoryToDelete = widget.currentCategory;
     newCategory = TextEditingController(text: widget.currentCategory);
+  }
+
+  Future<void> fetchPage(int pageKey) async {
+    try {
+      final newItems = listToDoAll.skip(pageKey).take(_pageSize).toList();
+      final isLastPage = pageKey + newItems.length >= listToDoAll.length;
+
+      if (isLastPage) {
+        _pagingController.appendLastPage(newItems);
+      } else {
+        final nextPageKey = pageKey + newItems.length;
+        _pagingController.appendPage(newItems, nextPageKey);
+      }
+    } catch (error) {
+      _pagingController.error = error;
+    }
   }
 
   void handleUpdateFolders() {
@@ -227,6 +251,12 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _pagingController.dispose();
+    super.dispose();
   }
 
   @override
@@ -374,7 +404,25 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                           widget.currentCategory == "All")
                         _innerSort(),
                       _innerSortByStatus(),
-                      _innerListTodoItem(sortedList),
+                      // _innerListTodoItem(sortedList),
+                      SizedBox(
+                        height: 300,
+                        child: RefreshIndicator(
+                          onRefresh: () async => await fetchPage(0),
+                          child: ListView.builder(
+                            itemBuilder: (BuildContext context, int index) {
+                              final item = _pagingController.itemList![index];
+                              return TodoItemCard(
+                                index: index,
+                                todoItem: item,
+                                isSelected: selectedItems.contains(index),
+                                onSelected: (selectedIndex) {},
+                              );
+                            },
+                            itemCount: _pagingController.itemList!.length,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),

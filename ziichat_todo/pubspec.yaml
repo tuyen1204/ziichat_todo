@@ -38,6 +38,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: any
+  infinite_scroll_pagination: ^4.1.0
 
 dev_dependencies:
   flutter_test:
