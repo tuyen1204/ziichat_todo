@@ -12,7 +12,7 @@
     "status": "Trạng thái",
     "category": "Danh mục",
     "saveChanges": "Lưu thay đổi",
-    "todoUpdateSuccessfully": "Cập nhật Todo thành công",
+    "todoUpdateSuccessfully": "Cập nhật thành công",
     "deleteTodo": "Xóa todo",
     "editFolder": "Chỉnh sửa thư mục",
     "deleteFolder": "Xóa thư mục",
@@ -24,9 +24,9 @@
     "todo": "Việc cần làm",
     "done": "Đã hoàn thành",
     "pending": "đang chờ xử lý",
-    "newTask": "Nhiệm vụ mới",
+    "newTask": "Thêm mới",
     "create": "Tạo",
-    "newTaskRequired": "Nhiệm vụ mới bắt buộc",
+    "newTaskRequired": "Tiêu đề là bắt buộc",
     "no": "Không",
     "yes": "Có",
     "cancel": "Hủy",
@@ -34,5 +34,6 @@
     "youDeleteFolder": "Bạn muốn xóa thư mục này",
     "info": "Thông tin",
     "folderNameExists": "Tên thư mục tồn tại",
-    "youDeleteTodo": "Bạn sắp xóa việc cần làm {itemTodoName}. Bạn có chắc không?"
+    "youDeleteTodo": "Bạn sắp xóa việc cần làm {itemTodoName}. Bạn có chắc không?",
+    "close": "Đóng"
 }

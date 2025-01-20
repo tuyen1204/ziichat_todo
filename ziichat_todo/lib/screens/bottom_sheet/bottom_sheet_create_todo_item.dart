@@ -4,6 +4,8 @@ import 'package:ziichat_todo/component/title_section_large.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:intl/intl.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
+import 'package:ziichat_todo/i18n/app_localizations.dart';
+import 'package:ziichat_todo/screens/folder/folder_detail.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
 
 class BottomSheetCreateTodoItem extends StatefulWidget {
@@ -35,12 +37,20 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
   late String? categorySelected = categoryTodo;
   late String? statusSelected = "To Do";
 
+  late AppLocalizations localizations = AppLocalizations.of(context)!;
+
   @override
   void initState() {
     super.initState();
     categoryTodo = widget.showCurrentCategory;
     selectedCategory = categoryTodo;
     choiceCategory.text = selectedCategory!;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        localizations = AppLocalizations.of(context)!;
+      });
+    });
   }
 
   @override
@@ -74,7 +84,7 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                   ),
                 ),
                 TitleSectionLarge(
-                  title: "New task",
+                  title: localizations.translate('newTask'),
                 ),
                 Expanded(
                   child: Align(
@@ -108,7 +118,7 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                             controller: nameTodo,
                             cursorColor: primaryColor,
                             decoration: InputDecoration(
-                              labelText: "Title",
+                              labelText: localizations.translate('title'),
                               labelStyle: TextStyle(color: Colors.grey),
                               alignLabelWithHint: true,
                               focusedBorder: UnderlineInputBorder(
@@ -123,7 +133,8 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Name task is required';
+                                return localizations
+                                    .translate('newTaskRequired');
                               }
                               return null;
                             },
@@ -132,7 +143,7 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                             initialValue: formattedDate,
                             cursorColor: primaryColor,
                             decoration: InputDecoration(
-                              labelText: "Date",
+                              labelText: localizations.translate('createdDate'),
                               labelStyle: TextStyle(color: Colors.grey),
                               alignLabelWithHint: true,
                               focusedBorder: UnderlineInputBorder(
@@ -148,7 +159,7 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                             controller: noteTodo,
                             cursorColor: primaryColor,
                             decoration: InputDecoration(
-                              labelText: "Note",
+                              labelText: localizations.translate('note'),
                               labelStyle: TextStyle(color: Colors.grey),
                               contentPadding: EdgeInsets.zero,
                               alignLabelWithHint: true,
@@ -167,7 +178,7 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             spacing: 8,
                             children: [
-                              Text("Status",
+                              Text(localizations.translate('status'),
                                   style: TextStyle(
                                       color: Color(0xff727272),
                                       fontWeight: FontWeight.w500)),
@@ -190,7 +201,7 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             spacing: 8,
                             children: [
-                              Text("Category",
+                              Text(localizations.translate('category'),
                                   style: TextStyle(
                                       color: Color(0xff727272),
                                       fontWeight: FontWeight.w500)),
@@ -233,7 +244,15 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                         TodoItemData.onCreateTodoItem(currentDate.toString(),
                             nameTodo.text, categorySelected!, noteTodo.text),
                         setState(() {}),
-                        Navigator.pop(context),
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ItemsTodoDetail(
+                              currentCategory: categorySelected!,
+                              onLanguageChanged: (local) {},
+                            ),
+                          ),
+                        ),
                       }
                   },
                   style: ButtonStyle(
@@ -247,7 +266,7 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                         WidgetStatePropertyAll(Size(double.infinity, 48)),
                   ),
                   child: Text(
-                    "Create",
+                    localizations.translate('create'),
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,

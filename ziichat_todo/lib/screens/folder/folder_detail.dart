@@ -45,12 +45,12 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   Set<int> selectedItems = {};
   bool isLoading = true;
   final currentDate = DateTime.now();
-  List<String> sortList = [
-    "Alphabetically",
-    "Oldest",
-    "Latest",
-  ];
-  String currentSort = "";
+  Map<String, String> sortList = {
+    "latest": "Latest",
+    "oldest": "Oldest",
+    "alpha": "Alphabetically",
+  };
+  String currentSort = "latest";
   late List<ItemStatus> listStatus = [ItemStatus.all];
   List<TodoItemData> sortByStatus = [...dataFolder];
 
@@ -61,6 +61,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   final folderNames =
       dataFolder.map((item) => item.category.toLowerCase()).toSet().toList();
 
+  late AppLocalizations? localizations;
   @override
   void initState() {
     super.initState();
@@ -198,7 +199,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: Text(localizations.translate('no')),
+            child: Text(localizations!.translate('no')),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
@@ -216,7 +217,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 ),
               );
             },
-            child: const Text('Yes'),
+            child: Text(localizations!.translate('yes')),
           ),
         ],
       ),
@@ -231,9 +232,9 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         ? listToDoAll
         : listToDo)
       ..sort((a, b) {
-        if (currentSort == "Alphabetically") {
+        if (currentSort == "alpha") {
           return a.title.toLowerCase().compareTo(b.title.toLowerCase());
-        } else if (currentSort == "Latest") {
+        } else if (currentSort == "latest") {
           return DateTime.parse(a.createdTime)
               .difference(currentDate)
               .inDays
@@ -241,14 +242,12 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
               .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
                   .inDays
                   .abs());
-        } else if (currentSort == "Oldest") {
+        } else if (currentSort == "oldest") {
           return DateTime.parse(a.createdTime)
               .compareTo(DateTime.parse(b.createdTime));
         }
         return 0;
       });
-
-    final currentLocale = Localizations.localeOf(context);
 
     return Scaffold(
       backgroundColor: primaryColor,
@@ -260,9 +259,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          HomeScreen(onLanguageChanged: (locale) {
-                        currentLocale.toString();
-                      }),
+                          HomeScreen(onLanguageChanged: (locale) {}),
                     ),
                   ),
                 }),
@@ -476,15 +473,18 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         scrollDirection: Axis.horizontal,
         itemCount: sortList.length,
         itemBuilder: (context, index) {
+          String key = sortList.keys.elementAt(index);
+          String value = sortList[key]!;
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: index == 0 ? 6 : 6),
             child: ChoiceChip(
               showCheckmark: false,
-              label: Text(sortList[index]),
-              selected: currentSort == sortList[index],
+              label: Text(value),
+              selected: currentSort == key,
               onSelected: (value) {
                 setState(() {
-                  currentSort = sortList[index];
+                  currentSort = key;
+                  print(currentSort);
                 });
               },
             ),
@@ -554,9 +554,7 @@ class TodoItemCard extends StatelessWidget {
                     idTodo: todoItem.idTodo,
                     initStatus: todoItem.status,
                     initCategory: updateNameFolder,
-                    onLanguageChanged: (locale) {
-                      currentLocale.toString();
-                    });
+                    onLanguageChanged: (locale) {});
               },
             ),
           ),
@@ -566,11 +564,6 @@ class TodoItemCard extends StatelessWidget {
           child: Row(
             spacing: 12,
             children: [
-              Icon(
-                isSelected ? Icons.check_circle_rounded : Icons.circle_outlined,
-                size: 24,
-                color: isSelected ? primaryColor : Colors.grey,
-              ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

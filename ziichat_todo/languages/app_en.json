@@ -34,5 +34,6 @@
     "youDeleteFolder": "You want to delete this folder",
     "info": "Info",
     "folderNameExists": "Folder name exists",
-    "youDeleteTodo": "You're going to delete the {itemTodoName} todo. Are you sure?"
+    "youDeleteTodo": "You're going to delete the {itemTodoName} todo. Are you sure?",
+    "close": "Close"
 }
