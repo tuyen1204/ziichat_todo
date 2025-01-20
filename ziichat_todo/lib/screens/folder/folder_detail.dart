@@ -49,10 +49,11 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   List<TodoItemData> sortByStatus = [...dataFolder];
 
   String currentStatus = statusToReadableString(ItemStatus.all);
-
   String categoryToDelete = "";
-
   late final TextEditingController newCategory;
+
+  final folderNames =
+      dataFolder.map((item) => item.category.toLowerCase()).toSet().toList();
 
   @override
   void initState() {
@@ -79,7 +80,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     });
 
     categoryToDelete = widget.currentCategory;
-
     newCategory = TextEditingController(text: widget.currentCategory);
   }
 
@@ -107,10 +107,11 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         title: Column(
           spacing: 12,
           children: [
+            Text('Edit Folder'),
             CupertinoTextField(
-              prefix: Text('Name'),
               controller: newCategory,
-              decoration: BoxDecoration(),
+              placeholder: 'Enter new folder name',
+              padding: EdgeInsets.all(12),
             ),
           ],
         ),
@@ -120,12 +121,59 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('No'),
+            child: const Text('Cancel'),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
-            onPressed: () {},
-            child: const Text('Yes'),
+            onPressed: () {
+              if (folderNames.contains(newCategory.text.toLowerCase().trim())) {
+                showCupertinoDialog(
+                  context: context,
+                  builder: (context) => CupertinoAlertDialog(
+                    title: Text('Info'),
+                    content: Text('Folder name exists'),
+                    actions: <Widget>[
+                      CupertinoDialogAction(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text('Ok'),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                setState(() {
+                  final updatedData = dataFolder.map((item) {
+                    if (item.category == widget.currentCategory) {
+                      return TodoItemData(
+                        idTodo: item.idTodo,
+                        title: item.title,
+                        category: newCategory.text,
+                        status: item.status,
+                        createdTime: item.createdTime,
+                        editedTime: item.editedTime,
+                      );
+                    }
+                    return item;
+                  }).toList();
+
+                  dataFolder.clear();
+                  dataFolder.addAll(updatedData);
+
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ItemsTodoDetail(
+                        currentCategory: newCategory.text,
+                      ),
+                    ),
+                  );
+                  Navigator.of(context).pop();
+                });
+              }
+            },
+            child: const Text('Save'),
           ),
         ],
       ),
@@ -255,7 +303,9 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 ),
                 SizedBox(height: 12),
                 Text(
-                  widget.currentCategory,
+                  newCategory.text.isNotEmpty
+                      ? newCategory.text
+                      : widget.currentCategory,
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -341,31 +391,24 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                         index: index,
                         todoItem: todoItem,
                         isSelected: selectedItems.contains(index),
-                        onSelected: (selectedIndex) {
-                          setState(() {
-                            if (selectedItems.contains(selectedIndex)) {
-                              selectedItems.remove(selectedIndex);
-                            } else {
-                              selectedItems.add(selectedIndex);
-                            }
-                          });
-                        },
+                        onSelected: (selectedIndex) {},
                       ),
                     )
                   : TodoItemCard(
                       index: index,
                       todoItem: todoItem,
+                      updateNameFolder: newCategory.text,
                       isSelected: selectedItems.contains(index),
                       onSelected: (selectedIndex) {
-                        // setState(
-                        //   () {
-                        //     if (selectedItems.contains(selectedIndex)) {
-                        //       selectedItems.remove(selectedIndex);
-                        //     } else {
-                        //       selectedItems.add(selectedIndex);
-                        //     }
-                        //   },
-                        // );
+                        setState(
+                          () {
+                            if (selectedItems.contains(selectedIndex)) {
+                              selectedItems.remove(selectedIndex);
+                            } else {
+                              selectedItems.add(selectedIndex);
+                            }
+                          },
+                        );
                       },
                     );
             })
@@ -383,20 +426,13 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                           index: index,
                           todoItem: todoItem,
                           isSelected: selectedItems.contains(index),
-                          onSelected: (selectedIndex) {
-                            setState(() {
-                              if (selectedItems.contains(selectedIndex)) {
-                                selectedItems.remove(selectedIndex);
-                              } else {
-                                selectedItems.add(selectedIndex);
-                              }
-                            });
-                          },
+                          onSelected: (selectedIndex) {},
                         ),
                       )
                     : TodoItemCard(
                         index: index,
                         todoItem: todoItem,
+                        updateNameFolder: newCategory.text,
                         isSelected: selectedItems.contains(index),
                         onSelected: (selectedIndex) {
                           setState(
@@ -475,6 +511,7 @@ class TodoItemCard extends StatelessWidget {
   final TodoItemData todoItem;
   final bool isSelected;
   final ValueChanged<int> onSelected;
+  final updateNameFolder;
 
   const TodoItemCard({
     super.key,
@@ -482,6 +519,7 @@ class TodoItemCard extends StatelessWidget {
     required this.todoItem,
     required this.isSelected,
     required this.onSelected,
+    this.updateNameFolder = "",
   });
 
   @override
@@ -500,7 +538,7 @@ class TodoItemCard extends StatelessWidget {
                 return TodoDetailScreen(
                   idTodo: todoItem.idTodo,
                   initStatus: todoItem.status,
-                  initCategory: todoItem.category,
+                  initCategory: updateNameFolder,
                 );
               },
             ),
@@ -532,7 +570,9 @@ class TodoItemCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          '${todoItem.category} - ',
+                          updateNameFolder.isNotEmpty
+                              ? '$updateNameFolder - '
+                              : '${todoItem.category} - ',
                           style: TextStyle(
                               fontSize: 14,
                               color: Colors.black45,
