@@ -14,11 +14,13 @@ class TodoDetailScreen extends StatefulWidget {
     required this.idTodo,
     required this.initStatus,
     required this.initCategory,
+    required this.onLanguageChanged,
   });
 
   final String idTodo;
   final ItemStatus initStatus;
   final String initCategory;
+  final Function(Locale) onLanguageChanged;
 
   @override
   State<TodoDetailScreen> createState() => _TodoDetailScreenState();
@@ -54,10 +56,6 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
 
   void _handleDeleteTodo(
       String id, BuildContext context, String itemInCategory) {
-    dataFolder.removeWhere((item) {
-      return item.idTodo == id;
-    });
-
     final localizations = AppLocalizations.of(context)!;
     String fullText = localizations.translate(
       'youDeleteTodo',
@@ -73,7 +71,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     showCupertinoDialog(
       context: context,
       builder: (BuildContext context) => CupertinoAlertDialog(
-        title: const Text('Delete todo'),
+        title: Text(localizations.translate('deleteFolder')),
         content: RichText(
           textAlign: TextAlign.center,
           text: TextSpan(
@@ -96,17 +94,21 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('No'),
+            child: Text(localizations.translate('no')),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
             onPressed: () {
+              dataFolder.removeWhere((item) {
+                return item.idTodo == id;
+              });
               Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) {
                         return ItemsTodoDetail(
                           currentCategory: itemInCategory,
+                          onLanguageChanged: (locale) {},
                         );
                       },
                       settings: RouteSettings(arguments: itemInCategory)));
@@ -179,6 +181,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -190,6 +193,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                     builder: (context) {
                       return ItemsTodoDetail(
                         currentCategory: categorySelected.toString(),
+                        onLanguageChanged: (locale) {},
                       );
                     },
                     settings: RouteSettings(arguments: categorySelected))),
@@ -208,7 +212,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      "Todo detail",
+                      localizations.translate('todoDetail'),
                       style:
                           TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
                     ),
@@ -239,7 +243,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       readOnly: edited == true ? false : true,
                       cursorColor: primaryColor,
                       decoration: InputDecoration(
-                        labelText: "Title",
+                        labelText: localizations.translate('title'),
                         labelStyle: TextStyle(color: Colors.grey),
                         alignLabelWithHint: true,
                         focusedBorder: UnderlineInputBorder(
@@ -265,7 +269,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                           .format(DateTime.parse(todoDetailData.createdTime)),
                       cursorColor: primaryColor,
                       decoration: InputDecoration(
-                        labelText: "Date",
+                        labelText: localizations.translate('createdDate'),
                         labelStyle: TextStyle(color: Colors.grey),
                         alignLabelWithHint: true,
                         focusedBorder: UnderlineInputBorder(
@@ -283,7 +287,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                         initialValue: todoDetailData.editedTime,
                         cursorColor: primaryColor,
                         decoration: InputDecoration(
-                          labelText: "Edited Date",
+                          labelText: localizations.translate('editedDate'),
                           labelStyle: TextStyle(color: Colors.grey),
                           alignLabelWithHint: true,
                           focusedBorder: UnderlineInputBorder(
@@ -300,7 +304,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       readOnly: edited == true ? false : true,
                       cursorColor: primaryColor,
                       decoration: InputDecoration(
-                        labelText: "Note",
+                        labelText: localizations.translate('note'),
                         labelStyle: TextStyle(color: Colors.grey),
                         contentPadding: EdgeInsets.only(bottom: defaultPadding),
                         alignLabelWithHint: true,
@@ -319,7 +323,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       spacing: 8,
                       children: [
-                        Text("Status",
+                        Text(localizations.translate('status'),
                             style: TextStyle(
                                 color: Color(0xff727272),
                                 fontWeight: FontWeight.w500)),
@@ -354,7 +358,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       spacing: 8,
                       children: [
-                        Text("Category",
+                        Text(localizations.translate('category'),
                             style: TextStyle(
                                 color: Color(0xff727272),
                                 fontWeight: FontWeight.w500)),
@@ -408,7 +412,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                           ),
                         ),
                         child: Text(
-                          "Save changes",
+                          localizations.translate('saveChanges'),
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,

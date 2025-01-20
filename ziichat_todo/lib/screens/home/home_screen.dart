@@ -22,6 +22,13 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
 
+  List<String> languagesOption = [
+    "en",
+    "vi",
+  ];
+
+  late String langSelected = "";
+
   @override
   void initState() {
     super.initState();
@@ -40,8 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
         dataFolder.where((item) => item.status == ItemStatus.progressing);
     final totalTask = dataFolder.length;
     final localizations = AppLocalizations.of(context)!;
-
-    Locale selectedLocale = Locale('en');
+    late final currentLocale = Localizations.localeOf(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -54,42 +60,21 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         actions: [
-          ChoiceChip(
-            label: Text(
-              "EN",
-              style: TextStyle(
-                color: selectedLocale.languageCode == 'en'
-                    ? Colors.white
-                    : Colors.black,
-              ),
-            ),
-            selected: selectedLocale.languageCode == 'en',
-            showCheckmark: false,
-            onSelected: (value) {
-              setState(() {
-                selectedLocale = Locale('en');
-              });
-              widget.onLanguageChanged(selectedLocale);
-            },
-          ),
-          SizedBox(width: 8),
-          ChoiceChip(
-            label: Text(
-              "VI",
-              style: TextStyle(
-                color: selectedLocale.languageCode == 'vi'
-                    ? Colors.white
-                    : Colors.black,
-              ),
-            ),
-            selected: selectedLocale.languageCode == 'vi',
-            showCheckmark: false,
-            onSelected: (value) {
-              setState(() {
-                selectedLocale = Locale('vi');
-              });
-              widget.onLanguageChanged(selectedLocale);
-            },
+          Wrap(
+            spacing: 8.0,
+            children: languagesOption.map((index) {
+              return ChoiceChip(
+                label: Text(index.toUpperCase()),
+                showCheckmark: false,
+                selected: currentLocale.toString() == index,
+                onSelected: (value) {
+                  setState(() {
+                    langSelected = index;
+                  });
+                  widget.onLanguageChanged(Locale(langSelected));
+                },
+              );
+            }).toList(),
           ),
           SizedBox(width: 16),
         ],
@@ -133,7 +118,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: defaultPadding),
-                  child: TitleSectionLarge(title: "Processing tasks"),
+                  child: TitleSectionLarge(
+                      title: localizations.translate('processingTasks')),
                 ),
                 SizedBox(height: defaultPadding),
                 ListView.builder(
@@ -145,9 +131,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     return isLoading
                         ? ShimmerLoading(
                             isLoading: isLoading,
-                            child: _innerTodoItem(
-                                context, index, processingFolders))
-                        : _innerTodoItem(context, index, processingFolders);
+                            child: _innerTodoItem(context, index,
+                                currentLocale.toString(), processingFolders))
+                        : _innerTodoItem(context, index,
+                            currentLocale.toString(), processingFolders);
                   },
                 ),
               ],
@@ -168,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
         length: folders.length);
   }
 
-  SizedBox _innerTodoItem(BuildContext context, int index,
+  SizedBox _innerTodoItem(BuildContext context, int index, String currentLocale,
       Iterable<TodoItemData> processingFolders) {
     return _todoItem(context,
         index: index,
@@ -176,7 +163,8 @@ class _HomeScreenState extends State<HomeScreen> {
         nameTodo: processingFolders.elementAt(index).title,
         date: processingFolders.elementAt(index).createdTime,
         status: processingFolders.elementAt(index).status,
-        category: processingFolders.elementAt(index).category);
+        category: processingFolders.elementAt(index).category,
+        currentLocale: currentLocale);
   }
 
   SizedBox _todoItem(BuildContext context,
@@ -185,7 +173,8 @@ class _HomeScreenState extends State<HomeScreen> {
       required String nameTodo,
       required String date,
       required ItemStatus status,
-      required String category}) {
+      required String category,
+      String? currentLocale}) {
     return SizedBox(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
@@ -203,10 +192,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 MaterialPageRoute(
                   builder: (context) {
                     return TodoDetailScreen(
-                      idTodo: idTodo,
-                      initStatus: status,
-                      initCategory: category,
-                    );
+                        idTodo: idTodo,
+                        initStatus: status,
+                        initCategory: category,
+                        onLanguageChanged: (locale) {
+                          currentLocale.toString();
+                        });
                   },
                 ),
               ),
@@ -271,6 +262,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       builder: (context) {
                         return ItemsTodoDetail(
                           currentCategory: category,
+                          onLanguageChanged: (locale) =>
+                              langSelected.toString(),
                         );
                       },
                       settings: RouteSettings(arguments: category)));

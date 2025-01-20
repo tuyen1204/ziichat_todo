@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
+import 'package:ziichat_todo/i18n/app_localizations.dart';
 import 'package:ziichat_todo/screens/buttons/add_item.dart';
 import 'package:ziichat_todo/screens/home/home_screen.dart';
 import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
@@ -10,8 +11,13 @@ import 'package:ziichat_todo/component/shimmer_effect.dart';
 import 'folder_item.dart';
 
 class ItemsTodoDetail extends StatefulWidget {
-  const ItemsTodoDetail({super.key, required this.currentCategory});
+  const ItemsTodoDetail(
+      {super.key,
+      required this.currentCategory,
+      required this.onLanguageChanged});
   final String currentCategory;
+  final Function(Locale) onLanguageChanged;
+
   @override
   State<ItemsTodoDetail> createState() => _ItemsTodoDetailState();
 }
@@ -107,7 +113,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         title: Column(
           spacing: 12,
           children: [
-            Text('Edit Folder'),
+            Text(AppLocalizations.of(context)!.translate('editFolder')),
             CupertinoTextField(
               controller: newCategory,
               placeholder: 'Enter new folder name',
@@ -166,6 +172,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                     MaterialPageRoute(
                       builder: (context) => ItemsTodoDetail(
                         currentCategory: newCategory.text,
+                        onLanguageChanged: widget.onLanguageChanged,
                       ),
                     ),
                   );
@@ -191,7 +198,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('No'),
+            child: Text(localizations.translate('no')),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
@@ -241,20 +248,24 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         return 0;
       });
 
+    final currentLocale = Localizations.localeOf(context);
+
     return Scaffold(
       backgroundColor: primaryColor,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => HomeScreen(
-                onLanguageChanged: (locale) {},
-              ),
-            ),
-          ),
-        ),
+            icon: Icon(Icons.arrow_back_ios_new, color: Colors.white),
+            onPressed: () => {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          HomeScreen(onLanguageChanged: (locale) {
+                        currentLocale.toString();
+                      }),
+                    ),
+                  ),
+                }),
         backgroundColor: Colors.transparent,
         actions: [
           widget.currentCategory == "All"
@@ -276,12 +287,14 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                       <PopupMenuEntry<ActionInFolder>>[
                     PopupMenuItem<ActionInFolder>(
                       value: ActionInFolder.editNameFolder,
-                      child: Text('Edit Folder'),
+                      child: Text(AppLocalizations.of(context)!
+                          .translate('editFolder')),
                     ),
                     if (listToDo.isEmpty)
                       PopupMenuItem<ActionInFolder>(
                         value: ActionInFolder.deleteFolder,
-                        child: Text('Delete Folder'),
+                        child: Text(AppLocalizations.of(context)!
+                            .translate('deleteFolder')),
                       )
                   ],
                 ),
@@ -516,15 +529,13 @@ class TodoItemCard extends StatelessWidget {
   final bool isSelected;
   final ValueChanged<int> onSelected;
   final updateNameFolder;
-
-  const TodoItemCard({
-    super.key,
-    required this.index,
-    required this.todoItem,
-    required this.isSelected,
-    required this.onSelected,
-    this.updateNameFolder = "",
-  });
+  const TodoItemCard(
+      {super.key,
+      required this.index,
+      required this.todoItem,
+      required this.isSelected,
+      required this.onSelected,
+      this.updateNameFolder = ""});
 
   @override
   Widget build(BuildContext context) {
@@ -540,10 +551,12 @@ class TodoItemCard extends StatelessWidget {
             MaterialPageRoute(
               builder: (context) {
                 return TodoDetailScreen(
-                  idTodo: todoItem.idTodo,
-                  initStatus: todoItem.status,
-                  initCategory: updateNameFolder,
-                );
+                    idTodo: todoItem.idTodo,
+                    initStatus: todoItem.status,
+                    initCategory: updateNameFolder,
+                    onLanguageChanged: (locale) {
+                      currentLocale.toString();
+                    });
               },
             ),
           ),
