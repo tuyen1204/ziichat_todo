@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
+import 'package:ziichat_todo/i18n/app_localizations.dart';
 import 'package:ziichat_todo/screens/folder/folder_detail.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
 
@@ -57,6 +58,18 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
       return item.idTodo == id;
     });
 
+    final localizations = AppLocalizations.of(context)!;
+    String fullText = localizations.translate(
+      'youDeleteTodo',
+      args: {'itemTodoName': todoDetailData.title},
+    );
+
+    final usernamePlaceholder = todoDetailData.title;
+    final usernameStart = fullText.indexOf(usernamePlaceholder);
+    final usernameEnd = usernameStart + usernamePlaceholder.length;
+    final textBeforeUsername = fullText.substring(0, usernameStart);
+    final textAfterUsername = fullText.substring(usernameEnd);
+
     showCupertinoDialog(
       context: context,
       builder: (BuildContext context) => CupertinoAlertDialog(
@@ -64,16 +77,16 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
         content: RichText(
           textAlign: TextAlign.center,
           text: TextSpan(
-            text: 'Yor\' are going to delete the ',
+            text: textBeforeUsername,
             style: TextStyle(color: Colors.black),
             children: <TextSpan>[
               TextSpan(
-                text: todoDetailData.title,
+                text: usernamePlaceholder,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              TextSpan(text: ' todo. Are you sure?'),
+              TextSpan(text: textAfterUsername),
             ],
           ),
         ),

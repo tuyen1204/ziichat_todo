@@ -16,9 +16,19 @@ class AppLocalizations {
         jsonMap.map((key, value) => MapEntry(key, value.toString()));
   }
 
-  String translate(String key) => _localizedStrings[key] ?? key;
+  String translate(String key, {Map<String, String>? args}) {
+    String translation = _localizedStrings[key] ?? key;
 
-  static AppLocalizations? of(context) {
+    if (args != null) {
+      args.forEach((placeholder, value) {
+        translation = translation.replaceAll('{$placeholder}', value);
+      });
+    }
+
+    return translation;
+  }
+
+  static AppLocalizations? of(BuildContext context) {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 }
