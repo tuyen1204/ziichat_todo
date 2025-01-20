@@ -32,7 +32,7 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: primaryColor),
           useMaterial3: true,
-          fontFamily: 'FilsonPro'),
+          fontFamily: 'Barlow'),
       home: OnboardingScreen(
         onLanguageChanged: _changeLanguage,
       ),
