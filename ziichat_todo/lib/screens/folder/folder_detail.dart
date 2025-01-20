@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
+import 'package:ziichat_todo/i18n/app_localizations.dart';
 import 'package:ziichat_todo/screens/buttons/add_item.dart';
 import 'package:ziichat_todo/screens/home/home_screen.dart';
 import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
@@ -10,8 +11,13 @@ import 'package:ziichat_todo/component/shimmer_effect.dart';
 import 'folder_item.dart';
 
 class ItemsTodoDetail extends StatefulWidget {
-  const ItemsTodoDetail({super.key, required this.currentCategory});
+  const ItemsTodoDetail(
+      {super.key,
+      required this.currentCategory,
+      required this.onLanguageChanged});
   final String currentCategory;
+  final Function(Locale) onLanguageChanged;
+
   @override
   State<ItemsTodoDetail> createState() => _ItemsTodoDetailState();
 }
@@ -39,12 +45,12 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   Set<int> selectedItems = {};
   bool isLoading = true;
   final currentDate = DateTime.now();
-  List<String> sortList = [
-    "Alphabetically",
-    "Oldest",
-    "Latest",
-  ];
-  String currentSort = "";
+  Map<String, String> sortList = {
+    "latest": "Latest",
+    "oldest": "Oldest",
+    "alpha": "Alphabetically",
+  };
+  String currentSort = "latest";
   late List<ItemStatus> listStatus = [ItemStatus.all];
   List<TodoItemData> sortByStatus = [...dataFolder];
 
@@ -54,6 +60,10 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
 
   final folderNames =
       dataFolder.map((item) => item.category.toLowerCase()).toSet().toList();
+
+  late AppLocalizations? localizations;
+
+  late DateFormat dateTimeFormat;
 
   @override
   void initState() {
@@ -71,6 +81,8 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
           .toSet()
           .where((status) => status != ItemStatus.all)
           .toList());
+
+      dateTimeFormat = DateFormat('yyyy-MM-dd HH:mm');
     });
 
     Future.delayed(Duration(milliseconds: 1000), () {
@@ -107,7 +119,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         title: Column(
           spacing: 12,
           children: [
-            Text('Edit Folder'),
+            Text(AppLocalizations.of(context)!.translate('editFolder')),
             CupertinoTextField(
               controller: newCategory,
               placeholder: 'Enter new folder name',
@@ -166,6 +178,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                     MaterialPageRoute(
                       builder: (context) => ItemsTodoDetail(
                         currentCategory: newCategory.text,
+                        onLanguageChanged: widget.onLanguageChanged,
                       ),
                     ),
                   );
@@ -191,7 +204,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('No'),
+            child: Text(localizations!.translate('no')),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
@@ -203,11 +216,13 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const HomeScreen(),
+                  builder: (context) => HomeScreen(
+                    onLanguageChanged: (locale) {},
+                  ),
                 ),
               );
             },
-            child: const Text('Yes'),
+            child: Text(localizations!.translate('yes')),
           ),
         ],
       ),
@@ -222,9 +237,9 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         ? listToDoAll
         : listToDo)
       ..sort((a, b) {
-        if (currentSort == "Alphabetically") {
+        if (currentSort == "alpha") {
           return a.title.toLowerCase().compareTo(b.title.toLowerCase());
-        } else if (currentSort == "Latest") {
+        } else if (currentSort == "latest") {
           return DateTime.parse(a.createdTime)
               .difference(currentDate)
               .inDays
@@ -232,7 +247,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
               .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
                   .inDays
                   .abs());
-        } else if (currentSort == "Oldest") {
+        } else if (currentSort == "oldest") {
           return DateTime.parse(a.createdTime)
               .compareTo(DateTime.parse(b.createdTime));
         }
@@ -243,14 +258,16 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
       backgroundColor: primaryColor,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const HomeScreen(),
-            ),
-          ),
-        ),
+            icon: Icon(Icons.arrow_back_ios_new, color: Colors.white),
+            onPressed: () => {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          HomeScreen(onLanguageChanged: (locale) {}),
+                    ),
+                  ),
+                }),
         backgroundColor: Colors.transparent,
         actions: [
           widget.currentCategory == "All"
@@ -272,12 +289,14 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                       <PopupMenuEntry<ActionInFolder>>[
                     PopupMenuItem<ActionInFolder>(
                       value: ActionInFolder.editNameFolder,
-                      child: Text('Edit Folder'),
+                      child: Text(AppLocalizations.of(context)!
+                          .translate('editFolder')),
                     ),
                     if (listToDo.isEmpty)
                       PopupMenuItem<ActionInFolder>(
                         value: ActionInFolder.deleteFolder,
-                        child: Text('Delete Folder'),
+                        child: Text(AppLocalizations.of(context)!
+                            .translate('deleteFolder')),
                       )
                   ],
                 ),
@@ -459,15 +478,18 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         scrollDirection: Axis.horizontal,
         itemCount: sortList.length,
         itemBuilder: (context, index) {
+          String key = sortList.keys.elementAt(index);
+          String value = sortList[key]!;
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: index == 0 ? 6 : 6),
             child: ChoiceChip(
               showCheckmark: false,
-              label: Text(sortList[index]),
-              selected: currentSort == sortList[index],
+              label: Text(value),
+              selected: currentSort == key,
               onSelected: (value) {
                 setState(() {
-                  currentSort = sortList[index];
+                  currentSort = key;
+                  print(currentSort);
                 });
               },
             ),
@@ -512,15 +534,13 @@ class TodoItemCard extends StatelessWidget {
   final bool isSelected;
   final ValueChanged<int> onSelected;
   final updateNameFolder;
-
-  const TodoItemCard({
-    super.key,
-    required this.index,
-    required this.todoItem,
-    required this.isSelected,
-    required this.onSelected,
-    this.updateNameFolder = "",
-  });
+  const TodoItemCard(
+      {super.key,
+      required this.index,
+      required this.todoItem,
+      required this.isSelected,
+      required this.onSelected,
+      this.updateNameFolder = ""});
 
   @override
   Widget build(BuildContext context) {
@@ -536,10 +556,10 @@ class TodoItemCard extends StatelessWidget {
             MaterialPageRoute(
               builder: (context) {
                 return TodoDetailScreen(
-                  idTodo: todoItem.idTodo,
-                  initStatus: todoItem.status,
-                  initCategory: updateNameFolder,
-                );
+                    idTodo: todoItem.idTodo,
+                    initStatus: todoItem.status,
+                    initCategory: updateNameFolder,
+                    onLanguageChanged: (locale) {});
               },
             ),
           ),
@@ -549,11 +569,6 @@ class TodoItemCard extends StatelessWidget {
           child: Row(
             spacing: 12,
             children: [
-              Icon(
-                isSelected ? Icons.check_circle_rounded : Icons.circle_outlined,
-                size: 24,
-                color: isSelected ? primaryColor : Colors.grey,
-              ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -580,9 +595,9 @@ class TodoItemCard extends StatelessWidget {
                         ),
                         Text(
                           todoItem.editedTime.isEmpty
-                              ? DateFormat('yyyy MMM dd, HH:MM')
+                              ? DateFormat('yyyy-MM-dd HH:mm')
                                   .format(DateTime.parse(todoItem.createdTime))
-                              : DateFormat('yyyy MMM dd, HH:MM')
+                              : DateFormat('yyyy-MM-dd HH:mm')
                                   .format(DateTime.parse(todoItem.editedTime)),
                           style: TextStyle(
                               fontSize: 14,

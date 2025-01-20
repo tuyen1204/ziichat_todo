@@ -5,13 +5,15 @@ import 'package:intl/intl.dart';
 import 'package:ziichat_todo/component/title_section_large.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
+import 'package:ziichat_todo/i18n/app_localizations.dart';
 import 'package:ziichat_todo/screens/folder/folder_detail.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
 import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
 import 'package:ziichat_todo/component/shimmer_effect.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, required this.onLanguageChanged});
+  final Function(Locale) onLanguageChanged;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -19,6 +21,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
+
+  List<String> languagesOption = [
+    "en",
+    "vi",
+  ];
+
+  late String langSelected = "";
 
   @override
   void initState() {
@@ -37,18 +46,38 @@ class _HomeScreenState extends State<HomeScreen> {
     final processingFolders =
         dataFolder.where((item) => item.status == ItemStatus.progressing);
     final totalTask = dataFolder.length;
+    final localizations = AppLocalizations.of(context)!;
+    late final currentLocale = Localizations.localeOf(context);
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        centerTitle: true,
-        title: Column(
-          children: [
-            Text(
-              'ZiiChat Todo',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
-            ),
-          ],
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'ZiiChat Todo',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
+          ),
         ),
+        actions: [
+          Wrap(
+            spacing: 8.0,
+            children: languagesOption.map((index) {
+              return ChoiceChip(
+                label: Text(index.toUpperCase()),
+                showCheckmark: false,
+                selected: currentLocale.toString() == index,
+                onSelected: (value) {
+                  setState(() {
+                    langSelected = index;
+                  });
+                  widget.onLanguageChanged(Locale(langSelected));
+                },
+              );
+            }).toList(),
+          ),
+          SizedBox(width: 16),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -60,7 +89,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: defaultPadding),
-                  child: TitleSectionLarge(title: "Folders"),
+                  child: TitleSectionLarge(
+                      title: localizations.translate('folders')),
                 ),
                 SizedBox(height: defaultPadding),
                 SizedBox(
@@ -88,7 +118,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: defaultPadding),
-                  child: TitleSectionLarge(title: "Processing tasks"),
+                  child: TitleSectionLarge(
+                      title: localizations.translate('processingTasks')),
                 ),
                 SizedBox(height: defaultPadding),
                 ListView.builder(
@@ -100,9 +131,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     return isLoading
                         ? ShimmerLoading(
                             isLoading: isLoading,
-                            child: _innerTodoItem(
-                                context, index, processingFolders))
-                        : _innerTodoItem(context, index, processingFolders);
+                            child: _innerTodoItem(context, index,
+                                currentLocale.toString(), processingFolders))
+                        : _innerTodoItem(context, index,
+                            currentLocale.toString(), processingFolders);
                   },
                 ),
               ],
@@ -123,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
         length: folders.length);
   }
 
-  SizedBox _innerTodoItem(BuildContext context, int index,
+  SizedBox _innerTodoItem(BuildContext context, int index, String currentLocale,
       Iterable<TodoItemData> processingFolders) {
     return _todoItem(context,
         index: index,
@@ -131,7 +163,8 @@ class _HomeScreenState extends State<HomeScreen> {
         nameTodo: processingFolders.elementAt(index).title,
         date: processingFolders.elementAt(index).createdTime,
         status: processingFolders.elementAt(index).status,
-        category: processingFolders.elementAt(index).category);
+        category: processingFolders.elementAt(index).category,
+        currentLocale: currentLocale);
   }
 
   SizedBox _todoItem(BuildContext context,
@@ -140,7 +173,8 @@ class _HomeScreenState extends State<HomeScreen> {
       required String nameTodo,
       required String date,
       required ItemStatus status,
-      required String category}) {
+      required String category,
+      String? currentLocale}) {
     return SizedBox(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
@@ -158,10 +192,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 MaterialPageRoute(
                   builder: (context) {
                     return TodoDetailScreen(
-                      idTodo: idTodo,
-                      initStatus: status,
-                      initCategory: category,
-                    );
+                        idTodo: idTodo,
+                        initStatus: status,
+                        initCategory: category,
+                        onLanguageChanged: (locale) {
+                          currentLocale.toString();
+                        });
                   },
                 ),
               ),
@@ -226,6 +262,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       builder: (context) {
                         return ItemsTodoDetail(
                           currentCategory: category,
+                          onLanguageChanged: (locale) =>
+                              langSelected.toString(),
                         );
                       },
                       settings: RouteSettings(arguments: category)));

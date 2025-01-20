@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
+import 'package:ziichat_todo/i18n/app_localizations.dart';
 import 'package:ziichat_todo/screens/folder/folder_detail.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
 
@@ -13,11 +14,13 @@ class TodoDetailScreen extends StatefulWidget {
     required this.idTodo,
     required this.initStatus,
     required this.initCategory,
+    required this.onLanguageChanged,
   });
 
   final String idTodo;
   final ItemStatus initStatus;
   final String initCategory;
+  final Function(Locale) onLanguageChanged;
 
   @override
   State<TodoDetailScreen> createState() => _TodoDetailScreenState();
@@ -35,7 +38,11 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
   late TextEditingController newNote;
 
   final currentDate = DateTime.now();
-  String formattedDate = '';
+  String formattedDateNow = '';
+  late AppLocalizations localizations = AppLocalizations.of(context)!;
+  final dateTimeFormat = DateFormat('yyyy-MM-dd HH:mm');
+
+  final formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -49,31 +56,44 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     newNote = TextEditingController(text: todoDetailData.note);
 
     _updateTime();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        localizations = AppLocalizations.of(context)!;
+      });
+    });
   }
 
   void _handleDeleteTodo(
       String id, BuildContext context, String itemInCategory) {
-    dataFolder.removeWhere((item) {
-      return item.idTodo == id;
-    });
+    String fullText = localizations.translate(
+      'youDeleteTodo',
+      args: {'itemTodoName': todoDetailData.title},
+    );
+
+    final usernamePlaceholder = todoDetailData.title;
+    final usernameStart = fullText.indexOf(usernamePlaceholder);
+    final usernameEnd = usernameStart + usernamePlaceholder.length;
+    final textBeforeUsername = fullText.substring(0, usernameStart);
+    final textAfterUsername = fullText.substring(usernameEnd);
 
     showCupertinoDialog(
       context: context,
       builder: (BuildContext context) => CupertinoAlertDialog(
-        title: const Text('Delete todo'),
+        title: Text(localizations.translate('deleteFolder')),
         content: RichText(
           textAlign: TextAlign.center,
           text: TextSpan(
-            text: 'Yor\' are going to delete the ',
+            text: textBeforeUsername,
             style: TextStyle(color: Colors.black),
             children: <TextSpan>[
               TextSpan(
-                text: todoDetailData.title,
+                text: usernamePlaceholder,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              TextSpan(text: ' todo. Are you sure?'),
+              TextSpan(text: textAfterUsername),
             ],
           ),
         ),
@@ -83,22 +103,26 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('No'),
+            child: Text(localizations.translate('no')),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
             onPressed: () {
+              dataFolder.removeWhere((item) {
+                return item.idTodo == id;
+              });
               Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) {
                         return ItemsTodoDetail(
                           currentCategory: itemInCategory,
+                          onLanguageChanged: (locale) {},
                         );
                       },
                       settings: RouteSettings(arguments: itemInCategory)));
             },
-            child: const Text('Yes'),
+            child: Text(localizations.translate('yes')),
           ),
         ],
       ),
@@ -125,27 +149,32 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
             status: status ?? dataFolder[index].status,
             createdTime: dataFolder[index].createdTime,
             note: note ?? dataFolder[index].note,
-            editedTime: formattedDate.toString(),
+            editedTime: formattedDateNow.toString(),
           );
         });
 
         showCupertinoDialog(
             context: context,
-            builder: (BuildContext context) => CupertinoAlertDialog(
-                  title: const Text('Todo update successfully'),
-                  actions: <CupertinoDialogAction>[
-                    CupertinoDialogAction(
-                      isDefaultAction: true,
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text(
-                        'Ok',
-                        style: TextStyle(fontWeight: FontWeight.w500),
-                      ),
+            builder: (BuildContext context) {
+              Future.delayed(Duration(milliseconds: 1000), () {
+                Navigator.of(context).pop();
+              });
+              return CupertinoAlertDialog(
+                title: Text(localizations.translate('todoUpdateSuccessfully')),
+                actions: <CupertinoDialogAction>[
+                  CupertinoDialogAction(
+                    isDefaultAction: true,
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      localizations.translate('close'),
+                      style: TextStyle(fontWeight: FontWeight.w500),
                     ),
-                  ],
-                ));
+                  ),
+                ],
+              );
+            });
       } else {
         print('ID Todo not found');
       }
@@ -159,7 +188,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     Timer.periodic(Duration(seconds: 1), (Timer t) {
       setState(() {
         DateTime now = DateTime.now();
-        formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+        formattedDateNow = dateTimeFormat.format(now);
       });
     });
   }
@@ -177,6 +206,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                     builder: (context) {
                       return ItemsTodoDetail(
                         currentCategory: categorySelected.toString(),
+                        onLanguageChanged: (locale) {},
                       );
                     },
                     settings: RouteSettings(arguments: categorySelected))),
@@ -195,7 +225,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      "Todo detail",
+                      localizations.translate('todoDetail'),
                       style:
                           TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
                     ),
@@ -217,60 +247,44 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                     )
                   ],
                 ),
-                Column(
-                  spacing: 16,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextFormField(
-                      controller: newTitle,
-                      readOnly: edited == true ? false : true,
-                      cursorColor: primaryColor,
-                      decoration: InputDecoration(
-                        labelText: "Title",
-                        labelStyle: TextStyle(color: Colors.grey),
-                        alignLabelWithHint: true,
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: primaryColor),
-                        ),
-                      ),
-                      minLines: 4,
-                      keyboardType: TextInputType.multiline,
-                      maxLines: null,
-                      onTapOutside: (event) {
-                        FocusManager.instance.primaryFocus?.unfocus();
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Name task is required';
-                        }
-                        return null;
-                      },
-                    ),
-                    TextFormField(
-                      readOnly: true,
-                      initialValue: DateFormat('yyyy MMM dd, HH:MM')
-                          .format(DateTime.parse(todoDetailData.createdTime)),
-                      cursorColor: primaryColor,
-                      decoration: InputDecoration(
-                        labelText: "Date",
-                        labelStyle: TextStyle(color: Colors.grey),
-                        alignLabelWithHint: true,
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: primaryColor),
-                        ),
-                      ),
-                      keyboardType: TextInputType.multiline,
-                      onTapOutside: (event) {
-                        FocusManager.instance.primaryFocus?.unfocus();
-                      },
-                    ),
-                    if (todoDetailData.editedTime.isNotEmpty)
+                Form(
+                  key: formKey,
+                  child: Column(
+                    spacing: 16,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       TextFormField(
-                        readOnly: true,
-                        initialValue: todoDetailData.editedTime,
+                        controller: newTitle,
+                        readOnly: edited == true ? false : true,
                         cursorColor: primaryColor,
                         decoration: InputDecoration(
-                          labelText: "Edited Date",
+                          labelText: localizations.translate('title'),
+                          labelStyle: TextStyle(color: Colors.grey),
+                          alignLabelWithHint: true,
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: primaryColor),
+                          ),
+                        ),
+                        minLines: 4,
+                        keyboardType: TextInputType.multiline,
+                        maxLines: null,
+                        onTapOutside: (event) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return localizations.translate('newTaskRequired');
+                          }
+                          return null;
+                        },
+                      ),
+                      TextFormField(
+                        readOnly: true,
+                        initialValue: dateTimeFormat
+                            .format(DateTime.parse(todoDetailData.createdTime)),
+                        cursorColor: primaryColor,
+                        decoration: InputDecoration(
+                          labelText: localizations.translate('createdDate'),
                           labelStyle: TextStyle(color: Colors.grey),
                           alignLabelWithHint: true,
                           focusedBorder: UnderlineInputBorder(
@@ -282,91 +296,113 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                           FocusManager.instance.primaryFocus?.unfocus();
                         },
                       ),
-                    TextFormField(
-                      controller: newNote,
-                      readOnly: edited == true ? false : true,
-                      cursorColor: primaryColor,
-                      decoration: InputDecoration(
-                        labelText: "Note",
-                        labelStyle: TextStyle(color: Colors.grey),
-                        contentPadding: EdgeInsets.only(bottom: defaultPadding),
-                        alignLabelWithHint: true,
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: primaryColor),
+                      if (todoDetailData.editedTime.isNotEmpty)
+                        TextFormField(
+                          readOnly: true,
+                          initialValue: todoDetailData.editedTime,
+                          cursorColor: primaryColor,
+                          decoration: InputDecoration(
+                            labelText: localizations.translate('editedDate'),
+                            labelStyle: TextStyle(color: Colors.grey),
+                            alignLabelWithHint: true,
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: primaryColor),
+                            ),
+                          ),
+                          keyboardType: TextInputType.multiline,
+                          onTapOutside: (event) {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                          },
                         ),
+                      TextFormField(
+                        controller: newNote,
+                        readOnly: edited == true ? false : true,
+                        cursorColor: primaryColor,
+                        decoration: InputDecoration(
+                          labelText: localizations.translate('note'),
+                          labelStyle: TextStyle(color: Colors.grey),
+                          contentPadding:
+                              EdgeInsets.only(bottom: defaultPadding),
+                          alignLabelWithHint: true,
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: primaryColor),
+                          ),
+                        ),
+                        minLines: 4,
+                        keyboardType: TextInputType.multiline,
+                        maxLines: null,
+                        onTapOutside: (event) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
                       ),
-                      minLines: 4,
-                      keyboardType: TextInputType.multiline,
-                      maxLines: null,
-                      onTapOutside: (event) {
-                        FocusManager.instance.primaryFocus?.unfocus();
-                      },
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 8,
-                      children: [
-                        Text("Status",
-                            style: TextStyle(
-                                color: Color(0xff727272),
-                                fontWeight: FontWeight.w500)),
-                        Wrap(
-                          spacing: 8.0,
-                          children: status.map((item) {
-                            return ChoiceChip(
-                              label: Text(
-                                statusToReadableString(item),
-                              ),
-                              labelStyle: TextStyle(
-                                color: statusSelected == item
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 8,
+                        children: [
+                          Text(localizations.translate('status'),
+                              style: TextStyle(
+                                  color: Color(0xff727272),
+                                  fontWeight: FontWeight.w500)),
+                          Wrap(
+                            spacing: 8.0,
+                            children: status.map((item) {
+                              return ChoiceChip(
+                                label: Text(
+                                  statusToReadableString(item),
+                                ),
+                                labelStyle: TextStyle(
+                                  color: statusSelected == item
+                                      ? Colors.white
+                                      : Colors.black87,
+                                ),
+                                checkmarkColor: statusSelected == item
                                     ? Colors.white
-                                    : Colors.black87,
-                              ),
-                              checkmarkColor: statusSelected == item
-                                  ? Colors.white
-                                  : Colors.grey,
-                              selectedColor: statusColor(item),
-                              selected: statusSelected == item,
-                              onSelected: (value) {
-                                setState(() {
-                                  edited == true ? statusSelected = item : null;
-                                });
-                              },
-                            );
-                          }).toList(),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 8,
-                      children: [
-                        Text("Category",
-                            style: TextStyle(
-                                color: Color(0xff727272),
-                                fontWeight: FontWeight.w500)),
-                        Wrap(
-                          spacing: 8.0,
-                          children: folders.map((item) {
-                            return ChoiceChip(
-                              label: Text(item),
-                              selected: categorySelected == item,
-                              labelStyle: TextStyle(
-                                color: Colors.black87,
-                              ),
-                              onSelected: (value) {
-                                setState(() {
-                                  edited == true
-                                      ? categorySelected = item
-                                      : null;
-                                });
-                              },
-                            );
-                          }).toList(),
-                        ),
-                      ],
-                    ),
-                  ],
+                                    : Colors.grey,
+                                selectedColor: statusColor(item),
+                                selected: statusSelected == item,
+                                onSelected: (value) {
+                                  setState(() {
+                                    edited == true
+                                        ? statusSelected = item
+                                        : null;
+                                  });
+                                },
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 8,
+                        children: [
+                          Text(localizations.translate('category'),
+                              style: TextStyle(
+                                  color: Color(0xff727272),
+                                  fontWeight: FontWeight.w500)),
+                          Wrap(
+                            spacing: 8.0,
+                            children: folders.map((item) {
+                              return ChoiceChip(
+                                label: Text(item),
+                                selected: categorySelected == item,
+                                labelStyle: TextStyle(
+                                  color: Colors.black87,
+                                ),
+                                onSelected: (value) {
+                                  setState(() {
+                                    edited == true
+                                        ? categorySelected = item
+                                        : null;
+                                  });
+                                },
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
                 SizedBox(height: 32),
                 Row(
@@ -376,13 +412,15 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                     Expanded(
                       child: TextButton(
                         onPressed: () {
-                          _handleEditTodo(
-                            title: newTitle.text,
-                            currentTodo: todoDetailData,
-                            note: newNote.text,
-                            status: statusSelected,
-                            category: categorySelected,
-                          );
+                          if (formKey.currentState!.validate()) {
+                            _handleEditTodo(
+                              title: newTitle.text,
+                              currentTodo: todoDetailData,
+                              note: newNote.text,
+                              status: statusSelected,
+                              category: categorySelected,
+                            );
+                          }
                         },
                         style: ButtonStyle(
                           backgroundColor: edited == true
@@ -395,7 +433,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                           ),
                         ),
                         child: Text(
-                          "Save changes",
+                          localizations.translate('saveChanges'),
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
