@@ -62,6 +62,9 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
       dataFolder.map((item) => item.category.toLowerCase()).toSet().toList();
 
   late AppLocalizations? localizations;
+
+  late DateFormat dateTimeFormat;
+
   @override
   void initState() {
     super.initState();
@@ -78,6 +81,8 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
           .toSet()
           .where((status) => status != ItemStatus.all)
           .toList());
+
+      dateTimeFormat = DateFormat('yyyy-MM-dd HH:mm');
     });
 
     Future.delayed(Duration(milliseconds: 1000), () {
@@ -590,9 +595,9 @@ class TodoItemCard extends StatelessWidget {
                         ),
                         Text(
                           todoItem.editedTime.isEmpty
-                              ? DateFormat('yyyy MMM dd, HH:MM')
+                              ? DateFormat('yyyy-MM-dd HH:mm')
                                   .format(DateTime.parse(todoItem.createdTime))
-                              : DateFormat('yyyy MMM dd, HH:MM')
+                              : DateFormat('yyyy-MM-dd HH:mm')
                                   .format(DateTime.parse(todoItem.editedTime)),
                           style: TextStyle(
                               fontSize: 14,

@@ -38,8 +38,9 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
   late TextEditingController newNote;
 
   final currentDate = DateTime.now();
-  String formattedDate = '';
+  String formattedDateNow = '';
   late AppLocalizations localizations = AppLocalizations.of(context)!;
+  final dateTimeFormat = DateFormat('yyyy-MM-dd HH:mm');
 
   final formKey = GlobalKey<FormState>();
 
@@ -148,7 +149,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
             status: status ?? dataFolder[index].status,
             createdTime: dataFolder[index].createdTime,
             note: note ?? dataFolder[index].note,
-            editedTime: formattedDate.toString(),
+            editedTime: formattedDateNow.toString(),
           );
         });
 
@@ -187,7 +188,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     Timer.periodic(Duration(seconds: 1), (Timer t) {
       setState(() {
         DateTime now = DateTime.now();
-        formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+        formattedDateNow = dateTimeFormat.format(now);
       });
     });
   }
@@ -279,7 +280,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       ),
                       TextFormField(
                         readOnly: true,
-                        initialValue: DateFormat('yyyy MMM dd, HH:MM')
+                        initialValue: dateTimeFormat
                             .format(DateTime.parse(todoDetailData.createdTime)),
                         cursorColor: primaryColor,
                         decoration: InputDecoration(
