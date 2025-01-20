@@ -56,7 +56,6 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
 
   void _handleDeleteTodo(
       String id, BuildContext context, String itemInCategory) {
-    final localizations = AppLocalizations.of(context)!;
     String fullText = localizations.translate(
       'youDeleteTodo',
       args: {'itemTodoName': todoDetailData.title},
