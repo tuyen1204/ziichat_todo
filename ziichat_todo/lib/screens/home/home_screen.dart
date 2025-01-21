@@ -229,7 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   }
                 },
-                child: const Text('Save'),
+                child: Text(AppLocalizations.of(context)!.translate('save')),
               ),
             ],
           ),
@@ -296,6 +296,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Text(
                         category,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.w500),
                       ),

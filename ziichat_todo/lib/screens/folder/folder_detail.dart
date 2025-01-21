@@ -64,6 +64,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   late AppLocalizations? localizations;
   late DateFormat dateTimeFormat;
 
+  List<TodoItemData> displayedTodos = [];
   final ScrollController _scrollController = ScrollController();
   int page = 0;
   final int pageSize = 3;
@@ -108,7 +109,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   }
 
   void _loadMoreData() {
-    if (!isLoadingPagination && sortByStatus.length < dataFolder.length) {
+    if (!isLoadingPagination && displayedTodos.length < dataFolder.length) {
       setState(() {
         isLoadingPagination = true;
       });
@@ -117,7 +118,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         final nextItems =
             dataFolder.skip(page * pageSize).take(pageSize).toList();
         setState(() {
-          sortByStatus.addAll(nextItems);
+          displayedTodos.addAll(nextItems);
           page++;
           isLoadingPagination = false;
         });
@@ -457,40 +458,21 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                   style: TextStyle(fontWeight: FontWeight.w600),
                 )),
               )
-            :
-            // SizedBox(
-            //     height: 300,
-            //     child: ListView.builder(
-            //       controller: _scrollController,
-            //       itemCount: sortByStatus.length + 1,
-            //       itemBuilder: (context, index) {
-            //         if (index == sortByStatus.length) {
-            //           return isLoadingPagination
-            //               ? const Padding(
-            //                   padding: EdgeInsets.all(8.0),
-            //                   child: Center(child: CircularProgressIndicator()),
-            //                 )
-            //               : const SizedBox.shrink();
-            //         }
-            //         final todoItem = sortByStatus[index];
-            //         return isLoading
-            //             ? ShimmerLoading(
-            //                 isLoading: isLoading,
-            //                 child: _buildTodoItemCard(index, todoItem),
-            //               )
-            //             : _buildTodoItemCard(index, todoItem);
-            //       },
-            //     ),
-            //   ),
-            Column(
-                spacing: 8,
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: List.generate(
-                  sortByStatus.length,
-                  (index) {
+            : SizedBox(
+                height: 300,
+                child: ListView.builder(
+                  controller: _scrollController,
+                  itemCount: sortByStatus.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == sortByStatus.length) {
+                      return isLoadingPagination
+                          ? const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Center(child: CircularProgressIndicator()),
+                            )
+                          : const SizedBox.shrink();
+                    }
                     final todoItem = sortByStatus[index];
-
                     return isLoading
                         ? ShimmerLoading(
                             isLoading: isLoading,
@@ -500,6 +482,24 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                   },
                 ),
               ),
+        // Column(
+        //     spacing: 8,
+        //     mainAxisAlignment: MainAxisAlignment.start,
+        //     crossAxisAlignment: CrossAxisAlignment.start,
+        //     children: List.generate(
+        //       sortByStatus.length,
+        //       (index) {
+        //         final todoItem = sortByStatus[index];
+
+        //         return isLoading
+        //             ? ShimmerLoading(
+        //                 isLoading: isLoading,
+        //                 child: _buildTodoItemCard(index, todoItem),
+        //               )
+        //             : _buildTodoItemCard(index, todoItem);
+        //       },
+        //     ),
+        //   ),
       ],
     );
   }
