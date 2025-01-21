@@ -9,6 +9,7 @@ import 'package:ziichat_todo/screens/home/home_screen.dart';
 import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
 import 'package:ziichat_todo/component/shimmer_effect.dart';
 import 'folder_item.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 class ItemsTodoDetail extends StatefulWidget {
   const ItemsTodoDetail(
@@ -64,11 +65,9 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   late AppLocalizations? localizations;
   late DateFormat dateTimeFormat;
 
-  List<TodoItemData> displayedTodos = [];
-  final ScrollController _scrollController = ScrollController();
-  int page = 0;
   final int pageSize = 3;
-  bool isLoadingPagination = false;
+  final PagingController<int, TodoItemData> _pagingController =
+      PagingController(firstPageKey: 0);
 
   @override
   void initState() {
@@ -76,9 +75,10 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
 
     setState(() {
       listToDo = dataFolder
-          .where((toDo) => toDo.category == widget.currentCategory)
+          .where((toDo) => (toDo.category == widget.currentCategory &&
+              toDo.title.isNotEmpty))
           .toList();
-      listToDoAll = List.from(dataFolder);
+      listToDoAll = dataFolder.where((toDo) => toDo.title.isNotEmpty).toList();
       totals = dataFolder.length;
 
       listStatus.addAll(dataFolder
@@ -99,30 +99,24 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     categoryToDelete = widget.currentCategory;
     newCategory = TextEditingController(text: widget.currentCategory);
 
-    _loadMoreData();
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels ==
-          _scrollController.position.maxScrollExtent) {
-        _loadMoreData();
-      }
+    _pagingController.addPageRequestListener((pageKey) {
+      _fetchPage(pageKey);
     });
   }
 
-  void _loadMoreData() {
-    if (!isLoadingPagination && displayedTodos.length < dataFolder.length) {
-      setState(() {
-        isLoadingPagination = true;
-      });
-
-      Future.delayed(const Duration(seconds: 1), () {
-        final nextItems =
-            dataFolder.skip(page * pageSize).take(pageSize).toList();
-        setState(() {
-          displayedTodos.addAll(nextItems);
-          page++;
-          isLoadingPagination = false;
-        });
-      });
+  Future<void> _fetchPage(int pageKey) async {
+    try {
+      final newItems = dataFolder.sublist(pageKey, pageKey + pageSize);
+      print(newItems);
+      final isLastPage = newItems.length < pageSize;
+      if (isLastPage) {
+        _pagingController.appendLastPage(newItems);
+      } else {
+        final nextPageKey = pageKey + newItems.length;
+        _pagingController.appendPage(newItems, nextPageKey);
+      }
+    } catch (error) {
+      _pagingController.error = error;
     }
   }
 
@@ -132,14 +126,16 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         sortByStatus = widget.currentCategory == "All"
             ? dataFolder
                 .where((toDo) =>
-                    statusToReadableString(toDo.status) == currentStatus)
+                    statusToReadableString(toDo.status) == currentStatus &&
+                    toDo.title.isNotEmpty)
                 .toList()
             : dataFolder
                 .where((toDo) =>
-                    (widget.currentCategory != "All"
-                        ? toDo.category == widget.currentCategory
-                        : true) &&
-                    statusToReadableString(toDo.status) == currentStatus)
+                    ((widget.currentCategory != "All"
+                            ? toDo.category == widget.currentCategory
+                            : true) &&
+                        statusToReadableString(toDo.status) == currentStatus) &&
+                    toDo.title.isNotEmpty)
                 .toList();
       },
     );
@@ -271,12 +267,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
   }
 
   @override
@@ -422,29 +412,29 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   }
 
   Column _innerListTodoItem() {
-    sortByStatus = widget.currentCategory == "All"
-        ? (currentStatus == "All" ? listToDoAll : sortByStatus)
-        : (currentStatus == "All" ? listToDo : sortByStatus);
+    // sortByStatus = widget.currentCategory == "All"
+    //     ? (currentStatus == "All" ? listToDoAll : sortByStatus)
+    //     : (currentStatus == "All" ? listToDo : sortByStatus);
 
-    sortByStatus.sort(
-      (a, b) {
-        if (currentSort == "alpha") {
-          return a.title.toLowerCase().compareTo(b.title.toLowerCase());
-        } else if (currentSort == "latest") {
-          return DateTime.parse(a.createdTime)
-              .difference(currentDate)
-              .inDays
-              .abs()
-              .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
-                  .inDays
-                  .abs());
-        } else if (currentSort == "oldest") {
-          return DateTime.parse(a.createdTime)
-              .compareTo(DateTime.parse(b.createdTime));
-        }
-        return 0;
-      },
-    );
+    // sortByStatus.sort(
+    //   (a, b) {
+    //     if (currentSort == "alpha") {
+    //       return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+    //     } else if (currentSort == "latest") {
+    //       return DateTime.parse(a.createdTime)
+    //           .difference(currentDate)
+    //           .inDays
+    //           .abs()
+    //           .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
+    //               .inDays
+    //               .abs());
+    //     } else if (currentSort == "oldest") {
+    //       return DateTime.parse(a.createdTime)
+    //           .compareTo(DateTime.parse(b.createdTime));
+    //     }
+    //     return 0;
+    //   },
+    // );
 
     return Column(
       children: [
@@ -460,46 +450,14 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
               )
             : SizedBox(
                 height: 300,
-                child: ListView.builder(
-                  controller: _scrollController,
-                  itemCount: sortByStatus.length + 1,
-                  itemBuilder: (context, index) {
-                    if (index == sortByStatus.length) {
-                      return isLoadingPagination
-                          ? const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Center(child: CircularProgressIndicator()),
-                            )
-                          : const SizedBox.shrink();
-                    }
-                    final todoItem = sortByStatus[index];
-                    return isLoading
-                        ? ShimmerLoading(
-                            isLoading: isLoading,
-                            child: _buildTodoItemCard(index, todoItem),
-                          )
-                        : _buildTodoItemCard(index, todoItem);
-                  },
+                child: PagedListView<int, TodoItemData>(
+                  pagingController: _pagingController,
+                  builderDelegate: PagedChildBuilderDelegate<TodoItemData>(
+                    itemBuilder: (context, item, index) =>
+                        _buildTodoItemCard(index, item),
+                  ),
                 ),
               ),
-        // Column(
-        //     spacing: 8,
-        //     mainAxisAlignment: MainAxisAlignment.start,
-        //     crossAxisAlignment: CrossAxisAlignment.start,
-        //     children: List.generate(
-        //       sortByStatus.length,
-        //       (index) {
-        //         final todoItem = sortByStatus[index];
-
-        //         return isLoading
-        //             ? ShimmerLoading(
-        //                 isLoading: isLoading,
-        //                 child: _buildTodoItemCard(index, todoItem),
-        //               )
-        //             : _buildTodoItemCard(index, todoItem);
-        //       },
-        //     ),
-        //   ),
       ],
     );
   }
