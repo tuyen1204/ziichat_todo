@@ -127,21 +127,15 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     }
   }
 
-  void handleUpdateFolders() {
-    setState(() {
-      sortByStatus = widget.currentCategory == "All"
-          ? dataFolder
-              .where((toDo) =>
-                  statusToReadableString(toDo.status) == currentStatus)
-              .toList()
-          : dataFolder
-              .where((toDo) =>
-                  (widget.currentCategory != "All"
-                      ? toDo.category == widget.currentCategory
-                      : true) &&
-                  statusToReadableString(toDo.status) == currentStatus)
-              .toList();
-    });
+  void handleStatusFilter() {
+    setState(
+      () {
+        sortByStatus = dataFolder
+            .where(
+                (toDo) => statusToReadableString(toDo.status) == currentStatus)
+            .toList();
+      },
+    );
   }
 
   void handleEditFolder(BuildContext context) {
@@ -271,26 +265,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   Widget build(BuildContext context) {
     final paddingNotch = MediaQuery.of(context).padding.top;
     final paddingBottom = MediaQuery.of(context).padding.bottom;
-    final sortedList = (widget.currentCategory == "All"
-        ? listToDoAll
-        : listToDo)
-      ..sort((a, b) {
-        if (currentSort == "alpha") {
-          return a.title.toLowerCase().compareTo(b.title.toLowerCase());
-        } else if (currentSort == "latest") {
-          return DateTime.parse(a.createdTime)
-              .difference(currentDate)
-              .inDays
-              .abs()
-              .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
-                  .inDays
-                  .abs());
-        } else if (currentSort == "oldest") {
-          return DateTime.parse(a.createdTime)
-              .compareTo(DateTime.parse(b.createdTime));
-        }
-        return 0;
-      });
 
     return Scaffold(
       backgroundColor: primaryColor,
@@ -412,7 +386,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                           widget.currentCategory == "All")
                         _innerSort(),
                       _innerSortByStatus(),
-                      _innerListTodoItem(sortedList),
+                      _innerListTodoItem(),
                       // SizedBox(
                       //   height: 300,
                       //   child: ListView.builder(
@@ -454,17 +428,37 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     );
   }
 
-  Column _innerListTodoItem(List<TodoItemData> sortedList) {
-    List<TodoItemData> currentList = widget.currentCategory == "All"
+  Column _innerListTodoItem() {
+    sortByStatus = widget.currentCategory == "All"
         ? (currentStatus == "All" ? listToDoAll : sortByStatus)
         : (currentStatus == "All" ? listToDo : sortByStatus);
+
+    sortByStatus.sort(
+      (a, b) {
+        if (currentSort == "alpha") {
+          return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+        } else if (currentSort == "latest") {
+          return DateTime.parse(a.createdTime)
+              .difference(currentDate)
+              .inDays
+              .abs()
+              .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
+                  .inDays
+                  .abs());
+        } else if (currentSort == "oldest") {
+          return DateTime.parse(a.createdTime)
+              .compareTo(DateTime.parse(b.createdTime));
+        }
+        return 0;
+      },
+    );
 
     return Column(
       spacing: 8,
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: List.generate(currentList.length, (index) {
-        final todoItem = currentList[index];
+      children: List.generate(sortByStatus.length, (index) {
+        final todoItem = sortByStatus[index];
 
         return isLoading
             ? ShimmerLoading(
@@ -511,9 +505,11 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
               label: Text(value),
               selected: currentSort == key,
               onSelected: (value) {
-                setState(() {
-                  currentSort = key;
-                });
+                setState(
+                  () {
+                    currentSort = key;
+                  },
+                );
               },
             ),
           );
@@ -541,7 +537,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 setState(() {
                   currentStatus = statusToReadableString(listStatus[index]);
                 });
-                handleUpdateFolders();
+                handleStatusFilter();
               },
             ),
           );
