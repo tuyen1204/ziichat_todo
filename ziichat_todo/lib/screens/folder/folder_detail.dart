@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:intl/intl.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
@@ -66,7 +65,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   late DateFormat dateTimeFormat;
 
   final ScrollController _scrollController = ScrollController();
-  List<TodoItemData> displayedTodos = [];
   int page = 0;
   final int pageSize = 3;
   bool isLoadingPagination = false;
@@ -110,7 +108,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   }
 
   void _loadMoreData() {
-    if (!isLoadingPagination && displayedTodos.length < dataFolder.length) {
+    if (!isLoadingPagination && sortByStatus.length < dataFolder.length) {
       setState(() {
         isLoadingPagination = true;
       });
@@ -119,7 +117,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         final nextItems =
             dataFolder.skip(page * pageSize).take(pageSize).toList();
         setState(() {
-          displayedTodos.addAll(nextItems);
+          sortByStatus.addAll(nextItems);
           page++;
           isLoadingPagination = false;
         });
@@ -438,32 +436,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
 
     return Column(
       children: [
-        // SizedBox(
-        //   height: 300,
-        //   child: ListView.builder(
-        //     controller: _scrollController,
-        //     itemCount: displayedTodos.length + 1,
-        //     itemBuilder: (context, index) {
-        //       if (index == displayedTodos.length) {
-        //         return isLoadingPagination
-        //             ? const Padding(
-        //                 padding: EdgeInsets.all(8.0),
-        //                 child: Center(
-        //                     child: CircularProgressIndicator()),
-        //               )
-        //             : const SizedBox.shrink();
-        //       }
-        //       final todo = displayedTodos[index];
-        //       return ListTile(
-        //         title: Text(todo.title),
-        //         subtitle: Text(todo.category),
-        //         trailing:
-        //             Text(todo.status.toString().split('.').last),
-        //       );
-        //     },
-        //   ),
-        // ),
-
         sortByStatus.isEmpty
             ? SizedBox(
                 width: double.infinity,
@@ -474,20 +446,48 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                   style: TextStyle(fontWeight: FontWeight.w600),
                 )),
               )
-            : Column(
+            :
+            // SizedBox(
+            //     height: 300,
+            //     child: ListView.builder(
+            //       controller: _scrollController,
+            //       itemCount: sortByStatus.length + 1,
+            //       itemBuilder: (context, index) {
+            //         if (index == sortByStatus.length) {
+            //           return isLoadingPagination
+            //               ? const Padding(
+            //                   padding: EdgeInsets.all(8.0),
+            //                   child: Center(child: CircularProgressIndicator()),
+            //                 )
+            //               : const SizedBox.shrink();
+            //         }
+            //         final todoItem = sortByStatus[index];
+            //         return isLoading
+            //             ? ShimmerLoading(
+            //                 isLoading: isLoading,
+            //                 child: _buildTodoItemCard(index, todoItem),
+            //               )
+            //             : _buildTodoItemCard(index, todoItem);
+            //       },
+            //     ),
+            //   ),
+            Column(
                 spacing: 8,
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: List.generate(sortByStatus.length, (index) {
-                  final todoItem = sortByStatus[index];
+                children: List.generate(
+                  sortByStatus.length,
+                  (index) {
+                    final todoItem = sortByStatus[index];
 
-                  return isLoading
-                      ? ShimmerLoading(
-                          isLoading: isLoading,
-                          child: _buildTodoItemCard(index, todoItem),
-                        )
-                      : _buildTodoItemCard(index, todoItem);
-                }),
+                    return isLoading
+                        ? ShimmerLoading(
+                            isLoading: isLoading,
+                            child: _buildTodoItemCard(index, todoItem),
+                          )
+                        : _buildTodoItemCard(index, todoItem);
+                  },
+                ),
               ),
       ],
     );
