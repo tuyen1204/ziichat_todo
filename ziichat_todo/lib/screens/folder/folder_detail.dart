@@ -130,10 +130,18 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   void handleStatusFilter() {
     setState(
       () {
-        sortByStatus = dataFolder
-            .where(
-                (toDo) => statusToReadableString(toDo.status) == currentStatus)
-            .toList();
+        sortByStatus = widget.currentCategory == "All"
+            ? dataFolder
+                .where((toDo) =>
+                    statusToReadableString(toDo.status) == currentStatus)
+                .toList()
+            : dataFolder
+                .where((toDo) =>
+                    (widget.currentCategory != "All"
+                        ? toDo.category == widget.currentCategory
+                        : true) &&
+                    statusToReadableString(toDo.status) == currentStatus)
+                .toList();
       },
     );
   }
@@ -387,31 +395,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                         _innerSort(),
                       _innerSortByStatus(),
                       _innerListTodoItem(),
-                      // SizedBox(
-                      //   height: 300,
-                      //   child: ListView.builder(
-                      //     controller: _scrollController,
-                      //     itemCount: displayedTodos.length + 1,
-                      //     itemBuilder: (context, index) {
-                      //       if (index == displayedTodos.length) {
-                      //         return isLoadingPagination
-                      //             ? const Padding(
-                      //                 padding: EdgeInsets.all(8.0),
-                      //                 child: Center(
-                      //                     child: CircularProgressIndicator()),
-                      //               )
-                      //             : const SizedBox.shrink();
-                      //       }
-                      //       final todo = displayedTodos[index];
-                      //       return ListTile(
-                      //         title: Text(todo.title),
-                      //         subtitle: Text(todo.category),
-                      //         trailing:
-                      //             Text(todo.status.toString().split('.').last),
-                      //       );
-                      //     },
-                      //   ),
-                      // ),
                     ],
                   ),
                 ),
@@ -454,19 +437,48 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     );
 
     return Column(
-      spacing: 8,
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: List.generate(sortByStatus.length, (index) {
-        final todoItem = sortByStatus[index];
+      children: [
+        // SizedBox(
+        //   height: 300,
+        //   child: ListView.builder(
+        //     controller: _scrollController,
+        //     itemCount: displayedTodos.length + 1,
+        //     itemBuilder: (context, index) {
+        //       if (index == displayedTodos.length) {
+        //         return isLoadingPagination
+        //             ? const Padding(
+        //                 padding: EdgeInsets.all(8.0),
+        //                 child: Center(
+        //                     child: CircularProgressIndicator()),
+        //               )
+        //             : const SizedBox.shrink();
+        //       }
+        //       final todo = displayedTodos[index];
+        //       return ListTile(
+        //         title: Text(todo.title),
+        //         subtitle: Text(todo.category),
+        //         trailing:
+        //             Text(todo.status.toString().split('.').last),
+        //       );
+        //     },
+        //   ),
+        // ),
+        Column(
+          spacing: 8,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: List.generate(sortByStatus.length, (index) {
+            final todoItem = sortByStatus[index];
 
-        return isLoading
-            ? ShimmerLoading(
-                isLoading: isLoading,
-                child: _buildTodoItemCard(index, todoItem),
-              )
-            : _buildTodoItemCard(index, todoItem);
-      }),
+            return isLoading
+                ? ShimmerLoading(
+                    isLoading: isLoading,
+                    child: _buildTodoItemCard(index, todoItem),
+                  )
+                : _buildTodoItemCard(index, todoItem);
+          }),
+        ),
+      ],
     );
   }
 

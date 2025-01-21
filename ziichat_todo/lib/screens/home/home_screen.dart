@@ -49,12 +49,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final localizations = AppLocalizations.of(context)!;
     late final currentLocale = Localizations.localeOf(context);
 
-    // folders.sort((a, b) {
-    //   if (a == "All") return -1;
-    //   if (b == "All") return 1;
-    //   return a.compareTo(b);
-    // });
-
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -106,7 +100,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     scrollDirection: Axis.horizontal,
                     itemCount: folders.length + 1,
                     itemBuilder: (context, index) {
-                      if (index == folders.length) {
+                      folders.sort((a, b) {
+                        if (a == "All") return -1;
+                        if (b == "All") return 1;
+                        if (a == "Other") return -1;
+                        if (b == "Other") return 1;
+                        return a.compareTo(b);
+                      });
+                      if (index == 0) {
                         final allItems = dataFolder
                             .where((item) => item.category.isEmpty)
                             .toList();
@@ -120,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             : _innerFolderItem(context, index, "All", taskCount,
                                 totalTask, folders);
                       } else {
-                        final category = folders[index];
+                        final category = folders[index - 1];
                         final taskCount = dataFolder
                             .where((item) => item.category == category)
                             .length;
