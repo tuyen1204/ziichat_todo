@@ -65,9 +65,11 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   late AppLocalizations? localizations;
   late DateFormat dateTimeFormat;
 
-  static const _pageSize = 2;
-  final PagingController<int, TodoItemData> _pagingController =
-      PagingController(firstPageKey: 0);
+  final ScrollController _scrollController = ScrollController();
+  List<TodoItemData> displayedTodos = [];
+  int page = 0;
+  final int pageSize = 3;
+  bool isLoadingPagination = false;
 
   @override
   void initState() {
@@ -93,29 +95,35 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
       setState(() {
         isLoading = false;
       });
-
-      _pagingController.addPageRequestListener((pageKey) {
-        fetchPage(pageKey);
-      });
     });
 
     categoryToDelete = widget.currentCategory;
     newCategory = TextEditingController(text: widget.currentCategory);
+
+    _loadMoreData();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent) {
+        _loadMoreData();
+      }
+    });
   }
 
-  Future<void> fetchPage(int pageKey) async {
-    try {
-      final newItems = listToDoAll.skip(pageKey).take(_pageSize).toList();
-      final isLastPage = pageKey + newItems.length >= listToDoAll.length;
+  void _loadMoreData() {
+    if (!isLoadingPagination && displayedTodos.length < dataFolder.length) {
+      setState(() {
+        isLoadingPagination = true;
+      });
 
-      if (isLastPage) {
-        _pagingController.appendLastPage(newItems);
-      } else {
-        final nextPageKey = pageKey + newItems.length;
-        _pagingController.appendPage(newItems, nextPageKey);
-      }
-    } catch (error) {
-      _pagingController.error = error;
+      Future.delayed(const Duration(seconds: 1), () {
+        final nextItems =
+            dataFolder.skip(page * pageSize).take(pageSize).toList();
+        setState(() {
+          displayedTodos.addAll(nextItems);
+          page++;
+          isLoadingPagination = false;
+        });
+      });
     }
   }
 
@@ -255,7 +263,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
 
   @override
   void dispose() {
-    _pagingController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -404,25 +412,32 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                           widget.currentCategory == "All")
                         _innerSort(),
                       _innerSortByStatus(),
-                      // _innerListTodoItem(sortedList),
-                      SizedBox(
-                        height: 300,
-                        child: RefreshIndicator(
-                          onRefresh: () async => await fetchPage(0),
-                          child: ListView.builder(
-                            itemBuilder: (BuildContext context, int index) {
-                              final item = _pagingController.itemList![index];
-                              return TodoItemCard(
-                                index: index,
-                                todoItem: item,
-                                isSelected: selectedItems.contains(index),
-                                onSelected: (selectedIndex) {},
-                              );
-                            },
-                            itemCount: _pagingController.itemList!.length,
-                          ),
-                        ),
-                      ),
+                      _innerListTodoItem(sortedList),
+                      // SizedBox(
+                      //   height: 300,
+                      //   child: ListView.builder(
+                      //     controller: _scrollController,
+                      //     itemCount: displayedTodos.length + 1,
+                      //     itemBuilder: (context, index) {
+                      //       if (index == displayedTodos.length) {
+                      //         return isLoadingPagination
+                      //             ? const Padding(
+                      //                 padding: EdgeInsets.all(8.0),
+                      //                 child: Center(
+                      //                     child: CircularProgressIndicator()),
+                      //               )
+                      //             : const SizedBox.shrink();
+                      //       }
+                      //       final todo = displayedTodos[index];
+                      //       return ListTile(
+                      //         title: Text(todo.title),
+                      //         subtitle: Text(todo.category),
+                      //         trailing:
+                      //             Text(todo.status.toString().split('.').last),
+                      //       );
+                      //     },
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
@@ -440,81 +455,42 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   }
 
   Column _innerListTodoItem(List<TodoItemData> sortedList) {
+    List<TodoItemData> currentList = widget.currentCategory == "All"
+        ? (currentStatus == "All" ? listToDoAll : sortByStatus)
+        : (currentStatus == "All" ? listToDo : sortByStatus);
+
     return Column(
       spacing: 8,
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: widget.currentCategory == "All"
-          ? List.generate(
-              currentStatus == "All" ? listToDoAll.length : sortByStatus.length,
-              (index) {
-              final todoItem = currentStatus == "All"
-                  ? listToDoAll[index]
-                  : sortByStatus[index];
-              return isLoading
-                  ? ShimmerLoading(
-                      isLoading: isLoading,
-                      child: TodoItemCard(
-                        index: index,
-                        todoItem: todoItem,
-                        isSelected: selectedItems.contains(index),
-                        onSelected: (selectedIndex) {},
-                      ),
-                    )
-                  : TodoItemCard(
-                      index: index,
-                      todoItem: todoItem,
-                      updateNameFolder: newCategory.text,
-                      isSelected: selectedItems.contains(index),
-                      onSelected: (selectedIndex) {
-                        setState(
-                          () {
-                            if (selectedItems.contains(selectedIndex)) {
-                              selectedItems.remove(selectedIndex);
-                            } else {
-                              selectedItems.add(selectedIndex);
-                            }
-                          },
-                        );
-                      },
-                    );
-            })
-          : List.generate(
-              currentStatus == "All" ? listToDo.length : sortByStatus.length,
-              (index) {
-                final todoItem = currentStatus == "All"
-                    ? listToDo[index]
-                    : sortByStatus[index];
+      children: List.generate(currentList.length, (index) {
+        final todoItem = currentList[index];
 
-                return isLoading
-                    ? ShimmerLoading(
-                        isLoading: isLoading,
-                        child: TodoItemCard(
-                          index: index,
-                          todoItem: todoItem,
-                          isSelected: selectedItems.contains(index),
-                          onSelected: (selectedIndex) {},
-                        ),
-                      )
-                    : TodoItemCard(
-                        index: index,
-                        todoItem: todoItem,
-                        updateNameFolder: newCategory.text,
-                        isSelected: selectedItems.contains(index),
-                        onSelected: (selectedIndex) {
-                          setState(
-                            () {
-                              if (selectedItems.contains(selectedIndex)) {
-                                selectedItems.remove(selectedIndex);
-                              } else {
-                                selectedItems.add(selectedIndex);
-                              }
-                            },
-                          );
-                        },
-                      );
-              },
-            ),
+        return isLoading
+            ? ShimmerLoading(
+                isLoading: isLoading,
+                child: _buildTodoItemCard(index, todoItem),
+              )
+            : _buildTodoItemCard(index, todoItem);
+      }),
+    );
+  }
+
+  Widget _buildTodoItemCard(int index, TodoItemData todoItem) {
+    return TodoItemCard(
+      index: index,
+      todoItem: todoItem,
+      updateNameFolder: newCategory.text,
+      isSelected: selectedItems.contains(index),
+      onSelected: (selectedIndex) {
+        setState(() {
+          if (selectedItems.contains(selectedIndex)) {
+            selectedItems.remove(selectedIndex);
+          } else {
+            selectedItems.add(selectedIndex);
+          }
+        });
+      },
     );
   }
 
@@ -537,7 +513,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
               onSelected: (value) {
                 setState(() {
                   currentSort = key;
-                  print(currentSort);
                 });
               },
             ),
@@ -593,7 +568,7 @@ class TodoItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 0.4,
+      elevation: 2,
       color: Colors.white,
       clipBehavior: Clip.hardEdge,
       child: InkWell(
