@@ -463,21 +463,32 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         //     },
         //   ),
         // ),
-        Column(
-          spacing: 8,
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: List.generate(sortByStatus.length, (index) {
-            final todoItem = sortByStatus[index];
 
-            return isLoading
-                ? ShimmerLoading(
-                    isLoading: isLoading,
-                    child: _buildTodoItemCard(index, todoItem),
-                  )
-                : _buildTodoItemCard(index, todoItem);
-          }),
-        ),
+        sortByStatus.isEmpty
+            ? SizedBox(
+                width: double.infinity,
+                height: 100,
+                child: Center(
+                    child: Text(
+                  "Nothing",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                )),
+              )
+            : Column(
+                spacing: 8,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: List.generate(sortByStatus.length, (index) {
+                  final todoItem = sortByStatus[index];
+
+                  return isLoading
+                      ? ShimmerLoading(
+                          isLoading: isLoading,
+                          child: _buildTodoItemCard(index, todoItem),
+                        )
+                      : _buildTodoItemCard(index, todoItem);
+                }),
+              ),
       ],
     );
   }
