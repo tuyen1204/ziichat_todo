@@ -35,5 +35,8 @@
     "info": "Info",
     "folderNameExists": "Folder name exists",
     "youDeleteTodo": "You're going to delete the {itemTodoName} todo. Are you sure?",
-    "close": "Close"
+    "close": "Close",
+    "enterNewFolderName" : "Enter new folder name",
+    "newFolder": "New folder",
+    "addNew": "Add New"
 }

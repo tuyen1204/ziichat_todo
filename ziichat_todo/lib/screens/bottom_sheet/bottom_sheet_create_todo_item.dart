@@ -150,9 +150,6 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                               ),
                             ),
                             keyboardType: TextInputType.multiline,
-                            onTapOutside: (event) {
-                              FocusManager.instance.primaryFocus?.unfocus();
-                            },
                           ),
                           TextFormField(
                             controller: noteTodo,

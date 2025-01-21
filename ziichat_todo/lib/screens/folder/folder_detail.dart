@@ -154,7 +154,8 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
             Text(AppLocalizations.of(context)!.translate('editFolder')),
             CupertinoTextField(
               controller: newCategory,
-              placeholder: 'Enter new folder name',
+              placeholder:
+                  AppLocalizations.of(context)!.translate('enterNewFolderName'),
               padding: EdgeInsets.all(12),
             ),
           ],
@@ -165,7 +166,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.translate('cancel')),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
@@ -174,12 +175,23 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 showCupertinoDialog(
                   context: context,
                   builder: (context) => CupertinoAlertDialog(
-                    title: Text('Info'),
-                    content: Text('Folder name exists'),
+                    title:
+                        Text(AppLocalizations.of(context)!.translate('info')),
+                    content: Text(AppLocalizations.of(context)!
+                        .translate('folderNameExists')),
                     actions: <Widget>[
                       CupertinoDialogAction(
                         onPressed: () {
-                          Navigator.pop(context);
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ItemsTodoDetail(
+                                currentCategory: newCategory.text,
+                                onLanguageChanged: widget.onLanguageChanged,
+                              ),
+                            ),
+                          );
+                          Navigator.of(context).pop();
                         },
                         child: Text('Ok'),
                       ),
@@ -204,7 +216,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
 
                   dataFolder.clear();
                   dataFolder.addAll(updatedData);
-
+                  Navigator.of(context).pop();
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
@@ -214,11 +226,10 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                       ),
                     ),
                   );
-                  Navigator.of(context).pop();
                 });
               }
             },
-            child: const Text('Save'),
+            child: Text(AppLocalizations.of(context)!.translate('save')),
           ),
         ],
       ),
@@ -229,7 +240,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     showCupertinoDialog(
       context: context,
       builder: (BuildContext context) => CupertinoAlertDialog(
-        title: const Text('You want to delete this folder'),
+        title: Text(localizations!.translate('youDeleteFolder')),
         actions: <CupertinoDialogAction>[
           CupertinoDialogAction(
             isDefaultAction: true,
@@ -288,7 +299,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 }),
         backgroundColor: Colors.transparent,
         actions: [
-          widget.currentCategory == "All"
+          widget.currentCategory == "All" || widget.currentCategory == "Other"
               ? SizedBox()
               : PopupMenuButton<ActionInFolder>(
                   icon: Icon(Icons.more_vert, color: Colors.white),

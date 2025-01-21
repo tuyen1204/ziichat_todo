@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ziichat_todo/component/title_section_large.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/i18n/app_localizations.dart';
+import 'package:ziichat_todo/screens/buttons/add_item.dart';
 import 'package:ziichat_todo/screens/folder/folder_detail.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
 import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
@@ -40,9 +42,15 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  final folderNames =
+      dataFolder.map((item) => item.category.toLowerCase()).toSet().toList();
+
+  late final TextEditingController folderName = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     final folders = dataFolder.map((item) => item.category).toSet().toList();
+
     final processingFolders =
         dataFolder.where((item) => item.status == ItemStatus.progressing);
     final totalTask = dataFolder.length;
@@ -165,6 +173,68 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+      floatingActionButton: _floatingNeeFolder(context),
+    );
+  }
+
+  FloatingActionButton _floatingNeeFolder(BuildContext context) {
+    late final TextEditingController newFolder = TextEditingController();
+    return FloatingActionButton(
+      child: Icon(Icons.add),
+      onPressed: () {
+        showCupertinoDialog(
+          context: context,
+          builder: (BuildContext context) => CupertinoAlertDialog(
+            title: Column(
+              spacing: 12,
+              children: [
+                Text(AppLocalizations.of(context)!.translate('editFolder')),
+                CupertinoTextField(
+                  controller: newFolder,
+                  placeholder: AppLocalizations.of(context)!
+                      .translate('enterNewFolderName'),
+                  padding: EdgeInsets.all(12),
+                ),
+              ],
+            ),
+            actions: <CupertinoDialogAction>[
+              CupertinoDialogAction(
+                isDefaultAction: true,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(AppLocalizations.of(context)!.translate('cancel')),
+              ),
+              CupertinoDialogAction(
+                isDestructiveAction: true,
+                onPressed: () {
+                  if (folderNames
+                      .contains(newFolder.text.toLowerCase().trim())) {
+                    showCupertinoDialog(
+                      context: context,
+                      builder: (context) => CupertinoAlertDialog(
+                        title: Text(
+                            AppLocalizations.of(context)!.translate('info')),
+                        content: Text(AppLocalizations.of(context)!
+                            .translate('folderNameExists')),
+                        actions: <Widget>[
+                          CupertinoDialogAction(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text('Ok'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
