@@ -49,6 +49,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final localizations = AppLocalizations.of(context)!;
     late final currentLocale = Localizations.localeOf(context);
 
+    // folders.sort((a, b) {
+    //   if (a == "All") return -1;
+    //   if (b == "All") return 1;
+    //   return a.compareTo(b);
+    // });
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -98,19 +104,35 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 180,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    itemCount: folders.length,
+                    itemCount: folders.length + 1,
                     itemBuilder: (context, index) {
-                      final category = folders[index];
-                      final taskCount = dataFolder
-                          .where((item) => item.category == category)
-                          .length;
-                      return isLoading
-                          ? ShimmerLoading(
-                              isLoading: isLoading,
-                              child: _innerFolderItem(context, index, category,
-                                  taskCount, totalTask, folders))
-                          : _innerFolderItem(context, index, category,
-                              taskCount, totalTask, folders);
+                      if (index == folders.length) {
+                        final allItems = dataFolder
+                            .where((item) => item.category.isEmpty)
+                            .toList();
+                        final taskCount = allItems.length;
+                        return isLoading
+                            ? ShimmerLoading(
+                                isLoading: isLoading,
+                                child: _innerFolderItem(context, index, "All",
+                                    taskCount, totalTask, folders),
+                              )
+                            : _innerFolderItem(context, index, "All", taskCount,
+                                totalTask, folders);
+                      } else {
+                        final category = folders[index];
+                        final taskCount = dataFolder
+                            .where((item) => item.category == category)
+                            .length;
+                        return isLoading
+                            ? ShimmerLoading(
+                                isLoading: isLoading,
+                                child: _innerFolderItem(context, index,
+                                    category, taskCount, totalTask, folders),
+                              )
+                            : _innerFolderItem(context, index, category,
+                                taskCount, totalTask, folders);
+                      }
                     },
                   ),
                 ),
@@ -145,91 +167,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _innerFolderItem(BuildContext context, int index, String category,
-      int taskCount, int totalTask, List<String> folders) {
-    return _folderItem(context,
-        index: index,
-        category: category,
-        taskCount: taskCount,
-        totalTaskCount: totalTask,
-        length: folders.length);
-  }
-
-  SizedBox _innerTodoItem(BuildContext context, int index, String currentLocale,
-      Iterable<TodoItemData> processingFolders) {
-    return _todoItem(context,
-        index: index,
-        idTodo: processingFolders.elementAt(index).idTodo,
-        nameTodo: processingFolders.elementAt(index).title,
-        date: processingFolders.elementAt(index).createdTime,
-        status: processingFolders.elementAt(index).status,
-        category: processingFolders.elementAt(index).category,
-        currentLocale: currentLocale);
-  }
-
-  SizedBox _todoItem(BuildContext context,
-      {required int index,
-      required String idTodo,
-      required String nameTodo,
-      required String date,
-      required ItemStatus status,
-      required String category,
-      String? currentLocale}) {
-    return SizedBox(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
-        child: Card(
-          elevation: 1,
-          color: Colors.white,
-          clipBehavior: Clip.hardEdge,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: InkWell(
-            onTap: () => {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) {
-                    return TodoDetailScreen(
-                        idTodo: idTodo,
-                        initStatus: status,
-                        initCategory: category,
-                        onLanguageChanged: (locale) {
-                          currentLocale.toString();
-                        });
-                  },
-                ),
-              ),
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    nameTodo,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-                  ),
-                  Text(
-                    DateFormat('yyyy MMM dd, HH:MM')
-                        .format(DateTime.parse(date)),
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xff727272)),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _folderItem(BuildContext context,
       {required int index,
       required String category,
@@ -239,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Padding(
       padding: EdgeInsets.only(
         left: 12,
-        right: index == length - 1 ? 12 : 0,
+        right: index == length ? 12 : 0,
       ),
       child: ConstrainedBox(
         constraints: BoxConstraints(
@@ -309,5 +246,90 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Widget _innerFolderItem(BuildContext context, int index, String category,
+      int taskCount, int totalTask, List<String> folders) {
+    return _folderItem(context,
+        index: index,
+        category: category,
+        taskCount: taskCount,
+        totalTaskCount: totalTask,
+        length: folders.length);
+  }
+
+  SizedBox _todoItem(BuildContext context,
+      {required int index,
+      required String idTodo,
+      required String nameTodo,
+      required String date,
+      required ItemStatus status,
+      required String category,
+      String? currentLocale}) {
+    return SizedBox(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+        child: Card(
+          elevation: 1,
+          color: Colors.white,
+          clipBehavior: Clip.hardEdge,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: InkWell(
+            onTap: () => {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) {
+                    return TodoDetailScreen(
+                        idTodo: idTodo,
+                        initStatus: status,
+                        initCategory: category,
+                        onLanguageChanged: (locale) {
+                          currentLocale.toString();
+                        });
+                  },
+                ),
+              ),
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    nameTodo,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                  ),
+                  Text(
+                    DateFormat('yyyy MMM dd, HH:MM')
+                        .format(DateTime.parse(date)),
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xff727272)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  SizedBox _innerTodoItem(BuildContext context, int index, String currentLocale,
+      Iterable<TodoItemData> processingFolders) {
+    return _todoItem(context,
+        index: index,
+        idTodo: processingFolders.elementAt(index).idTodo,
+        nameTodo: processingFolders.elementAt(index).title,
+        date: processingFolders.elementAt(index).createdTime,
+        status: processingFolders.elementAt(index).status,
+        category: processingFolders.elementAt(index).category,
+        currentLocale: currentLocale);
   }
 }
