@@ -407,7 +407,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                   ),
                   Text(
-                    '$category - ${DateFormat('yyyy MMM dd, HH:MM').format(DateTime.parse(date))}',
+                    '$category • ${DateFormat('yyyy MMM dd, HH:MM').format(DateTime.parse(date))}',
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,

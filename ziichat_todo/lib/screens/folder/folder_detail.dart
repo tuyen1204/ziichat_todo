@@ -439,7 +439,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
               ),
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 32, bottom: 64),
+                  padding: const EdgeInsets.only(top: 12, bottom: 64),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -691,7 +691,7 @@ class TodoItemCard extends StatelessWidget {
                         Row(
                           children: [
                             Text(
-                              '${todoItem.category} - ',
+                              '${todoItem.category} • ',
                               style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.black45,
