@@ -9,7 +9,6 @@ import 'package:ziichat_todo/screens/home/home_screen.dart';
 import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
 import 'package:ziichat_todo/component/shimmer_effect.dart';
 import 'folder_item.dart';
-import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 class ItemsTodoDetail extends StatefulWidget {
   const ItemsTodoDetail(
@@ -42,6 +41,7 @@ enum ActionInFolder { deleteFolder, editNameFolder }
 class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   late final List<TodoItemData> listToDo;
   late final List<TodoItemData> listToDoAll;
+  late final List<TodoItemData> listToDoIsNotItem;
   late int totals;
   Set<int> selectedItems = {};
   bool isLoading = true;
@@ -62,12 +62,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   final folderNames =
       dataFolder.map((item) => item.category.toLowerCase()).toSet().toList();
 
-  late AppLocalizations? localizations;
   late DateFormat dateTimeFormat;
-
-  // final int pageSize = 3;
-  // final PagingController<int, TodoItemData> _pagingController =
-  //     PagingController(firstPageKey: 0);
 
   @override
   void initState() {
@@ -80,6 +75,10 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
           .toList();
       listToDoAll = dataFolder.where((toDo) => toDo.title.isNotEmpty).toList();
       totals = dataFolder.length;
+
+      listToDoIsNotItem = dataFolder
+          .where((toDo) => toDo.category == widget.currentCategory)
+          .toList();
 
       listStatus.addAll(dataFolder
           .map((item) => item.status)
@@ -98,27 +97,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
 
     categoryToDelete = widget.currentCategory;
     newCategory = TextEditingController(text: widget.currentCategory);
-
-    // _pagingController.addPageRequestListener((pageKey) {
-    //   _fetchPage(pageKey);
-    // });
   }
-
-  // Future<void> _fetchPage(int pageKey) async {
-  //   try {
-  //     final newItems = dataFolder.sublist(pageKey, pageKey + pageSize);
-
-  //     final isLastPage = newItems.length < pageSize;
-  //     if (isLastPage) {
-  //       _pagingController.appendLastPage(newItems);
-  //     } else {
-  //       final nextPageKey = pageKey + newItems.length;
-  //       _pagingController.appendPage(newItems, nextPageKey);
-  //     }
-  //   } catch (error) {
-  //     _pagingController.error = error;
-  //   }
-  // }
 
   void handleStatusFilter() {
     setState(
@@ -237,14 +216,14 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     showCupertinoDialog(
       context: context,
       builder: (BuildContext context) => CupertinoAlertDialog(
-        title: Text(localizations!.translate('youDeleteFolder')),
+        title: Text(AppLocalizations.of(context)!.translate('youDeleteFolder')),
         actions: <CupertinoDialogAction>[
           CupertinoDialogAction(
             isDefaultAction: true,
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: Text(localizations!.translate('no')),
+            child: Text(AppLocalizations.of(context)!.translate('no')),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
@@ -262,7 +241,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 ),
               );
             },
-            child: Text(localizations!.translate('yes')),
+            child: Text(AppLocalizations.of(context)!.translate('yes')),
           ),
         ],
       ),
@@ -279,15 +258,25 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
       appBar: AppBar(
         leading: IconButton(
             icon: Icon(Icons.arrow_back_ios_new, color: Colors.white),
-            onPressed: () => {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          HomeScreen(onLanguageChanged: (locale) {}),
-                    ),
-                  ),
-                }),
+            onPressed: () {
+              if (listToDoIsNotItem.isEmpty &&
+                  widget.currentCategory != "All") {
+                final newTodoItemData = TodoItemData(
+                    idTodo: "",
+                    title: "",
+                    createdTime: "formatDate",
+                    category: widget.currentCategory,
+                    note: "noteTodo");
+                dataFolder.add(newTodoItemData);
+              }
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      HomeScreen(onLanguageChanged: (locale) {}),
+                ),
+              );
+            }),
         backgroundColor: Colors.transparent,
         actions: [
           widget.currentCategory == "All" || widget.currentCategory == "Other"
@@ -461,13 +450,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                             )
                           : _buildTodoItemCard(index, todoItem);
                     }),
-                // PagedListView<int, TodoItemData>(
-                //   pagingController: _pagingController,
-                //   builderDelegate: PagedChildBuilderDelegate<TodoItemData>(
-                //     itemBuilder: (context, item, index) =>
-                //         _buildTodoItemCard(index, item),
-                //   ),
-                // ),
               ),
       ],
     );
@@ -640,7 +622,7 @@ class TodoItemCard extends StatelessWidget {
                 width: 10,
                 height: 10,
                 decoration: BoxDecoration(
-                  color: statusColor(todoItem.status), // border color
+                  color: statusColor(todoItem.status),
                   shape: BoxShape.circle,
                 ),
               ),

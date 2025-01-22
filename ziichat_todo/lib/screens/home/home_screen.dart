@@ -130,7 +130,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       } else {
                         final category = folders[index - 1];
                         final taskCount = dataFolder
-                            .where((item) => item.category == category)
+                            .where((item) => (item.category == category &&
+                                item.title.isNotEmpty))
                             .length;
                         return isLoading
                             ? ShimmerLoading(
