@@ -7,7 +7,6 @@ import 'package:ziichat_todo/component/title_section_large.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/i18n/app_localizations.dart';
-import 'package:ziichat_todo/screens/buttons/add_item.dart';
 import 'package:ziichat_todo/screens/folder/folder_detail.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
 import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
@@ -46,11 +45,10 @@ class _HomeScreenState extends State<HomeScreen> {
       dataFolder.map((item) => item.category.toLowerCase()).toSet().toList();
 
   late final TextEditingController folderName = TextEditingController();
+  final folders = dataFolder.map((item) => item.category).toSet().toList();
 
   @override
   Widget build(BuildContext context) {
-    final folders = dataFolder.map((item) => item.category).toSet().toList();
-
     final processingFolders =
         dataFolder.where((item) => item.status == ItemStatus.progressing);
     final totalTask = dataFolder.length;
@@ -119,15 +117,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         final allItems = dataFolder
                             .where((item) => item.category.isEmpty)
                             .toList();
-                        final taskCount = allItems.length;
+                        final taskCountAll = allItems.length;
+
                         return isLoading
                             ? ShimmerLoading(
                                 isLoading: isLoading,
                                 child: _innerFolderItem(context, index, "All",
-                                    taskCount, totalTask, folders),
+                                    taskCountAll, totalTask, folders),
                               )
-                            : _innerFolderItem(context, index, "All", taskCount,
-                                totalTask, folders);
+                            : _innerFolderItem(context, index, "All",
+                                taskCountAll, totalTask, folders);
                       } else {
                         final category = folders[index - 1];
                         final taskCount = dataFolder
@@ -179,6 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   FloatingActionButton _floatingNeeFolder(BuildContext context) {
     late final TextEditingController newFolder = TextEditingController();
+
     return FloatingActionButton(
       child: Icon(Icons.add),
       onPressed: () {
@@ -188,7 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
             title: Column(
               spacing: 12,
               children: [
-                Text(AppLocalizations.of(context)!.translate('editFolder')),
+                Text(AppLocalizations.of(context)!.translate('newFolder')),
                 CupertinoTextField(
                   controller: newFolder,
                   placeholder: AppLocalizations.of(context)!
@@ -208,8 +208,8 @@ class _HomeScreenState extends State<HomeScreen> {
               CupertinoDialogAction(
                 isDestructiveAction: true,
                 onPressed: () {
-                  if (folderNames
-                      .contains(newFolder.text.toLowerCase().trim())) {
+                  final trimmedFolderName = newFolder.text.toLowerCase().trim();
+                  if (folderNames.contains(trimmedFolderName)) {
                     showCupertinoDialog(
                       context: context,
                       builder: (context) => CupertinoAlertDialog(
@@ -227,9 +227,37 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     );
+                  } else {
+                    setState(() {
+                      folders.add(trimmedFolderName.toLowerCase());
+                      dataFolder.add(
+                        TodoItemData(
+                          idTodo: "new-folder-$trimmedFolderName",
+                          title: "",
+                          createdTime: DateTime.now().toString(),
+                          category: capitalizeEachWord(trimmedFolderName),
+                          status: ItemStatus.todo,
+                        ),
+                      );
+                    });
+
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) {
+                              return ItemsTodoDetail(
+                                currentCategory:
+                                    capitalizeEachWord(trimmedFolderName),
+                                onLanguageChanged: (locale) =>
+                                    langSelected.toString(),
+                              );
+                            },
+                            settings: RouteSettings(
+                                arguments:
+                                    capitalizeEachWord(trimmedFolderName))));
                   }
                 },
-                child: Text(AppLocalizations.of(context)!.translate('save')),
+                child: Text(AppLocalizations.of(context)!.translate('addNew')),
               ),
             ],
           ),
@@ -378,8 +406,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                   ),
                   Text(
-                    DateFormat('yyyy MMM dd, HH:MM')
-                        .format(DateTime.parse(date)),
+                    '$category - ${DateFormat('yyyy MMM dd, HH:MM').format(DateTime.parse(date))}',
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,

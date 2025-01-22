@@ -65,9 +65,9 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   late AppLocalizations? localizations;
   late DateFormat dateTimeFormat;
 
-  final int pageSize = 3;
-  final PagingController<int, TodoItemData> _pagingController =
-      PagingController(firstPageKey: 0);
+  // final int pageSize = 3;
+  // final PagingController<int, TodoItemData> _pagingController =
+  //     PagingController(firstPageKey: 0);
 
   @override
   void initState() {
@@ -99,26 +99,26 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     categoryToDelete = widget.currentCategory;
     newCategory = TextEditingController(text: widget.currentCategory);
 
-    _pagingController.addPageRequestListener((pageKey) {
-      _fetchPage(pageKey);
-    });
+    // _pagingController.addPageRequestListener((pageKey) {
+    //   _fetchPage(pageKey);
+    // });
   }
 
-  Future<void> _fetchPage(int pageKey) async {
-    try {
-      final newItems = dataFolder.sublist(pageKey, pageKey + pageSize);
-      print(newItems);
-      final isLastPage = newItems.length < pageSize;
-      if (isLastPage) {
-        _pagingController.appendLastPage(newItems);
-      } else {
-        final nextPageKey = pageKey + newItems.length;
-        _pagingController.appendPage(newItems, nextPageKey);
-      }
-    } catch (error) {
-      _pagingController.error = error;
-    }
-  }
+  // Future<void> _fetchPage(int pageKey) async {
+  //   try {
+  //     final newItems = dataFolder.sublist(pageKey, pageKey + pageSize);
+
+  //     final isLastPage = newItems.length < pageSize;
+  //     if (isLastPage) {
+  //       _pagingController.appendLastPage(newItems);
+  //     } else {
+  //       final nextPageKey = pageKey + newItems.length;
+  //       _pagingController.appendPage(newItems, nextPageKey);
+  //     }
+  //   } catch (error) {
+  //     _pagingController.error = error;
+  //   }
+  // }
 
   void handleStatusFilter() {
     setState(
@@ -412,29 +412,29 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   }
 
   Column _innerListTodoItem() {
-    // sortByStatus = widget.currentCategory == "All"
-    //     ? (currentStatus == "All" ? listToDoAll : sortByStatus)
-    //     : (currentStatus == "All" ? listToDo : sortByStatus);
+    sortByStatus = widget.currentCategory == "All"
+        ? (currentStatus == "All" ? listToDoAll : sortByStatus)
+        : (currentStatus == "All" ? listToDo : sortByStatus);
 
-    // sortByStatus.sort(
-    //   (a, b) {
-    //     if (currentSort == "alpha") {
-    //       return a.title.toLowerCase().compareTo(b.title.toLowerCase());
-    //     } else if (currentSort == "latest") {
-    //       return DateTime.parse(a.createdTime)
-    //           .difference(currentDate)
-    //           .inDays
-    //           .abs()
-    //           .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
-    //               .inDays
-    //               .abs());
-    //     } else if (currentSort == "oldest") {
-    //       return DateTime.parse(a.createdTime)
-    //           .compareTo(DateTime.parse(b.createdTime));
-    //     }
-    //     return 0;
-    //   },
-    // );
+    sortByStatus.sort(
+      (a, b) {
+        if (currentSort == "alpha") {
+          return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+        } else if (currentSort == "latest") {
+          return DateTime.parse(a.createdTime)
+              .difference(currentDate)
+              .inDays
+              .abs()
+              .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
+                  .inDays
+                  .abs());
+        } else if (currentSort == "oldest") {
+          return DateTime.parse(a.createdTime)
+              .compareTo(DateTime.parse(b.createdTime));
+        }
+        return 0;
+      },
+    );
 
     return Column(
       children: [
@@ -450,13 +450,24 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
               )
             : SizedBox(
                 height: 300,
-                child: PagedListView<int, TodoItemData>(
-                  pagingController: _pagingController,
-                  builderDelegate: PagedChildBuilderDelegate<TodoItemData>(
-                    itemBuilder: (context, item, index) =>
-                        _buildTodoItemCard(index, item),
-                  ),
-                ),
+                child: ListView.builder(
+                    itemCount: sortByStatus.length,
+                    itemBuilder: (context, index) {
+                      final todoItem = sortByStatus[index];
+                      return isLoading
+                          ? ShimmerLoading(
+                              isLoading: isLoading,
+                              child: _buildTodoItemCard(index, todoItem),
+                            )
+                          : _buildTodoItemCard(index, todoItem);
+                    }),
+                // PagedListView<int, TodoItemData>(
+                //   pagingController: _pagingController,
+                //   builderDelegate: PagedChildBuilderDelegate<TodoItemData>(
+                //     itemBuilder: (context, item, index) =>
+                //         _buildTodoItemCard(index, item),
+                //   ),
+                // ),
               ),
       ],
     );
@@ -544,7 +555,7 @@ class TodoItemCard extends StatelessWidget {
   final TodoItemData todoItem;
   final bool isSelected;
   final ValueChanged<int> onSelected;
-  final updateNameFolder;
+  final String? updateNameFolder;
   const TodoItemCard(
       {super.key,
       required this.index,
@@ -569,7 +580,7 @@ class TodoItemCard extends StatelessWidget {
                 return TodoDetailScreen(
                     idTodo: todoItem.idTodo,
                     initStatus: todoItem.status,
-                    initCategory: updateNameFolder,
+                    initCategory: updateNameFolder.toString(),
                     onLanguageChanged: (locale) {});
               },
             ),
@@ -596,9 +607,7 @@ class TodoItemCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          updateNameFolder.isNotEmpty
-                              ? '$updateNameFolder - '
-                              : '${todoItem.category} - ',
+                          '${todoItem.category} - ',
                           style: TextStyle(
                               fontSize: 14,
                               color: Colors.black45,

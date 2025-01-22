@@ -130,7 +130,7 @@ List<TodoItemData> dataFolder = [
   TodoItemData(
     idTodo: "todo-19",
     title: "Task 19",
-    category: "Work",
+    category: "Learning",
     createdTime: "2023-07-25 04:00:00",
     status: ItemStatus.progressing,
   ),
