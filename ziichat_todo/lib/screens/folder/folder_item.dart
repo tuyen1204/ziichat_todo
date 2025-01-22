@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
+import 'dart:convert';
 
 enum ItemStatus { todo, progressing, pending, done, all }
 
@@ -29,21 +31,69 @@ class TodoItemData {
     this.categorySlug = '',
   });
 
-  static void onCreateTodoItem(String formatDate, String nameTodo,
+  Map<String, dynamic> toJson() {
+    return {
+      'idTodo': idTodo,
+      'title': title,
+      'category': category,
+      'createdTime': createdTime,
+      'status': status.toString(),
+      'note': note,
+    };
+  }
+
+  factory TodoItemData.fromJson(Map<String, dynamic> json) {
+    return TodoItemData(
+      idTodo: json['idTodo'],
+      title: json['title'],
+      category: json['category'],
+      status:
+          ItemStatus.values.firstWhere((e) => e.toString() == json['status']),
+      createdTime: json['createdTime'],
+      editedTime: json['editedTime'],
+    );
+  }
+
+  static Future<void> saveTodoItem(TodoItemData newTodoItem) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> todoList = prefs.getStringList('todoItems') ?? [];
+    todoList.add(jsonEncode(newTodoItem.toJson()));
+    await prefs.setStringList('todoItems', todoList);
+    print(todoList.length);
+    print(todoList.join('\n'));
+  }
+
+  static Future<List<TodoItemData>> loadTodoItems() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String>? jsonList = prefs.getStringList('todoItems');
+
+    if (jsonList != null) {
+      return jsonList
+          .map((jsonString) => TodoItemData.fromJson(json.decode(jsonString)))
+          .toList();
+    } else {
+      return [];
+    }
+  }
+
+  static Future<void> onCreateTodoItem(String formatDate, String nameTodo,
       String categoryTodo, String noteTodo) async {
     try {
       var random = Random();
       final idTodoRandom = 'todo-${random.nextInt(100)}';
       final newTodoItemData = TodoItemData(
-          idTodo: idTodoRandom,
-          title: nameTodo,
-          createdTime: formatDate,
-          category: categoryTodo,
-          note: noteTodo);
+        idTodo: idTodoRandom,
+        title: nameTodo,
+        createdTime: formatDate,
+        category: categoryTodo,
+        note: noteTodo,
+      );
       dataFolder.add(newTodoItemData);
-      print("success");
+      await saveTodoItem(newTodoItemData);
+
+      print("Todo item created successfully.");
     } catch (error) {
-      print(error);
+      print("Error creating todo item: $error");
     }
   }
 
