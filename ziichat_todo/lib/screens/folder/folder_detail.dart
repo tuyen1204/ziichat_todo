@@ -124,6 +124,8 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     await prefs.setString('dataFolder', encodedData);
   }
 
+  List<String> idsToRemove = [];
+
   void handleStatusFilter() {
     setState(
       () {
@@ -273,6 +275,43 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     );
   }
 
+  void _handleManyTodo(String id, BuildContext context, String itemInCategory) {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: Text(
+            "${AppLocalizations.of(context)!.translate('delete')} ${selectedItems.length} ${AppLocalizations.of(context)!.translate('todoSelected')}"),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text(AppLocalizations.of(context)!.translate('no')),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              dataFolder
+                  .removeWhere((item) => idsToRemove.contains(item.idTodo));
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) {
+                        return ItemsTodoDetail(
+                          currentCategory: itemInCategory,
+                          onLanguageChanged: (locale) {},
+                        );
+                      },
+                      settings: RouteSettings(arguments: itemInCategory)));
+            },
+            child: Text(AppLocalizations.of(context)!.translate('yes')),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final paddingNotch = MediaQuery.of(context).padding.top;
@@ -282,28 +321,29 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
       backgroundColor: primaryColor,
       appBar: AppBar(
         leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new, color: Colors.white),
-            onPressed: () {
-              if (listToDoIsNotItem.isEmpty &&
-                  widget.currentCategory != "All") {
-                final newTodoItemData = TodoItemData(
-                    idTodo: "",
-                    title: "",
-                    createdTime: "formatDate",
-                    category: widget.currentCategory,
-                    note: "noteTodo");
-                dataFolder.add(newTodoItemData);
-              }
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      HomeScreen(onLanguageChanged: (locale) {}),
-                ),
-              );
-            }),
+          icon: Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          onPressed: () {
+            if (listToDoIsNotItem.isEmpty && widget.currentCategory != "All") {
+              final newTodoItemData = TodoItemData(
+                  idTodo: "",
+                  title: "",
+                  createdTime: "formatDate",
+                  category: widget.currentCategory,
+                  note: "noteTodo");
+              dataFolder.add(newTodoItemData);
+            }
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    HomeScreen(onLanguageChanged: (locale) {}),
+              ),
+            );
+          },
+        ),
         backgroundColor: Colors.transparent,
         actions: [
+          SizedBox(width: 16),
           widget.currentCategory == "All" || widget.currentCategory == "Other"
               ? SizedBox()
               : PopupMenuButton<ActionInFolder>(
@@ -406,6 +446,24 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                     children: [
                       if (listToDo.length > 1 ||
                           widget.currentCategory == "All")
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () {
+                              sortByStatus.isEmpty
+                                  ? null
+                                  : _handleManyTodo(
+                                      sortByStatus[selectedItems.first].idTodo,
+                                      context,
+                                      widget.currentCategory);
+                            },
+                            child: Text(
+                                "${AppLocalizations.of(context)!.translate('delete')} ${selectedItems.length} ${AppLocalizations.of(context)!.translate('todoSelected')}"),
+                          ),
+                        ),
+                      SizedBox(height: 8),
+                      if (listToDo.length > 1 ||
+                          widget.currentCategory == "All")
                         _innerSort(),
                       _innerSortByStatus(),
                       _innerListTodoItem(),
@@ -487,13 +545,17 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
       updateNameFolder: newCategory.text,
       isSelected: selectedItems.contains(index),
       onSelected: (selectedIndex) {
-        setState(() {
-          if (selectedItems.contains(selectedIndex)) {
-            selectedItems.remove(selectedIndex);
-          } else {
-            selectedItems.add(selectedIndex);
-          }
-        });
+        setState(
+          () {
+            if (selectedItems.contains(selectedIndex)) {
+              selectedItems.remove(selectedIndex);
+              idsToRemove.remove(todoItem.idTodo);
+            } else {
+              selectedItems.add(selectedIndex);
+              idsToRemove.add(todoItem.idTodo);
+            }
+          },
+        );
       },
     );
   }
@@ -573,88 +635,105 @@ class TodoItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      color: Colors.white,
-      clipBehavior: Clip.hardEdge,
-      child: InkWell(
-        onTap: () => {
-          onSelected(index),
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) {
-                return TodoDetailScreen(
-                    idTodo: todoItem.idTodo,
-                    initStatus: todoItem.status,
-                    initCategory: updateNameFolder.toString(),
-                    onLanguageChanged: (locale) {});
-              },
-            ),
-          ),
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            spacing: 12,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      todoItem.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: isSelected ? primaryColor : Colors.black),
-                    ),
-                    Row(
+    return Column(
+      children: [
+        SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey[200]!)),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              spacing: 12,
+              children: [
+                InkWell(
+                  onTap: () => {
+                    onSelected(index),
+                  },
+                  child: Icon(
+                    isSelected
+                        ? Icons.check_box
+                        : Icons.check_box_outline_blank,
+                    size: 24,
+                    color: isSelected ? primaryColor : Colors.grey,
+                  ),
+                ),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return TodoDetailScreen(
+                                idTodo: todoItem.idTodo,
+                                initStatus: todoItem.status,
+                                initCategory: updateNameFolder.toString(),
+                                onLanguageChanged: (locale) {});
+                          },
+                        ),
+                      ),
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${todoItem.category} - ',
+                          todoItem.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black45,
-                              fontWeight: FontWeight.w500),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: isSelected ? primaryColor : Colors.black),
                         ),
-                        Text(
-                          todoItem.editedTime.isEmpty
-                              ? DateFormat('yyyy-MM-dd HH:mm')
-                                  .format(DateTime.parse(todoItem.createdTime))
-                              : DateFormat('yyyy-MM-dd HH:mm')
-                                  .format(DateTime.parse(todoItem.editedTime)),
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black45,
-                              fontWeight: FontWeight.w500),
+                        Row(
+                          children: [
+                            Text(
+                              '${todoItem.category} - ',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black45,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                            Text(
+                              todoItem.editedTime.isEmpty
+                                  ? DateFormat('yyyy-MM-dd HH:mm').format(
+                                      DateTime.parse(todoItem.createdTime))
+                                  : DateFormat('yyyy-MM-dd HH:mm').format(
+                                      DateTime.parse(todoItem.editedTime)),
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black45,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                            SizedBox(width: 4),
+                            if (todoItem.editedTime.isNotEmpty)
+                              Icon(
+                                Icons.edit,
+                                size: 12,
+                                color: Colors.grey,
+                              ),
+                          ],
                         ),
-                        SizedBox(width: 4),
-                        if (todoItem.editedTime.isNotEmpty)
-                          Icon(
-                            Icons.edit,
-                            size: 12,
-                            color: Colors.grey,
-                          ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: statusColor(todoItem.status),
-                  shape: BoxShape.circle,
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: statusColor(todoItem.status),
+                    shape: BoxShape.circle,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

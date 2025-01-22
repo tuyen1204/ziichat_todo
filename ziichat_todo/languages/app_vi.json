@@ -38,5 +38,7 @@
     "close": "Đóng",
     "enterNewFolderName": "Nhập tên thư mục mới",
     "newFolder": "Thư mục mới",
-    "addNew": "Thêm mới"
+    "addNew": "Thêm mới", 
+    "delete": "Xóa",
+    "todoSelected": "mục đã chọn"
 }

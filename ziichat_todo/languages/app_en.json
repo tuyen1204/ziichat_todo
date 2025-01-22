@@ -38,5 +38,7 @@
     "close": "Close",
     "enterNewFolderName" : "Enter new folder name",
     "newFolder": "New folder",
-    "addNew": "Add New"
+    "addNew": "Add New",
+    "delete": "Delete",
+    "todoSelected": "selected item"
 }
