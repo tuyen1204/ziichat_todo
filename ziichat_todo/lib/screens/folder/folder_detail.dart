@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -69,26 +71,29 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   void initState() {
     super.initState();
 
-    setState(() {
-      listToDo = dataFolder
-          .where((toDo) => (toDo.category == widget.currentCategory &&
-              toDo.title.isNotEmpty))
-          .toList();
-      listToDoAll = dataFolder.where((toDo) => toDo.title.isNotEmpty).toList();
-      totals = dataFolder.length;
+    setState(
+      () {
+        listToDo = dataFolder
+            .where((toDo) => (toDo.category == widget.currentCategory &&
+                toDo.title.isNotEmpty))
+            .toList();
+        listToDoAll =
+            dataFolder.where((toDo) => toDo.title.isNotEmpty).toList();
+        totals = dataFolder.length;
 
-      listToDoIsNotItem = dataFolder
-          .where((toDo) => toDo.category == widget.currentCategory)
-          .toList();
+        listToDoIsNotItem = dataFolder
+            .where((toDo) => toDo.category == widget.currentCategory)
+            .toList();
 
-      listStatus.addAll(dataFolder
-          .map((item) => item.status)
-          .toSet()
-          .where((status) => status != ItemStatus.all)
-          .toList());
+        listStatus.addAll(dataFolder
+            .map((item) => item.status)
+            .toSet()
+            .where((status) => status != ItemStatus.all)
+            .toList());
 
-      dateTimeFormat = DateFormat('yyyy-MM-dd HH:mm');
-    });
+        dateTimeFormat = DateFormat('yyyy-MM-dd HH:mm');
+      },
+    );
 
     Future.delayed(Duration(milliseconds: 1000), () {
       setState(() {
@@ -98,6 +103,25 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
 
     categoryToDelete = widget.currentCategory;
     newCategory = TextEditingController(text: widget.currentCategory);
+  }
+
+  Future<void> _loadData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? savedData = prefs.getString('dataFolder');
+    if (savedData != null) {
+      dataFolder = List<TodoItemData>.from(
+        json.decode(savedData).map((x) => TodoItemData.fromJson(x)),
+      );
+    } else {
+      dataFolder = [];
+    }
+  }
+
+  Future<void> _saveData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String encodedData =
+        json.encode(dataFolder.map((e) => e.toJson()).toList());
+    await prefs.setString('dataFolder', encodedData);
   }
 
   void handleStatusFilter() {

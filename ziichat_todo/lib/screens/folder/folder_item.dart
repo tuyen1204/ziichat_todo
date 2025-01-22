@@ -42,17 +42,15 @@ class TodoItemData {
     };
   }
 
-  factory TodoItemData.fromJson(Map<String, dynamic> json) {
-    return TodoItemData(
-      idTodo: json['idTodo'],
-      title: json['title'],
-      category: json['category'],
-      status:
-          ItemStatus.values.firstWhere((e) => e.toString() == json['status']),
-      createdTime: json['createdTime'],
-      editedTime: json['editedTime'],
-    );
-  }
+  factory TodoItemData.fromJson(Map<String, dynamic> json) => TodoItemData(
+        idTodo: json['idTodo'],
+        title: json['title'],
+        category: json['category'],
+        status: ItemStatus.values[json['status']],
+        createdTime: json['createdTime'],
+        editedTime: json['editedTime'],
+        note: json['note'],
+      );
 
   static Future<void> saveTodoItem(TodoItemData newTodoItem) async {
     final prefs = await SharedPreferences.getInstance();
@@ -63,24 +61,17 @@ class TodoItemData {
     print(todoList.join('\n'));
   }
 
-  static Future<List<TodoItemData>> loadTodoItems() async {
+  static Future<void> clearAllData() async {
     final prefs = await SharedPreferences.getInstance();
-    List<String>? jsonList = prefs.getStringList('todoItems');
-
-    if (jsonList != null) {
-      return jsonList
-          .map((jsonString) => TodoItemData.fromJson(json.decode(jsonString)))
-          .toList();
-    } else {
-      return [];
-    }
+    await prefs.clear();
+    print("All data cleared from SharedPreferences");
   }
 
   static Future<void> onCreateTodoItem(String formatDate, String nameTodo,
       String categoryTodo, String noteTodo) async {
     try {
       var random = Random();
-      final idTodoRandom = 'todo-${random.nextInt(100)}';
+      final idTodoRandom = 'todo-new-${random.nextInt(100)}';
       final newTodoItemData = TodoItemData(
         idTodo: idTodoRandom,
         title: nameTodo,
@@ -90,7 +81,6 @@ class TodoItemData {
       );
       dataFolder.add(newTodoItemData);
       await saveTodoItem(newTodoItemData);
-
       print("Todo item created successfully.");
     } catch (error) {
       print("Error creating todo item: $error");
