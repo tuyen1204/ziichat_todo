@@ -380,7 +380,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(32),
+            padding: const EdgeInsets.only(left: 32, right: 32, bottom: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -402,7 +402,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
-                      fontWeight: FontWeight.w500),
+                      fontWeight: FontWeight.w700),
                 ),
                 Text(
                   widget.currentCategory == "All"
@@ -446,20 +446,51 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                     children: [
                       if (listToDo.length > 1 ||
                           widget.currentCategory == "All")
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {
-                              sortByStatus.isEmpty
-                                  ? null
-                                  : _handleManyTodo(
-                                      sortByStatus[selectedItems.first].idTodo,
-                                      context,
-                                      widget.currentCategory);
-                            },
-                            child: Text(
-                                "${AppLocalizations.of(context)!.translate('delete')} ${selectedItems.length} ${AppLocalizations.of(context)!.translate('todoSelected')}"),
-                          ),
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                selectedItems.length == sortByStatus.length
+                                    ? Icons.check_box
+                                    : Icons.check_box_outline_blank,
+                                color:
+                                    selectedItems.length == sortByStatus.length
+                                        ? primaryColor
+                                        : Colors.grey,
+                              ),
+                              onPressed: () {
+                                setState(
+                                  () {
+                                    if (selectedItems.length ==
+                                        sortByStatus.length) {
+                                      selectedItems.clear();
+                                    } else {
+                                      selectedItems = List.generate(
+                                              sortByStatus.length, (i) => i)
+                                          .toSet();
+                                      for (var item in selectedItems) {
+                                        idsToRemove
+                                            .add(sortByStatus[item].idTodo);
+                                      }
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                sortByStatus.isEmpty
+                                    ? null
+                                    : _handleManyTodo(
+                                        sortByStatus[selectedItems.first]
+                                            .idTodo,
+                                        context,
+                                        widget.currentCategory);
+                              },
+                              child: Text(
+                                  "${AppLocalizations.of(context)!.translate('delete')} ${selectedItems.length} ${AppLocalizations.of(context)!.translate('todoSelected')}"),
+                            ),
+                          ],
                         ),
                       SizedBox(height: 8),
                       if (listToDo.length > 1 ||
