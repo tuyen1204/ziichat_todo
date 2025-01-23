@@ -7,6 +7,7 @@ List<TodoItemData> dataFolder = [
     category: "Fitness",
     createdTime: "2025-01-01 10:00:00",
     status: ItemStatus.todo,
+    categoryCreateTime: "2025-01-01 09:00:00",
   ),
   TodoItemData(
     idTodo: "todo-2",
@@ -14,6 +15,7 @@ List<TodoItemData> dataFolder = [
     category: "Personal",
     createdTime: "2024-12-01 11:00:00",
     status: ItemStatus.pending,
+    categoryCreateTime: "2024-11-30 10:00:00",
   ),
   TodoItemData(
     idTodo: "todo-3",
@@ -21,6 +23,7 @@ List<TodoItemData> dataFolder = [
     category: "Work",
     createdTime: "2024-11-15 12:00:00",
     status: ItemStatus.progressing,
+    categoryCreateTime: "2024-11-14 10:00:00",
   ),
   TodoItemData(
     idTodo: "todo-4",
@@ -28,6 +31,7 @@ List<TodoItemData> dataFolder = [
     category: "Learning",
     createdTime: "2024-10-10 13:00:00",
     status: ItemStatus.done,
+    categoryCreateTime: "2024-10-09 09:00:00",
   ),
   TodoItemData(
     idTodo: "todo-5",
@@ -35,6 +39,7 @@ List<TodoItemData> dataFolder = [
     category: "Fitness",
     createdTime: "2024-09-15 14:00:00",
     status: ItemStatus.todo,
+    categoryCreateTime: "2024-09-14 09:00:00",
   ),
   TodoItemData(
     idTodo: "todo-6",
@@ -42,6 +47,7 @@ List<TodoItemData> dataFolder = [
     category: "Personal",
     createdTime: "2024-08-10 15:00:00",
     status: ItemStatus.pending,
+    categoryCreateTime: "2024-08-09 09:00:00",
   ),
   TodoItemData(
     idTodo: "todo-7",
@@ -49,6 +55,7 @@ List<TodoItemData> dataFolder = [
     category: "Work",
     createdTime: "2024-07-20 16:00:00",
     status: ItemStatus.progressing,
+    categoryCreateTime: "2024-07-19 09:00:00",
   ),
   TodoItemData(
     idTodo: "todo-8",
@@ -56,6 +63,7 @@ List<TodoItemData> dataFolder = [
     category: "Learning",
     createdTime: "2024-06-25 17:00:00",
     status: ItemStatus.done,
+    categoryCreateTime: "2024-06-24 09:00:00",
   ),
   TodoItemData(
     idTodo: "todo-9",
@@ -63,6 +71,7 @@ List<TodoItemData> dataFolder = [
     category: "Fitness",
     createdTime: "2024-05-30 18:00:00",
     status: ItemStatus.todo,
+    categoryCreateTime: "2024-05-29 09:00:00",
   ),
   TodoItemData(
     idTodo: "todo-10",
@@ -70,6 +79,7 @@ List<TodoItemData> dataFolder = [
     category: "Personal",
     createdTime: "2024-04-20 19:00:00",
     status: ItemStatus.pending,
+    categoryCreateTime: "2024-04-19 09:00:00",
   ),
   TodoItemData(
     idTodo: "todo-11",
@@ -77,6 +87,7 @@ List<TodoItemData> dataFolder = [
     category: "Work",
     createdTime: "2024-03-15 20:00:00",
     status: ItemStatus.progressing,
+    categoryCreateTime: "2024-03-14 09:00:00",
   ),
   TodoItemData(
     idTodo: "todo-12",
@@ -84,6 +95,7 @@ List<TodoItemData> dataFolder = [
     category: "Learning",
     createdTime: "2024-02-10 21:00:00",
     status: ItemStatus.done,
+    categoryCreateTime: "2024-02-09 09:00:00",
   ),
   TodoItemData(
     idTodo: "todo-13",
@@ -91,6 +103,7 @@ List<TodoItemData> dataFolder = [
     category: "Fitness",
     createdTime: "2024-01-05 22:00:00",
     status: ItemStatus.todo,
+    categoryCreateTime: "2024-01-04 09:00:00",
   ),
   TodoItemData(
     idTodo: "todo-14",
@@ -98,6 +111,7 @@ List<TodoItemData> dataFolder = [
     category: "Personal",
     createdTime: "2023-12-25 23:00:00",
     status: ItemStatus.pending,
+    categoryCreateTime: "2023-12-24 09:00:00",
   ),
   TodoItemData(
     idTodo: "todo-15",
@@ -105,6 +119,7 @@ List<TodoItemData> dataFolder = [
     category: "Work",
     createdTime: "2023-11-30 00:00:00",
     status: ItemStatus.progressing,
+    categoryCreateTime: "2023-11-29 09:00:00",
   ),
   TodoItemData(
     idTodo: "todo-16",
@@ -112,6 +127,7 @@ List<TodoItemData> dataFolder = [
     category: "Learning",
     createdTime: "2023-10-15 01:00:00",
     status: ItemStatus.done,
+    categoryCreateTime: "2023-10-14 09:00:00",
   ),
   TodoItemData(
     idTodo: "todo-17",
@@ -119,6 +135,7 @@ List<TodoItemData> dataFolder = [
     category: "Fitness",
     createdTime: "2023-09-10 02:00:00",
     status: ItemStatus.todo,
+    categoryCreateTime: "2023-09-09 09:00:00",
   ),
   TodoItemData(
     idTodo: "todo-18",
@@ -126,6 +143,7 @@ List<TodoItemData> dataFolder = [
     category: "Personal",
     createdTime: "2023-08-20 03:00:00",
     status: ItemStatus.pending,
+    categoryCreateTime: "2023-08-19 09:00:00",
   ),
   TodoItemData(
     idTodo: "todo-19",
@@ -133,19 +151,14 @@ List<TodoItemData> dataFolder = [
     category: "Learning",
     createdTime: "2023-07-25 04:00:00",
     status: ItemStatus.progressing,
+    categoryCreateTime: "2023-07-24 09:00:00",
   ),
   TodoItemData(
     idTodo: "todo-20",
     title: "Task 20",
-    category: "Learning",
-    createdTime: "2023-06-15 05:00:00",
-    status: ItemStatus.done,
-  ),
-  TodoItemData(
-    idTodo: "todo-21",
-    title: "Task 21",
     category: "Music",
     createdTime: "2023-06-15 05:00:00",
     status: ItemStatus.done,
+    categoryCreateTime: "2023-06-14 09:00:00",
   ),
 ];

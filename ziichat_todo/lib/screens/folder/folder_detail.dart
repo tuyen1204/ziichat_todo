@@ -42,10 +42,10 @@ class TodoItem {
 enum ActionInFolder { deleteFolder, editNameFolder }
 
 class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
-  late final List<TodoItemData> listToDo;
-  late final List<TodoItemData> listToDoAll;
+  late List<TodoItemData> listToDo = [];
+  late List<TodoItemData> listToDoAll = [];
   late final List<TodoItemData> listToDoIsNotItem;
-  late int totals;
+  final int totals = 0;
   Set<int> selectedItems = {};
   bool isLoading = true;
   final currentDate = DateTime.now();
@@ -56,41 +56,25 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   };
   String currentSort = "latest";
   late List<ItemStatus> listStatus = [ItemStatus.all];
-  List<TodoItemData> sortByStatus = [...dataFolder];
 
   String currentStatus = statusToReadableString(ItemStatus.all);
   String categoryToDelete = "";
   late final TextEditingController newCategory;
 
-  final folderNames =
-      dataFolder.map((item) => item.category.toLowerCase()).toSet().toList();
-
   late DateFormat dateTimeFormat;
+
+  late List<TodoItemData> _dataFolderInShare = [];
+  late List<String> folderNames = [];
+  late List<TodoItemData> sortByStatus = [];
 
   @override
   void initState() {
     super.initState();
 
+    _loadTodos();
+
     setState(
       () {
-        listToDo = dataFolder
-            .where((toDo) => (toDo.category == widget.currentCategory &&
-                toDo.title.isNotEmpty))
-            .toList();
-        listToDoAll =
-            dataFolder.where((toDo) => toDo.title.isNotEmpty).toList();
-        totals = dataFolder.length;
-
-        listToDoIsNotItem = dataFolder
-            .where((toDo) => toDo.category == widget.currentCategory)
-            .toList();
-
-        listStatus.addAll(dataFolder
-            .map((item) => item.status)
-            .toSet()
-            .where((status) => status != ItemStatus.all)
-            .toList());
-
         dateTimeFormat = DateFormat('yyyy-MM-dd HH:mm');
       },
     );
@@ -106,6 +90,64 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   }
 
   List<String> idsToRemove = [];
+
+  Future<void> _loadTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? jsonString = prefs.getString('todo_data');
+
+    if (jsonString != null) {
+      List<dynamic> jsonList = jsonDecode(jsonString);
+
+      setState(
+        () {
+          _dataFolderInShare =
+              jsonList.map((item) => TodoItemData.fromJson(item)).toList();
+
+          folderNames = dataFolder
+              .map((item) => item.category.toLowerCase())
+              .toSet()
+              .toList();
+
+          sortByStatus = _dataFolderInShare;
+
+          listToDo = _dataFolderInShare
+              .where((toDo) => (toDo.category == widget.currentCategory &&
+                  toDo.title.isNotEmpty))
+              .toList();
+
+          listToDoAll = _dataFolderInShare
+              .where((toDo) => toDo.title.isNotEmpty)
+              .toList();
+
+          int totals = _dataFolderInShare.length;
+
+          listToDoIsNotItem = _dataFolderInShare
+              .where((toDo) => toDo.category == widget.currentCategory)
+              .toList();
+
+          listStatus.addAll(_dataFolderInShare
+              .map((item) => item.status)
+              .toSet()
+              .where((status) => status != ItemStatus.all)
+              .toList());
+        },
+      );
+    } else {
+      setState(() {
+        _dataFolderInShare = dataFolder;
+      });
+
+      _saveTodos();
+    }
+  }
+
+  Future<void> _saveTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<Map<String, dynamic>> jsonList =
+        _dataFolderInShare.map((item) => item.toJson()).toList();
+    String jsonString = jsonEncode(jsonList);
+    await prefs.setString('todo_data', jsonString);
+  }
 
   void handleStatusFilter() {
     setState(
@@ -184,7 +226,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 );
               } else {
                 setState(() {
-                  final updatedData = dataFolder.map((item) {
+                  final updatedData = _dataFolderInShare.map((item) {
                     if (item.category == widget.currentCategory) {
                       return TodoItemData(
                         idTodo: item.idTodo,
@@ -198,8 +240,8 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                     return item;
                   }).toList();
 
-                  dataFolder.clear();
-                  dataFolder.addAll(updatedData);
+                  _dataFolderInShare.clear();
+                  _dataFolderInShare.addAll(updatedData);
                   Navigator.of(context).pop();
                   Navigator.pushReplacement(
                     context,
@@ -237,7 +279,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
             isDestructiveAction: true,
             onPressed: () {
               setState(() {
-                dataFolder
+                _dataFolderInShare
                     .removeWhere((item) => item.category == categoryToDelete);
               });
               Navigator.push(
@@ -273,7 +315,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
           CupertinoDialogAction(
             isDestructiveAction: true,
             onPressed: () {
-              dataFolder
+              _dataFolderInShare
                   .removeWhere((item) => idsToRemove.contains(item.idTodo));
               Navigator.push(
                   context,
@@ -311,7 +353,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                   createdTime: "formatDate",
                   category: widget.currentCategory,
                   note: "noteTodo");
-              dataFolder.add(newTodoItemData);
+              _dataFolderInShare.add(newTodoItemData);
             }
             Navigator.push(
               context,

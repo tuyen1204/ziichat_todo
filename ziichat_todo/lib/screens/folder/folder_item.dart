@@ -11,6 +11,7 @@ class TodoItemData {
   final String title;
   final int task;
   final String category;
+  final String categoryCreateTime;
   final bool isDefault;
   final String createdTime;
   final String editedTime;
@@ -20,13 +21,14 @@ class TodoItemData {
 
   @override
   String toString() {
-    return 'TodoItemData(idTodo: $idTodo, title: $title, category: $category, createdTime: $createdTime, status: $status)';
+    return 'TodoItemData(idTodo: $idTodo, title: $title, category: $category,categoryCreateTime: $categoryCreateTime, createdTime: $createdTime, status: $status)';
   }
 
   const TodoItemData({
     required this.idTodo,
     required this.title,
     this.category = 'All',
+    this.categoryCreateTime = '',
     this.createdTime = '',
     this.editedTime = '',
     this.task = 0,
@@ -41,6 +43,7 @@ class TodoItemData {
       'idTodo': idTodo,
       'title': title,
       'category': category,
+      'categoryCreateTime': categoryCreateTime,
       'createdTime': createdTime,
       'status': status.index,
     };
@@ -51,6 +54,7 @@ class TodoItemData {
       idTodo: json['idTodo'],
       title: json['title'],
       category: json['category'],
+      categoryCreateTime: json['categoryCreateTime'],
       createdTime: json['createdTime'],
       status: ItemStatus.values[json['status']],
     );

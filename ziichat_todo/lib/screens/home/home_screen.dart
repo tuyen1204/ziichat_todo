@@ -58,41 +58,38 @@ class _HomeScreenState extends State<HomeScreen> {
     if (jsonString != null) {
       List<dynamic> jsonList = jsonDecode(jsonString);
 
-      setState(
-        () {
-          _dataFolderInShare =
-              jsonList.map((item) => TodoItemData.fromJson(item)).toList();
+      setState(() {
+        _dataFolderInShare =
+            jsonList.map((item) => TodoItemData.fromJson(item)).toList();
 
-          folderNames = _dataFolderInShare
-              .map((item) => item.category.toLowerCase())
-              .toSet()
-              .toList();
+        folderNames = _dataFolderInShare
+            .map((item) => item.category.toLowerCase())
+            .toSet()
+            .toList();
 
-          folders =
-              _dataFolderInShare.map((item) => item.category).toSet().toList();
-        },
-      );
+        folders =
+            _dataFolderInShare.map((item) => item.category).toSet().toList();
+      });
     } else {
       setState(() {
-        _dataFolderInShare = dataFolder;
+        _dataFolderInShare = [...dataFolder];
       });
 
-      _saveTodos();
+      await _saveTodos();
     }
   }
 
   Future<void> _saveTodos() async {
     final prefs = await SharedPreferences.getInstance();
-    List<Map<String, dynamic>> jsonList =
-        _dataFolderInShare.map((item) => item.toJson()).toList();
-    String jsonString = jsonEncode(jsonList);
+    String jsonString =
+        jsonEncode(_dataFolderInShare.map((item) => item.toJson()).toList());
     await prefs.setString('todo_data', jsonString);
   }
 
   @override
   Widget build(BuildContext context) {
     for (var item in _dataFolderInShare) {
-      // print(item.toString());
+      print(item.toString());
     }
 
     final processingFolders = _dataFolderInShare
@@ -264,12 +261,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   final trimmedFolderName = newFolder.text.toLowerCase().trim();
                   final idFolderName =
                       newFolder.text.toLowerCase().trim().replaceAll(' ', '-');
-                  final isFolderNameExists = _dataFolderInShare.any(
-                    (item) =>
-                        item.category.toLowerCase().trim() == trimmedFolderName,
-                  );
 
-                  if (isFolderNameExists) {
+                  if (folderNames.contains(trimmedFolderName)) {
                     showCupertinoDialog(
                       context: context,
                       builder: (context) => CupertinoAlertDialog(
