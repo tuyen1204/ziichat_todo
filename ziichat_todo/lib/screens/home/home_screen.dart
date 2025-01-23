@@ -36,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late List<String> folders = [];
   final int totalTask = 0;
   late final TextEditingController folderName = TextEditingController();
+  final currentDate = DateTime.now();
 
   @override
   void initState() {
@@ -57,18 +58,20 @@ class _HomeScreenState extends State<HomeScreen> {
     if (jsonString != null) {
       List<dynamic> jsonList = jsonDecode(jsonString);
 
-      setState(() {
-        _dataFolderInShare =
-            jsonList.map((item) => TodoItemData.fromJson(item)).toList();
+      setState(
+        () {
+          _dataFolderInShare =
+              jsonList.map((item) => TodoItemData.fromJson(item)).toList();
 
-        folderNames = _dataFolderInShare
-            .map((item) => item.category.toLowerCase())
-            .toSet()
-            .toList();
+          folderNames = _dataFolderInShare
+              .map((item) => item.category.toLowerCase())
+              .toSet()
+              .toList();
 
-        folders =
-            _dataFolderInShare.map((item) => item.category).toSet().toList();
-      });
+          folders =
+              _dataFolderInShare.map((item) => item.category).toSet().toList();
+        },
+      );
     } else {
       setState(() {
         _dataFolderInShare = dataFolder;
@@ -91,8 +94,17 @@ class _HomeScreenState extends State<HomeScreen> {
     for (var item in _dataFolderInShare) {
       // print(item.toString());
     }
+
     final processingFolders = _dataFolderInShare
-        .where((item) => item.status == ItemStatus.progressing);
+        .where((item) => item.status == ItemStatus.progressing)
+        .toList()
+      ..sort((a, b) => DateTime.parse(a.createdTime)
+          .difference(currentDate)
+          .inDays
+          .abs()
+          .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
+              .inDays
+              .abs()));
 
     final localizations = AppLocalizations.of(context)!;
     late final currentLocale = Localizations.localeOf(context);

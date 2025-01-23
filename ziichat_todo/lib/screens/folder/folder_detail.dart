@@ -428,6 +428,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                       if (listToDo.length > 1 ||
                           widget.currentCategory == "All")
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             IconButton(
                               icon: Icon(
