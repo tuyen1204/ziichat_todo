@@ -34,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late List<TodoItemData> _dataFolderInShare = [];
   late List<String> folderNames = [];
   late List<String> folders = [];
+  final int totalTask = 0;
   late final TextEditingController folderName = TextEditingController();
 
   @override
@@ -52,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadTodos() async {
     final prefs = await SharedPreferences.getInstance();
     String? jsonString = prefs.getString('todo_data');
+
     if (jsonString != null) {
       List<dynamic> jsonList = jsonDecode(jsonString);
 
@@ -86,10 +88,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    for (var item in _dataFolderInShare) {
+      // print(item.toString());
+    }
     final processingFolders = _dataFolderInShare
         .where((item) => item.status == ItemStatus.progressing);
 
-    final totalTask = _dataFolderInShare.length;
     final localizations = AppLocalizations.of(context)!;
     late final currentLocale = Localizations.localeOf(context);
 
@@ -152,22 +156,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         return a.compareTo(b);
                       });
                       if (index == 0) {
-                        final allItems = dataFolder
-                            .where((item) => item.category.isEmpty)
-                            .toList();
-                        final taskCountAll = allItems.length;
-
+                        final allTask = _dataFolderInShare
+                            .where((item) => (item.title.isNotEmpty))
+                            .length;
                         return isLoading
                             ? ShimmerLoading(
                                 isLoading: isLoading,
-                                child: _innerFolderItem(context, index, "All",
-                                    taskCountAll, totalTask, folders),
+                                child: _innerFolderItem(
+                                    context, index, "All", 1, allTask, folders),
                               )
-                            : _innerFolderItem(context, index, "All",
-                                taskCountAll, totalTask, folders);
+                            : _innerFolderItem(
+                                context, index, "All", 1, allTask, folders);
                       } else {
                         final category = folders[index - 1];
-                        final taskCount = dataFolder
+                        final taskCount = _dataFolderInShare
                             .where((item) => (item.category == category &&
                                 item.title.isNotEmpty))
                             .length;
@@ -283,7 +285,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         status: ItemStatus.todo,
                       ),
                     );
-                    _saveTodos();
 
                     Navigator.push(
                         context,
@@ -300,6 +301,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 arguments:
                                     capitalizeEachWord(trimmedFolderName))));
                   }
+                  _saveTodos();
                 },
                 child: Text(AppLocalizations.of(context)!.translate('addNew')),
               ),
