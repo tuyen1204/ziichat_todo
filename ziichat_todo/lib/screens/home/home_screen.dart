@@ -58,22 +58,26 @@ class _HomeScreenState extends State<HomeScreen> {
     if (jsonString != null) {
       List<dynamic> jsonList = jsonDecode(jsonString);
 
-      setState(() {
-        _dataFolderInShare =
-            jsonList.map((item) => TodoItemData.fromJson(item)).toList();
+      setState(
+        () {
+          _dataFolderInShare =
+              jsonList.map((item) => TodoItemData.fromJson(item)).toList();
 
-        folderNames = _dataFolderInShare
-            .map((item) => item.category.toLowerCase())
-            .toSet()
-            .toList();
+          folderNames = _dataFolderInShare
+              .map((item) => item.category.toLowerCase())
+              .toSet()
+              .toList();
 
-        folders =
-            _dataFolderInShare.map((item) => item.category).toSet().toList();
-      });
+          folders =
+              _dataFolderInShare.map((item) => item.category).toSet().toList();
+        },
+      );
     } else {
-      setState(() {
-        _dataFolderInShare = [...dataFolder];
-      });
+      setState(
+        () {
+          _dataFolderInShare = [...dataFolder];
+        },
+      );
 
       await _saveTodos();
     }
@@ -88,10 +92,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    for (var item in _dataFolderInShare) {
-      print(item.toString());
-    }
-
     final processingFolders = _dataFolderInShare
         .where((item) => item.status == ItemStatus.progressing)
         .toList()
@@ -105,6 +105,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final localizations = AppLocalizations.of(context)!;
     late final currentLocale = Localizations.localeOf(context);
+
+    for (var item in _dataFolderInShare) {
+      print(item.toString());
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -157,13 +161,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     scrollDirection: Axis.horizontal,
                     itemCount: folders.length + 1,
                     itemBuilder: (context, index) {
-                      folders.sort((a, b) {
-                        if (a == "All") return -1;
-                        if (b == "All") return 1;
-                        if (a == "Other") return -1;
-                        if (b == "Other") return 1;
-                        return a.compareTo(b);
-                      });
+                      folders.sort(
+                        (a, b) {
+                          if (a == "All") return -1;
+                          if (b == "All") return 1;
+                          if (a == "Other") return -1;
+                          if (b == "Other") return 1;
+
+                          return a.compareTo(b);
+                        },
+                      );
+
                       if (index == 0) {
                         final allTask = _dataFolderInShare
                             .where((item) => (item.title.isNotEmpty))
@@ -287,28 +295,33 @@ class _HomeScreenState extends State<HomeScreen> {
                         title: '',
                         category: trimmedFolderName,
                         createdTime: DateTime.now().toString(),
+                        categoryCreateTime: DateTime.now().toString(),
                         status: ItemStatus.todo,
                       ),
                     );
 
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) {
-                              return ItemsTodoDetail(
-                                currentCategory:
-                                    capitalizeEachWord(trimmedFolderName),
-                                onLanguageChanged: (locale) =>
-                                    langSelected.toString(),
-                              );
-                            },
-                            settings: RouteSettings(
-                                arguments:
-                                    capitalizeEachWord(trimmedFolderName))));
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return ItemsTodoDetail(
+                            currentCategory:
+                                capitalizeEachWord(trimmedFolderName),
+                            onLanguageChanged: (locale) =>
+                                langSelected.toString(),
+                          );
+                        },
+                        settings: RouteSettings(
+                          arguments: capitalizeEachWord(trimmedFolderName),
+                        ),
+                      ),
+                    );
                   }
                   _saveTodos();
                 },
-                child: Text(AppLocalizations.of(context)!.translate('addNew')),
+                child: Text(
+                  AppLocalizations.of(context)!.translate('addNew'),
+                ),
               ),
             ],
           ),

@@ -3,7 +3,7 @@ import 'package:ziichat_todo/screens/folder/folder_item.dart';
 List<TodoItemData> dataFolder = [
   TodoItemData(
     idTodo: "todo-1",
-    title: "Task 1",
+    title: "Morning gym session",
     category: "Fitness",
     createdTime: "2025-01-01 10:00:00",
     status: ItemStatus.todo,
@@ -11,7 +11,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-2",
-    title: "Task 2",
+    title: "Call family to catch up",
     category: "Personal",
     createdTime: "2024-12-01 11:00:00",
     status: ItemStatus.pending,
@@ -19,7 +19,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-3",
-    title: "Task 3",
+    title: "Complete weekly report",
     category: "Work",
     createdTime: "2024-11-15 12:00:00",
     status: ItemStatus.progressing,
@@ -27,7 +27,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-4",
-    title: "Task 4",
+    title: "Study new programming concepts",
     category: "Learning",
     createdTime: "2024-10-10 13:00:00",
     status: ItemStatus.done,
@@ -35,7 +35,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-5",
-    title: "Task 5",
+    title: "Jog at the park",
     category: "Fitness",
     createdTime: "2024-09-15 14:00:00",
     status: ItemStatus.todo,
@@ -43,7 +43,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-6",
-    title: "Task 6",
+    title: "Buy birthday gift",
     category: "Personal",
     createdTime: "2024-08-10 15:00:00",
     status: ItemStatus.pending,
@@ -51,7 +51,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-7",
-    title: "Task 7",
+    title: "Attend project strategy meeting",
     category: "Work",
     createdTime: "2024-07-20 16:00:00",
     status: ItemStatus.progressing,
@@ -59,7 +59,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-8",
-    title: "Task 8",
+    title: "Complete online course",
     category: "Learning",
     createdTime: "2024-06-25 17:00:00",
     status: ItemStatus.done,
@@ -67,7 +67,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-9",
-    title: "Task 9",
+    title: "Try new yoga exercises",
     category: "Fitness",
     createdTime: "2024-05-30 18:00:00",
     status: ItemStatus.todo,
@@ -75,7 +75,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-10",
-    title: "Task 10",
+    title: "Organize workspace",
     category: "Personal",
     createdTime: "2024-04-20 19:00:00",
     status: ItemStatus.pending,
@@ -83,7 +83,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-11",
-    title: "Task 11",
+    title: "Join industry workshop",
     category: "Work",
     createdTime: "2024-03-15 20:00:00",
     status: ItemStatus.progressing,
@@ -91,7 +91,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-12",
-    title: "Task 12",
+    title: "Learn how to use new tools",
     category: "Learning",
     createdTime: "2024-02-10 21:00:00",
     status: ItemStatus.done,
@@ -99,7 +99,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-13",
-    title: "Task 13",
+    title: "Join fitness training class",
     category: "Fitness",
     createdTime: "2024-01-05 22:00:00",
     status: ItemStatus.todo,
@@ -107,7 +107,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-14",
-    title: "Task 14",
+    title: "Plan end-of-year trip",
     category: "Personal",
     createdTime: "2023-12-25 23:00:00",
     status: ItemStatus.pending,
@@ -115,7 +115,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-15",
-    title: "Task 15",
+    title: "Prepare team meeting documents",
     category: "Work",
     createdTime: "2023-11-30 00:00:00",
     status: ItemStatus.progressing,
@@ -123,7 +123,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-16",
-    title: "Task 16",
+    title: "Watch lecture on AI",
     category: "Learning",
     createdTime: "2023-10-15 01:00:00",
     status: ItemStatus.done,
@@ -131,7 +131,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-17",
-    title: "Task 17",
+    title: "Morning walk",
     category: "Fitness",
     createdTime: "2023-09-10 02:00:00",
     status: ItemStatus.todo,
@@ -139,7 +139,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-18",
-    title: "Task 18",
+    title: "Write personal journal",
     category: "Personal",
     createdTime: "2023-08-20 03:00:00",
     status: ItemStatus.pending,
@@ -147,7 +147,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-19",
-    title: "Task 19",
+    title: "Practice new skills",
     category: "Learning",
     createdTime: "2023-07-25 04:00:00",
     status: ItemStatus.progressing,
@@ -155,7 +155,7 @@ List<TodoItemData> dataFolder = [
   ),
   TodoItemData(
     idTodo: "todo-20",
-    title: "Task 20",
+    title: "Compose a new song",
     category: "Music",
     createdTime: "2023-06-15 05:00:00",
     status: ItemStatus.done,
