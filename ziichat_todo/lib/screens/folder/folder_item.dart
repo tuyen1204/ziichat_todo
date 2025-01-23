@@ -18,6 +18,11 @@ class TodoItemData {
   final ItemStatus status;
   final String note;
 
+  @override
+  String toString() {
+    return 'TodoItemData(idTodo: $idTodo, title: $title, category: $category, createdTime: $createdTime, status: $status)';
+  }
+
   const TodoItemData({
     required this.idTodo,
     required this.title,
@@ -37,67 +42,18 @@ class TodoItemData {
       'title': title,
       'category': category,
       'createdTime': createdTime,
-      'status': status.toString(),
-      'note': note,
+      'status': status.index,
     };
   }
 
-  factory TodoItemData.fromJson(Map<String, dynamic> json) => TodoItemData(
-        idTodo: json['idTodo'],
-        title: json['title'],
-        category: json['category'],
-        status: ItemStatus.values[json['status']],
-        createdTime: json['createdTime'],
-        editedTime: json['editedTime'],
-        note: json['note'],
-      );
-
-  static Future<void> saveTodoItem(TodoItemData newTodoItem) async {
-    final prefs = await SharedPreferences.getInstance();
-    List<String> todoList = prefs.getStringList('todoItems') ?? [];
-    todoList.add(jsonEncode(newTodoItem.toJson()));
-    await prefs.setStringList('todoItems', todoList);
-    print(todoList.length);
-    print(todoList.join('\n'));
-  }
-
-  static Future<void> clearAllData() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-    print("All data cleared from SharedPreferences");
-  }
-
-  static Future<void> onCreateTodoItem(String formatDate, String nameTodo,
-      String categoryTodo, String noteTodo) async {
-    try {
-      var random = Random();
-      final idTodoRandom = 'todo-new-${random.nextInt(100)}';
-      final newTodoItemData = TodoItemData(
-        idTodo: idTodoRandom,
-        title: nameTodo,
-        createdTime: formatDate,
-        category: categoryTodo,
-        note: noteTodo,
-      );
-      dataFolder.add(newTodoItemData);
-      await saveTodoItem(newTodoItemData);
-      print("Todo item created successfully.");
-    } catch (error) {
-      print("Error creating todo item: $error");
-    }
-  }
-
-  static void onDeleteTodoItem(String idTodo) async {
-    try {
-      final todoItemIndex =
-          dataFolder.indexWhere((item) => item.idTodo == idTodo);
-      if (todoItemIndex != -1) {
-        dataFolder.removeAt(todoItemIndex);
-        print("Deleted id: $idTodo");
-      }
-    } catch (error) {
-      print("Error");
-    }
+  factory TodoItemData.fromJson(Map<String, dynamic> json) {
+    return TodoItemData(
+      idTodo: json['idTodo'],
+      title: json['title'],
+      category: json['category'],
+      createdTime: json['createdTime'],
+      status: ItemStatus.values[json['status']],
+    );
   }
 }
 

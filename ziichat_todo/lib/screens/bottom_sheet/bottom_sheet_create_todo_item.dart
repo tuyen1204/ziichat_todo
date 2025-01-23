@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +42,25 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
   late String? statusSelected = "To Do";
 
   late AppLocalizations localizations = AppLocalizations.of(context)!;
+
+  static Future<void> onCreateTodoItem(String formatDate, String nameTodo,
+      String categoryTodo, String noteTodo) async {
+    try {
+      var random = Random();
+      final idTodoRandom = 'todo-new-${random.nextInt(100)}';
+      final newTodoItemData = TodoItemData(
+        idTodo: idTodoRandom,
+        title: nameTodo,
+        createdTime: formatDate,
+        category: categoryTodo,
+        note: noteTodo,
+      );
+      dataFolder.add(newTodoItemData);
+      print("Todo item created successfully.");
+    } catch (error) {
+      print("Error creating todo item: $error");
+    }
+  }
 
   @override
   void initState() {
@@ -240,9 +260,8 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                   onPressed: () => {
                     if (formKey.currentState!.validate())
                       {
-                        TodoItemData.onCreateTodoItem(currentDate.toString(),
-                            nameTodo.text, categorySelected!, noteTodo.text),
-                        setState(() {}),
+                        onCreateTodoItem(currentDate.toString(), nameTodo.text,
+                            categorySelected!, noteTodo.text),
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(

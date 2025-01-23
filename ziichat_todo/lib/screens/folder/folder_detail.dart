@@ -105,25 +105,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     newCategory = TextEditingController(text: widget.currentCategory);
   }
 
-  Future<void> _loadData() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? savedData = prefs.getString('dataFolder');
-    if (savedData != null) {
-      dataFolder = List<TodoItemData>.from(
-        json.decode(savedData).map((x) => TodoItemData.fromJson(x)),
-      );
-    } else {
-      dataFolder = [];
-    }
-  }
-
-  Future<void> _saveData() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String encodedData =
-        json.encode(dataFolder.map((e) => e.toJson()).toList());
-    await prefs.setString('dataFolder', encodedData);
-  }
-
   List<String> idsToRemove = [];
 
   void handleStatusFilter() {
@@ -479,7 +460,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                             ),
                             TextButton(
                               onPressed: () {
-                                sortByStatus.isEmpty
+                                sortByStatus.isEmpty || selectedItems.isEmpty
                                     ? null
                                     : _handleManyTodo(
                                         sortByStatus[selectedItems.first]

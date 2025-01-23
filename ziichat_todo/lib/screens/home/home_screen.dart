@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ziichat_todo/component/title_section_large.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
@@ -30,6 +32,37 @@ class _HomeScreenState extends State<HomeScreen> {
 
   late String langSelected = "";
 
+  late List<TodoItemData> _dataFolderInShare = [];
+  late List<String> folderNames = [];
+  late List<String> folders = [];
+
+  Future<void> _saveTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<Map<String, dynamic>> jsonList =
+        _dataFolderInShare.map((item) => item.toJson()).toList();
+    String jsonString = jsonEncode(jsonList);
+    await prefs.setString('todo_data', jsonString);
+  }
+
+  Future<void> _loadTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? jsonString = prefs.getString('todo_data');
+    if (jsonString != null) {
+      List<dynamic> jsonList = jsonDecode(jsonString);
+      setState(() {
+        _dataFolderInShare =
+            jsonList.map((item) => TodoItemData.fromJson(item)).toList();
+
+        folders = dataFolder.map((item) => item.category).toSet().toList();
+      });
+    } else {
+      setState(() {
+        _dataFolderInShare = dataFolder;
+      });
+      _saveTodos();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -39,16 +72,21 @@ class _HomeScreenState extends State<HomeScreen> {
         isLoading = false;
       });
     });
+
+    folderNames = _dataFolderInShare
+        .map((item) => item.category.toLowerCase())
+        .toSet()
+        .toList();
+    _loadTodos();
   }
 
-  final folderNames =
-      dataFolder.map((item) => item.category.toLowerCase()).toSet().toList();
-
   late final TextEditingController folderName = TextEditingController();
-  final folders = dataFolder.map((item) => item.category).toSet().toList();
 
   @override
   Widget build(BuildContext context) {
+    for (var item in _dataFolderInShare) {
+      print(item.toString());
+    }
     final processingFolders =
         dataFolder.where((item) => item.status == ItemStatus.progressing);
     final totalTask = dataFolder.length;
@@ -173,11 +211,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      floatingActionButton: _floatingNeeFolder(context),
+      floatingActionButton: _floatingNewFolder(context),
     );
   }
 
-  FloatingActionButton _floatingNeeFolder(BuildContext context) {
+  FloatingActionButton _floatingNewFolder(BuildContext context) {
     late final TextEditingController newFolder = TextEditingController();
 
     return FloatingActionButton(
@@ -210,7 +248,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 isDestructiveAction: true,
                 onPressed: () {
                   final trimmedFolderName = newFolder.text.toLowerCase().trim();
-                  if (folderNames.contains(trimmedFolderName)) {
+                  final idFolderName =
+                      newFolder.text.toLowerCase().trim().replaceAll(' ', '-');
+                  final isFolderNameExists = _dataFolderInShare.any(
+                    (item) =>
+                        item.category.toLowerCase().trim() == trimmedFolderName,
+                  );
+
+                  if (isFolderNameExists) {
                     showCupertinoDialog(
                       context: context,
                       builder: (context) => CupertinoAlertDialog(
@@ -229,18 +274,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     );
                   } else {
-                    setState(() {
-                      folders.add(trimmedFolderName.toLowerCase());
-                      dataFolder.add(
-                        TodoItemData(
-                          idTodo: "new-folder-$trimmedFolderName",
-                          title: "",
-                          createdTime: DateTime.now().toString(),
-                          category: capitalizeEachWord(trimmedFolderName),
-                          status: ItemStatus.todo,
-                        ),
-                      );
-                    });
+                    _dataFolderInShare.add(
+                      TodoItemData(
+                        idTodo: 'new-id-$idFolderName',
+                        title: '',
+                        category: trimmedFolderName,
+                        createdTime: DateTime.now().toString(),
+                        status: ItemStatus.todo,
+                      ),
+                    );
+                    _saveTodos();
 
                     Navigator.push(
                         context,
