@@ -16,7 +16,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  Locale _locale = const Locale('vi');
+  Locale _locale = const Locale('en');
 
   void _changeLanguage(Locale locale) {
     setState(() {

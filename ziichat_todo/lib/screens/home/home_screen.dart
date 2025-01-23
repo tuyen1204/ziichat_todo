@@ -31,10 +31,50 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   late String langSelected = "";
-
   late List<TodoItemData> _dataFolderInShare = [];
   late List<String> folderNames = [];
   late List<String> folders = [];
+  late final TextEditingController folderName = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadTodos();
+
+    Future.delayed(Duration(milliseconds: 1000), () {
+      setState(() {
+        isLoading = false;
+      });
+    });
+  }
+
+  Future<void> _loadTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? jsonString = prefs.getString('todo_data');
+    if (jsonString != null) {
+      List<dynamic> jsonList = jsonDecode(jsonString);
+
+      setState(() {
+        _dataFolderInShare =
+            jsonList.map((item) => TodoItemData.fromJson(item)).toList();
+
+        folderNames = _dataFolderInShare
+            .map((item) => item.category.toLowerCase())
+            .toSet()
+            .toList();
+
+        folders =
+            _dataFolderInShare.map((item) => item.category).toSet().toList();
+      });
+    } else {
+      setState(() {
+        _dataFolderInShare = dataFolder;
+      });
+
+      _saveTodos();
+    }
+  }
 
   Future<void> _saveTodos() async {
     final prefs = await SharedPreferences.getInstance();
@@ -44,52 +84,12 @@ class _HomeScreenState extends State<HomeScreen> {
     await prefs.setString('todo_data', jsonString);
   }
 
-  Future<void> _loadTodos() async {
-    final prefs = await SharedPreferences.getInstance();
-    String? jsonString = prefs.getString('todo_data');
-    if (jsonString != null) {
-      List<dynamic> jsonList = jsonDecode(jsonString);
-      setState(() {
-        _dataFolderInShare =
-            jsonList.map((item) => TodoItemData.fromJson(item)).toList();
-
-        folders = dataFolder.map((item) => item.category).toSet().toList();
-      });
-    } else {
-      setState(() {
-        _dataFolderInShare = dataFolder;
-      });
-      _saveTodos();
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    Future.delayed(Duration(milliseconds: 1000), () {
-      setState(() {
-        isLoading = false;
-      });
-    });
-
-    folderNames = _dataFolderInShare
-        .map((item) => item.category.toLowerCase())
-        .toSet()
-        .toList();
-    _loadTodos();
-  }
-
-  late final TextEditingController folderName = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
-    for (var item in _dataFolderInShare) {
-      print(item.toString());
-    }
-    final processingFolders =
-        dataFolder.where((item) => item.status == ItemStatus.progressing);
-    final totalTask = dataFolder.length;
+    final processingFolders = _dataFolderInShare
+        .where((item) => item.status == ItemStatus.progressing);
+
+    final totalTask = _dataFolderInShare.length;
     final localizations = AppLocalizations.of(context)!;
     late final currentLocale = Localizations.localeOf(context);
 
@@ -367,7 +367,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        category,
+                        capitalizeEachWord(category),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
