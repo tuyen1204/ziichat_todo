@@ -1,8 +1,4 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ziichat_todo/data/folder_data.dart';
-import 'dart:convert';
 
 enum ItemStatus { todo, progressing, pending, done, all }
 

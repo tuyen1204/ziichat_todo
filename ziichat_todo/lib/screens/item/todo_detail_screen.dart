@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/i18n/app_localizations.dart';
@@ -30,19 +32,16 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
   late String? categorySelected = "All";
   late ItemStatus? statusSelected = ItemStatus.done;
   bool edited = false;
-  final folders = dataFolder.map((item) => item.category).toSet().toList();
   late TodoItemData todoDetailData;
-
-  final status = dataFolder.map((item) => item.status).toSet().toList();
   late TextEditingController newTitle;
   late TextEditingController newNote;
-
   final currentDate = DateTime.now();
   String formattedDateNow = '';
   late AppLocalizations localizations = AppLocalizations.of(context)!;
-  final dateTimeFormat = DateFormat('yyyy-MM-dd HH:mm');
 
+  final dateTimeFormat = DateFormat('yyyy-MM-dd HH:mm');
   final formKey = GlobalKey<FormState>();
+  late List<TodoItemData> _dataFolderInShare = [];
 
   @override
   void initState() {
@@ -62,6 +61,36 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
         localizations = AppLocalizations.of(context)!;
       });
     });
+  }
+
+  Future<void> _loadTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? jsonString = prefs.getString('todo_data');
+
+    if (jsonString != null) {
+      List<dynamic> jsonList = jsonDecode(jsonString);
+
+      setState(
+        () {
+          _dataFolderInShare =
+              jsonList.map((item) => TodoItemData.fromJson(item)).toList();
+        },
+      );
+    } else {
+      setState(() {
+        _dataFolderInShare = dataFolder;
+      });
+
+      _saveTodos();
+    }
+  }
+
+  Future<void> _saveTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<Map<String, dynamic>> jsonList =
+        _dataFolderInShare.map((item) => item.toJson()).toList();
+    String jsonString = jsonEncode(jsonList);
+    await prefs.setString('todo_data', jsonString);
   }
 
   void _handleDeleteTodo(

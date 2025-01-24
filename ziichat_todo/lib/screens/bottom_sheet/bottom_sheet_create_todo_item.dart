@@ -36,7 +36,7 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
   String? selectedCategory;
   late String? categorySelected =
       categoryTodo == "All" ? "Other" : categoryTodo;
-  late String? statusSelected = ItemStatus.todo.toString();
+  late String? statusSelected = "To Do";
   late AppLocalizations localizations = AppLocalizations.of(context)!;
   late List<TodoItemData> _dataFolderInShare = [];
 
@@ -237,6 +237,17 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                                     label: Text(
                                       statusToReadableString(item),
                                     ),
+                                    labelStyle: TextStyle(
+                                      color: statusSelected !=
+                                              statusToReadableString(item)
+                                          ? Colors.grey
+                                          : null,
+                                    ),
+                                    backgroundColor: statusSelected !=
+                                            statusToReadableString(item)
+                                        ? Colors.grey[50]
+                                        : null,
+                                    showCheckmark: false,
                                     selected: statusSelected ==
                                         statusToReadableString(item),
                                     onSelected: (value) {},
@@ -257,6 +268,7 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                                 spacing: 8.0,
                                 children: categoryList.map((item) {
                                   return ChoiceChip(
+                                    showCheckmark: false,
                                     label: Text(item),
                                     selected: categorySelected == item,
                                     labelStyle: TextStyle(
