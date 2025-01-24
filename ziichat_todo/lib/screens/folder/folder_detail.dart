@@ -320,6 +320,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
             onPressed: () {
               _dataFolderInShare
                   .removeWhere((item) => idsToRemove.contains(item.idTodo));
+              _saveTodos();
               Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -343,6 +344,22 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     final paddingNotch = MediaQuery.of(context).padding.top;
     final paddingBottom = MediaQuery.of(context).padding.bottom;
     int totals = listToDoAll.length;
+
+    sortByStatus.sort(
+      (a, b) {
+        if (currentSort == ActionSort.latest) {
+          return DateTime.parse(a.createdTime)
+              .difference(currentDate)
+              .inDays
+              .abs()
+              .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
+                  .inDays
+                  .abs());
+        }
+        return 0;
+      },
+    );
+
     return Scaffold(
       backgroundColor: primaryColor,
       appBar: AppBar(

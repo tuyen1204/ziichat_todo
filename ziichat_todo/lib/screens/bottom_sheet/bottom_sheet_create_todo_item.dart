@@ -31,19 +31,32 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
   final nameTodo = TextEditingController();
   final editedTodo = TextEditingController();
   final noteTodo = TextEditingController();
-  final listTodoItem = dataFolder;
-  final categoryList = dataFolder.map((data) => data.category).toList().toSet();
+  late List<String> categoryList = [];
   late String? categoryTodo;
-
   String? selectedCategory;
-
   late String? categorySelected =
       categoryTodo == "All" ? "Other" : categoryTodo;
-  late String? statusSelected = "To Do";
-
+  late String? statusSelected = ItemStatus.todo.toString();
   late AppLocalizations localizations = AppLocalizations.of(context)!;
+  late List<TodoItemData> _dataFolderInShare = [];
 
-  static Future<void> onCreateTodoItem(String formatDate, String nameTodo,
+  @override
+  void initState() {
+    super.initState();
+
+    _loadTodos();
+
+    categoryTodo = widget.showCurrentCategory;
+    selectedCategory = categoryTodo;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        localizations = AppLocalizations.of(context)!;
+      });
+    });
+  }
+
+  Future<void> onCreateTodoItem(String formatDate, String nameTodo,
       String categoryTodo, String noteTodo) async {
     try {
       var random = Random();
@@ -55,30 +68,46 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
         category: categoryTodo,
         note: noteTodo,
       );
-      dataFolder.add(newTodoItemData);
+      _dataFolderInShare.add(newTodoItemData);
+      _saveTodos();
       print("Todo item created successfully.");
     } catch (error) {
       print("Error creating todo item: $error");
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    categoryTodo = widget.showCurrentCategory;
-    selectedCategory = categoryTodo;
+  Future<void> _loadTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? jsonString = prefs.getString('todo_data');
+    List<dynamic> jsonList = jsonDecode(jsonString!);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        localizations = AppLocalizations.of(context)!;
-      });
-    });
+    if (jsonList.isNotEmpty) {
+      setState(
+        () {
+          _dataFolderInShare =
+              jsonList.map((item) => TodoItemData.fromJson(item)).toList();
+
+          categoryList =
+              _dataFolderInShare.map((data) => data.category).toSet().toList();
+        },
+      );
+    }
+    await _saveTodos();
+  }
+
+  Future<void> _saveTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    String jsonString =
+        jsonEncode(_dataFolderInShare.map((item) => item.toJson()).toList());
+    await prefs.setString('todo_data', jsonString);
   }
 
   @override
   Widget build(BuildContext context) {
     String formattedDate = DateFormat('MMM dd yyyy, HH:MM').format(currentDate);
-    final status = dataFolder.map((item) => item.status).toSet().toList();
+    final status =
+        _dataFolderInShare.map((item) => item.status).toSet().toList();
+
     return Padding(
       padding: EdgeInsets.only(bottom: widget.paddingBottom),
       child: Column(

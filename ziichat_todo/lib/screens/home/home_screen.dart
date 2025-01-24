@@ -108,10 +108,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final localizations = AppLocalizations.of(context)!;
     late final currentLocale = Localizations.localeOf(context);
 
-    for (var item in _dataFolderInShare) {
-      // print(item.toString());
-    }
-
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
