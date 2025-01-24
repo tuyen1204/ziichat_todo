@@ -39,15 +39,20 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
   String formattedDateNow = '';
   late AppLocalizations localizations = AppLocalizations.of(context)!;
 
+  final status = dataFolder.map((item) => item.status).toSet().toList();
   final dateTimeFormat = DateFormat('yyyy-MM-dd HH:mm');
   final formKey = GlobalKey<FormState>();
   late List<TodoItemData> _dataFolderInShare = [];
+  late List<String> categoryList = [];
 
   @override
   void initState() {
+    _loadTodos();
+
     statusSelected = widget.initStatus;
     categorySelected = widget.initCategory;
     edited;
+
     super.initState();
     todoDetailData =
         dataFolder.where((item) => item.idTodo == widget.idTodo).toList().first;
@@ -74,6 +79,9 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
         () {
           _dataFolderInShare =
               jsonList.map((item) => TodoItemData.fromJson(item)).toList();
+
+          categoryList =
+              _dataFolderInShare.map((item) => item.category).toSet().toList();
         },
       );
     } else {
@@ -411,7 +419,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                                   fontWeight: FontWeight.w500)),
                           Wrap(
                             spacing: 8.0,
-                            children: folders.map((item) {
+                            children: categoryList.map((item) {
                               return ChoiceChip(
                                 label: Text(item),
                                 selected: categorySelected == item,
