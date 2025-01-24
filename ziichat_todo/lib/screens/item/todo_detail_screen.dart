@@ -397,6 +397,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                                     : Colors.grey,
                                 selectedColor: statusColor(item),
                                 selected: statusSelected == item,
+                                showCheckmark: false,
                                 onSelected: (value) {
                                   setState(() {
                                     edited == true
@@ -426,6 +427,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                                 labelStyle: TextStyle(
                                   color: Colors.black87,
                                 ),
+                                showCheckmark: false,
                                 onSelected: (value) {
                                   setState(() {
                                     edited == true

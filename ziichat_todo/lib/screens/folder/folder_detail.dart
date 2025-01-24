@@ -245,6 +245,8 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
 
                   _dataFolderInShare.clear();
                   _dataFolderInShare.addAll(updatedData);
+                  _saveTodos();
+
                   Navigator.of(context).pop();
                   Navigator.pushReplacement(
                     context,
@@ -285,6 +287,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 _dataFolderInShare
                     .removeWhere((item) => item.category == categoryToDelete);
               });
+              _saveTodos();
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -779,7 +782,7 @@ class TodoItemCard extends StatelessWidget {
                             return TodoDetailScreen(
                                 idTodo: todoItem.idTodo,
                                 initStatus: todoItem.status,
-                                initCategory: updateNameFolder.toString(),
+                                initCategory: todoItem.category,
                                 onLanguageChanged: (locale) {});
                           },
                         ),
