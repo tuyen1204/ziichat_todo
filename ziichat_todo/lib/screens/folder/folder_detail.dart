@@ -108,7 +108,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
           _dataFolderInShare =
               jsonList.map((item) => TodoItemData.fromJson(item)).toList();
 
-          folderNames = dataFolder
+          folderNames = _dataFolderInShare
               .map((item) => item.category.toLowerCase())
               .toSet()
               .toList();

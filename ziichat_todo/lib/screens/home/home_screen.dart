@@ -54,10 +54,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadTodos() async {
     final prefs = await SharedPreferences.getInstance();
     String? jsonString = prefs.getString('todo_data');
+    List<dynamic> jsonList = jsonDecode(jsonString!);
 
-    if (jsonString != null) {
-      List<dynamic> jsonList = jsonDecode(jsonString);
-
+    if (jsonList.isNotEmpty) {
       setState(
         () {
           _dataFolderInShare =
@@ -76,11 +75,14 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(
         () {
           _dataFolderInShare = [...dataFolder];
+          folderNames = _dataFolderInShare
+              .map((item) => item.category.toLowerCase())
+              .toSet()
+              .toList();
         },
       );
-
-      await _saveTodos();
     }
+    await _saveTodos();
   }
 
   Future<void> _saveTodos() async {
@@ -107,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
     late final currentLocale = Localizations.localeOf(context);
 
     for (var item in _dataFolderInShare) {
-      print(item.toString());
+      // print(item.toString());
     }
 
     return Scaffold(
@@ -269,8 +271,25 @@ class _HomeScreenState extends State<HomeScreen> {
                   final trimmedFolderName = newFolder.text.toLowerCase().trim();
                   final idFolderName =
                       newFolder.text.toLowerCase().trim().replaceAll(' ', '-');
-
-                  if (folderNames.contains(trimmedFolderName)) {
+                  if (trimmedFolderName.isEmpty) {
+                    showCupertinoDialog(
+                      context: context,
+                      builder: (context) => CupertinoAlertDialog(
+                        title: Text(
+                            AppLocalizations.of(context)!.translate('info')),
+                        content: Text(AppLocalizations.of(context)!
+                            .translate('newFolderRequired')),
+                        actions: <Widget>[
+                          CupertinoDialogAction(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text('Ok'),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else if (folderNames.contains(trimmedFolderName)) {
                     showCupertinoDialog(
                       context: context,
                       builder: (context) => CupertinoAlertDialog(

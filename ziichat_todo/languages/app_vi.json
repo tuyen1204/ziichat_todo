@@ -40,5 +40,6 @@
     "newFolder": "Thư mục mới",
     "addNew": "Thêm mới", 
     "delete": "Xóa",
-    "todoSelected": "mục đã chọn"
+    "todoSelected": "mục đã chọn",
+    "newFolderRequired": "Tiêu thư mục là bắt buộc"
 }
