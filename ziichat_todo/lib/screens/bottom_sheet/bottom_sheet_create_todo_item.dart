@@ -32,9 +32,9 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
   late String? categoryTodo;
 
   String? selectedCategory;
-  TextEditingController choiceCategory = TextEditingController();
 
-  late String? categorySelected = categoryTodo;
+  late String? categorySelected =
+      categoryTodo == "All" ? "Other" : categoryTodo;
   late String? statusSelected = "To Do";
 
   late AppLocalizations localizations = AppLocalizations.of(context)!;
@@ -44,7 +44,6 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
     super.initState();
     categoryTodo = widget.showCurrentCategory;
     selectedCategory = categoryTodo;
-    choiceCategory.text = selectedCategory!;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
@@ -151,9 +150,6 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                               ),
                             ),
                             keyboardType: TextInputType.multiline,
-                            onTapOutside: (event) {
-                              FocusManager.instance.primaryFocus?.unfocus();
-                            },
                           ),
                           TextFormField(
                             controller: noteTodo,

@@ -35,5 +35,8 @@
     "info": "Thông tin",
     "folderNameExists": "Tên thư mục tồn tại",
     "youDeleteTodo": "Bạn sắp xóa việc cần làm {itemTodoName}. Bạn có chắc không?",
-    "close": "Đóng"
+    "close": "Đóng",
+    "enterNewFolderName": "Nhập tên thư mục mới",
+    "newFolder": "Thư mục mới",
+    "addNew": "Thêm mới"
 }

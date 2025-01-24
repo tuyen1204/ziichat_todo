@@ -41,6 +41,7 @@ enum ActionInFolder { deleteFolder, editNameFolder }
 class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   late final List<TodoItemData> listToDo;
   late final List<TodoItemData> listToDoAll;
+  late final List<TodoItemData> listToDoIsNotItem;
   late int totals;
   Set<int> selectedItems = {};
   bool isLoading = true;
@@ -61,8 +62,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   final folderNames =
       dataFolder.map((item) => item.category.toLowerCase()).toSet().toList();
 
-  late AppLocalizations? localizations;
-
   late DateFormat dateTimeFormat;
 
   @override
@@ -71,10 +70,15 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
 
     setState(() {
       listToDo = dataFolder
+          .where((toDo) => (toDo.category == widget.currentCategory &&
+              toDo.title.isNotEmpty))
+          .toList();
+      listToDoAll = dataFolder.where((toDo) => toDo.title.isNotEmpty).toList();
+      totals = dataFolder.length;
+
+      listToDoIsNotItem = dataFolder
           .where((toDo) => toDo.category == widget.currentCategory)
           .toList();
-      listToDoAll = List.from(dataFolder);
-      totals = dataFolder.length;
 
       listStatus.addAll(dataFolder
           .map((item) => item.status)
@@ -95,21 +99,25 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     newCategory = TextEditingController(text: widget.currentCategory);
   }
 
-  void handleUpdateFolders() {
-    setState(() {
-      sortByStatus = widget.currentCategory == "All"
-          ? dataFolder
-              .where((toDo) =>
-                  statusToReadableString(toDo.status) == currentStatus)
-              .toList()
-          : dataFolder
-              .where((toDo) =>
-                  (widget.currentCategory != "All"
-                      ? toDo.category == widget.currentCategory
-                      : true) &&
-                  statusToReadableString(toDo.status) == currentStatus)
-              .toList();
-    });
+  void handleStatusFilter() {
+    setState(
+      () {
+        sortByStatus = widget.currentCategory == "All"
+            ? dataFolder
+                .where((toDo) =>
+                    statusToReadableString(toDo.status) == currentStatus &&
+                    toDo.title.isNotEmpty)
+                .toList()
+            : dataFolder
+                .where((toDo) =>
+                    ((widget.currentCategory != "All"
+                            ? toDo.category == widget.currentCategory
+                            : true) &&
+                        statusToReadableString(toDo.status) == currentStatus) &&
+                    toDo.title.isNotEmpty)
+                .toList();
+      },
+    );
   }
 
   void handleEditFolder(BuildContext context) {
@@ -122,7 +130,8 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
             Text(AppLocalizations.of(context)!.translate('editFolder')),
             CupertinoTextField(
               controller: newCategory,
-              placeholder: 'Enter new folder name',
+              placeholder:
+                  AppLocalizations.of(context)!.translate('enterNewFolderName'),
               padding: EdgeInsets.all(12),
             ),
           ],
@@ -133,7 +142,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.translate('cancel')),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
@@ -142,12 +151,23 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 showCupertinoDialog(
                   context: context,
                   builder: (context) => CupertinoAlertDialog(
-                    title: Text('Info'),
-                    content: Text('Folder name exists'),
+                    title:
+                        Text(AppLocalizations.of(context)!.translate('info')),
+                    content: Text(AppLocalizations.of(context)!
+                        .translate('folderNameExists')),
                     actions: <Widget>[
                       CupertinoDialogAction(
                         onPressed: () {
-                          Navigator.pop(context);
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ItemsTodoDetail(
+                                currentCategory: newCategory.text,
+                                onLanguageChanged: widget.onLanguageChanged,
+                              ),
+                            ),
+                          );
+                          Navigator.of(context).pop();
                         },
                         child: Text('Ok'),
                       ),
@@ -172,7 +192,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
 
                   dataFolder.clear();
                   dataFolder.addAll(updatedData);
-
+                  Navigator.of(context).pop();
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
@@ -182,11 +202,10 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                       ),
                     ),
                   );
-                  Navigator.of(context).pop();
                 });
               }
             },
-            child: const Text('Save'),
+            child: Text(AppLocalizations.of(context)!.translate('save')),
           ),
         ],
       ),
@@ -197,14 +216,14 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     showCupertinoDialog(
       context: context,
       builder: (BuildContext context) => CupertinoAlertDialog(
-        title: const Text('You want to delete this folder'),
+        title: Text(AppLocalizations.of(context)!.translate('youDeleteFolder')),
         actions: <CupertinoDialogAction>[
           CupertinoDialogAction(
             isDefaultAction: true,
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: Text(localizations!.translate('no')),
+            child: Text(AppLocalizations.of(context)!.translate('no')),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
@@ -222,7 +241,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 ),
               );
             },
-            child: Text(localizations!.translate('yes')),
+            child: Text(AppLocalizations.of(context)!.translate('yes')),
           ),
         ],
       ),
@@ -233,44 +252,34 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   Widget build(BuildContext context) {
     final paddingNotch = MediaQuery.of(context).padding.top;
     final paddingBottom = MediaQuery.of(context).padding.bottom;
-    final sortedList = (widget.currentCategory == "All"
-        ? listToDoAll
-        : listToDo)
-      ..sort((a, b) {
-        if (currentSort == "alpha") {
-          return a.title.toLowerCase().compareTo(b.title.toLowerCase());
-        } else if (currentSort == "latest") {
-          return DateTime.parse(a.createdTime)
-              .difference(currentDate)
-              .inDays
-              .abs()
-              .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
-                  .inDays
-                  .abs());
-        } else if (currentSort == "oldest") {
-          return DateTime.parse(a.createdTime)
-              .compareTo(DateTime.parse(b.createdTime));
-        }
-        return 0;
-      });
 
     return Scaffold(
       backgroundColor: primaryColor,
       appBar: AppBar(
         leading: IconButton(
             icon: Icon(Icons.arrow_back_ios_new, color: Colors.white),
-            onPressed: () => {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          HomeScreen(onLanguageChanged: (locale) {}),
-                    ),
-                  ),
-                }),
+            onPressed: () {
+              if (listToDoIsNotItem.isEmpty &&
+                  widget.currentCategory != "All") {
+                final newTodoItemData = TodoItemData(
+                    idTodo: "",
+                    title: "",
+                    createdTime: "formatDate",
+                    category: widget.currentCategory,
+                    note: "noteTodo");
+                dataFolder.add(newTodoItemData);
+              }
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      HomeScreen(onLanguageChanged: (locale) {}),
+                ),
+              );
+            }),
         backgroundColor: Colors.transparent,
         actions: [
-          widget.currentCategory == "All"
+          widget.currentCategory == "All" || widget.currentCategory == "Other"
               ? SizedBox()
               : PopupMenuButton<ActionInFolder>(
                   icon: Icon(Icons.more_vert, color: Colors.white),
@@ -374,7 +383,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                           widget.currentCategory == "All")
                         _innerSort(),
                       _innerSortByStatus(),
-                      _innerListTodoItem(sortedList),
+                      _innerListTodoItem(),
                     ],
                   ),
                 ),
@@ -391,82 +400,76 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     );
   }
 
-  Column _innerListTodoItem(List<TodoItemData> sortedList) {
-    return Column(
-      spacing: 8,
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: widget.currentCategory == "All"
-          ? List.generate(
-              currentStatus == "All" ? listToDoAll.length : sortByStatus.length,
-              (index) {
-              final todoItem = currentStatus == "All"
-                  ? listToDoAll[index]
-                  : sortByStatus[index];
-              return isLoading
-                  ? ShimmerLoading(
-                      isLoading: isLoading,
-                      child: TodoItemCard(
-                        index: index,
-                        todoItem: todoItem,
-                        isSelected: selectedItems.contains(index),
-                        onSelected: (selectedIndex) {},
-                      ),
-                    )
-                  : TodoItemCard(
-                      index: index,
-                      todoItem: todoItem,
-                      updateNameFolder: newCategory.text,
-                      isSelected: selectedItems.contains(index),
-                      onSelected: (selectedIndex) {
-                        setState(
-                          () {
-                            if (selectedItems.contains(selectedIndex)) {
-                              selectedItems.remove(selectedIndex);
-                            } else {
-                              selectedItems.add(selectedIndex);
-                            }
-                          },
-                        );
-                      },
-                    );
-            })
-          : List.generate(
-              currentStatus == "All" ? listToDo.length : sortByStatus.length,
-              (index) {
-                final todoItem = currentStatus == "All"
-                    ? listToDo[index]
-                    : sortByStatus[index];
+  Column _innerListTodoItem() {
+    sortByStatus = widget.currentCategory == "All"
+        ? (currentStatus == "All" ? listToDoAll : sortByStatus)
+        : (currentStatus == "All" ? listToDo : sortByStatus);
 
-                return isLoading
-                    ? ShimmerLoading(
-                        isLoading: isLoading,
-                        child: TodoItemCard(
-                          index: index,
-                          todoItem: todoItem,
-                          isSelected: selectedItems.contains(index),
-                          onSelected: (selectedIndex) {},
-                        ),
-                      )
-                    : TodoItemCard(
-                        index: index,
-                        todoItem: todoItem,
-                        updateNameFolder: newCategory.text,
-                        isSelected: selectedItems.contains(index),
-                        onSelected: (selectedIndex) {
-                          setState(
-                            () {
-                              if (selectedItems.contains(selectedIndex)) {
-                                selectedItems.remove(selectedIndex);
-                              } else {
-                                selectedItems.add(selectedIndex);
-                              }
-                            },
-                          );
-                        },
-                      );
-              },
-            ),
+    sortByStatus.sort(
+      (a, b) {
+        if (currentSort == "alpha") {
+          return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+        } else if (currentSort == "latest") {
+          return DateTime.parse(a.createdTime)
+              .difference(currentDate)
+              .inDays
+              .abs()
+              .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
+                  .inDays
+                  .abs());
+        } else if (currentSort == "oldest") {
+          return DateTime.parse(a.createdTime)
+              .compareTo(DateTime.parse(b.createdTime));
+        }
+        return 0;
+      },
+    );
+
+    return Column(
+      children: [
+        sortByStatus.isEmpty
+            ? SizedBox(
+                width: double.infinity,
+                height: 100,
+                child: Center(
+                    child: Text(
+                  "Nothing",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                )),
+              )
+            : SizedBox(
+                height: 300,
+                child: ListView.builder(
+                    itemCount: sortByStatus.length,
+                    itemBuilder: (context, index) {
+                      final todoItem = sortByStatus[index];
+                      return isLoading
+                          ? ShimmerLoading(
+                              isLoading: isLoading,
+                              child: _buildTodoItemCard(index, todoItem),
+                            )
+                          : _buildTodoItemCard(index, todoItem);
+                    }),
+              ),
+      ],
+    );
+  }
+
+  Widget _buildTodoItemCard(int index, TodoItemData todoItem) {
+    return TodoItemCard(
+      index: index,
+      todoItem: todoItem,
+      updateNameFolder: newCategory.text,
+      isSelected: selectedItems.contains(index),
+      onSelected: (selectedIndex) {
+        setState(() {
+          if (selectedItems.contains(selectedIndex)) {
+            selectedItems.remove(selectedIndex);
+          } else {
+            selectedItems.add(selectedIndex);
+          }
+        });
+      },
     );
   }
 
@@ -487,10 +490,11 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
               label: Text(value),
               selected: currentSort == key,
               onSelected: (value) {
-                setState(() {
-                  currentSort = key;
-                  print(currentSort);
-                });
+                setState(
+                  () {
+                    currentSort = key;
+                  },
+                );
               },
             ),
           );
@@ -518,7 +522,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 setState(() {
                   currentStatus = statusToReadableString(listStatus[index]);
                 });
-                handleUpdateFolders();
+                handleStatusFilter();
               },
             ),
           );
@@ -533,7 +537,7 @@ class TodoItemCard extends StatelessWidget {
   final TodoItemData todoItem;
   final bool isSelected;
   final ValueChanged<int> onSelected;
-  final updateNameFolder;
+  final String? updateNameFolder;
   const TodoItemCard(
       {super.key,
       required this.index,
@@ -545,7 +549,7 @@ class TodoItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 0.4,
+      elevation: 2,
       color: Colors.white,
       clipBehavior: Clip.hardEdge,
       child: InkWell(
@@ -558,7 +562,7 @@ class TodoItemCard extends StatelessWidget {
                 return TodoDetailScreen(
                     idTodo: todoItem.idTodo,
                     initStatus: todoItem.status,
-                    initCategory: updateNameFolder,
+                    initCategory: updateNameFolder.toString(),
                     onLanguageChanged: (locale) {});
               },
             ),
@@ -585,9 +589,7 @@ class TodoItemCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          updateNameFolder.isNotEmpty
-                              ? '$updateNameFolder - '
-                              : '${todoItem.category} - ',
+                          '${todoItem.category} - ',
                           style: TextStyle(
                               fontSize: 14,
                               color: Colors.black45,
@@ -620,7 +622,7 @@ class TodoItemCard extends StatelessWidget {
                 width: 10,
                 height: 10,
                 decoration: BoxDecoration(
-                  color: statusColor(todoItem.status), // border color
+                  color: statusColor(todoItem.status),
                   shape: BoxShape.circle,
                 ),
               ),
