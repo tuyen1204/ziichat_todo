@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ziichat_todo/component/title_section_large.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
@@ -29,10 +31,18 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   late String langSelected = "";
+  late List<TodoItemData> _dataFolderInShare = [];
+  late List<String> folderNames = [];
+  late List<String> folders = [];
+  final int totalTask = 0;
+  late final TextEditingController folderName = TextEditingController();
+  final currentDate = DateTime.now();
 
   @override
   void initState() {
     super.initState();
+
+    _loadTodos();
 
     Future.delayed(Duration(milliseconds: 1000), () {
       setState(() {
@@ -41,17 +51,60 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  final folderNames =
-      dataFolder.map((item) => item.category.toLowerCase()).toSet().toList();
+  Future<void> _loadTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? jsonString = prefs.getString('todo_data');
+    List<dynamic> jsonList = jsonDecode(jsonString!);
 
-  late final TextEditingController folderName = TextEditingController();
-  final folders = dataFolder.map((item) => item.category).toSet().toList();
+    if (jsonList.isNotEmpty) {
+      setState(
+        () {
+          _dataFolderInShare =
+              jsonList.map((item) => TodoItemData.fromJson(item)).toList();
+
+          folderNames = _dataFolderInShare
+              .map((item) => item.category.toLowerCase())
+              .toSet()
+              .toList();
+
+          folders =
+              _dataFolderInShare.map((item) => item.category).toSet().toList();
+        },
+      );
+    } else {
+      setState(
+        () {
+          _dataFolderInShare = [...dataFolder];
+          folderNames = _dataFolderInShare
+              .map((item) => item.category.toLowerCase())
+              .toSet()
+              .toList();
+        },
+      );
+    }
+    await _saveTodos();
+  }
+
+  Future<void> _saveTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    String jsonString =
+        jsonEncode(_dataFolderInShare.map((item) => item.toJson()).toList());
+    await prefs.setString('todo_data', jsonString);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final processingFolders =
-        dataFolder.where((item) => item.status == ItemStatus.progressing);
-    final totalTask = dataFolder.length;
+    final processingFolders = _dataFolderInShare
+        .where((item) => item.status == ItemStatus.progressing)
+        .toList()
+      ..sort((a, b) => DateTime.parse(a.createdTime)
+          .difference(currentDate)
+          .inDays
+          .abs()
+          .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
+              .inDays
+              .abs()));
+
     final localizations = AppLocalizations.of(context)!;
     late final currentLocale = Localizations.localeOf(context);
 
@@ -106,30 +159,32 @@ class _HomeScreenState extends State<HomeScreen> {
                     scrollDirection: Axis.horizontal,
                     itemCount: folders.length + 1,
                     itemBuilder: (context, index) {
-                      folders.sort((a, b) {
-                        if (a == "All") return -1;
-                        if (b == "All") return 1;
-                        if (a == "Other") return -1;
-                        if (b == "Other") return 1;
-                        return a.compareTo(b);
-                      });
-                      if (index == 0) {
-                        final allItems = dataFolder
-                            .where((item) => item.category.isEmpty)
-                            .toList();
-                        final taskCountAll = allItems.length;
+                      folders.sort(
+                        (a, b) {
+                          if (a == "All") return -1;
+                          if (b == "All") return 1;
+                          if (a == "Other") return -1;
+                          if (b == "Other") return 1;
 
+                          return a.compareTo(b);
+                        },
+                      );
+
+                      if (index == 0) {
+                        final allTask = _dataFolderInShare
+                            .where((item) => (item.title.isNotEmpty))
+                            .length;
                         return isLoading
                             ? ShimmerLoading(
                                 isLoading: isLoading,
-                                child: _innerFolderItem(context, index, "All",
-                                    taskCountAll, totalTask, folders),
+                                child: _innerFolderItem(
+                                    context, index, "All", 1, allTask, folders),
                               )
-                            : _innerFolderItem(context, index, "All",
-                                taskCountAll, totalTask, folders);
+                            : _innerFolderItem(
+                                context, index, "All", 1, allTask, folders);
                       } else {
                         final category = folders[index - 1];
-                        final taskCount = dataFolder
+                        final taskCount = _dataFolderInShare
                             .where((item) => (item.category == category &&
                                 item.title.isNotEmpty))
                             .length;
@@ -173,11 +228,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      floatingActionButton: _floatingNeeFolder(context),
+      floatingActionButton: _floatingNewFolder(context),
     );
   }
 
-  FloatingActionButton _floatingNeeFolder(BuildContext context) {
+  FloatingActionButton _floatingNewFolder(BuildContext context) {
     late final TextEditingController newFolder = TextEditingController();
 
     return FloatingActionButton(
@@ -210,7 +265,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 isDestructiveAction: true,
                 onPressed: () {
                   final trimmedFolderName = newFolder.text.toLowerCase().trim();
-                  if (folderNames.contains(trimmedFolderName)) {
+                  final idFolderName =
+                      newFolder.text.toLowerCase().trim().replaceAll(' ', '-');
+                  if (trimmedFolderName.isEmpty) {
+                    showCupertinoDialog(
+                      context: context,
+                      builder: (context) => CupertinoAlertDialog(
+                        title: Text(
+                            AppLocalizations.of(context)!.translate('info')),
+                        content: Text(AppLocalizations.of(context)!
+                            .translate('newFolderRequired')),
+                        actions: <Widget>[
+                          CupertinoDialogAction(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text('Ok'),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else if (folderNames.contains(trimmedFolderName)) {
                     showCupertinoDialog(
                       context: context,
                       builder: (context) => CupertinoAlertDialog(
@@ -229,36 +304,39 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     );
                   } else {
-                    setState(() {
-                      folders.add(trimmedFolderName.toLowerCase());
-                      dataFolder.add(
-                        TodoItemData(
-                          idTodo: "new-folder-$trimmedFolderName",
-                          title: "",
-                          createdTime: DateTime.now().toString(),
-                          category: capitalizeEachWord(trimmedFolderName),
-                          status: ItemStatus.todo,
-                        ),
-                      );
-                    });
+                    _dataFolderInShare.add(
+                      TodoItemData(
+                        idTodo: 'new-id-$idFolderName',
+                        title: '',
+                        category: trimmedFolderName,
+                        createdTime: DateTime.now().toString(),
+                        categoryCreateTime: DateTime.now().toString(),
+                        status: ItemStatus.todo,
+                      ),
+                    );
 
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) {
-                              return ItemsTodoDetail(
-                                currentCategory:
-                                    capitalizeEachWord(trimmedFolderName),
-                                onLanguageChanged: (locale) =>
-                                    langSelected.toString(),
-                              );
-                            },
-                            settings: RouteSettings(
-                                arguments:
-                                    capitalizeEachWord(trimmedFolderName))));
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return ItemsTodoDetail(
+                            currentCategory:
+                                capitalizeEachWord(trimmedFolderName),
+                            onLanguageChanged: (locale) =>
+                                langSelected.toString(),
+                          );
+                        },
+                        settings: RouteSettings(
+                          arguments: capitalizeEachWord(trimmedFolderName),
+                        ),
+                      ),
+                    );
                   }
+                  _saveTodos();
                 },
-                child: Text(AppLocalizations.of(context)!.translate('addNew')),
+                child: Text(
+                  AppLocalizations.of(context)!.translate('addNew'),
+                ),
               ),
             ],
           ),
@@ -324,7 +402,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        category,
+                        capitalizeEachWord(category),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -407,7 +485,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                   ),
                   Text(
-                    '$category - ${DateFormat('yyyy MMM dd, HH:MM').format(DateTime.parse(date))}',
+                    '$category • ${DateFormat('yyyy MMM dd, HH:MM').format(DateTime.parse(date))}',
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
