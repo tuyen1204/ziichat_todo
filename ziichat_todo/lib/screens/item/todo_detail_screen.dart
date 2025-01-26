@@ -33,8 +33,8 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
   late ItemStatus? statusSelected = ItemStatus.done;
   bool edited = false;
   late TodoItemData todoDetailData;
-  late TextEditingController newTitle;
-  late TextEditingController newNote;
+  late TextEditingController newTitle = TextEditingController();
+  late TextEditingController newNote = TextEditingController();
   final currentDate = DateTime.now();
   String formattedDateNow = '';
   late AppLocalizations localizations = AppLocalizations.of(context)!;
@@ -42,8 +42,10 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
   final status = dataFolder.map((item) => item.status).toSet().toList();
   final dateTimeFormat = DateFormat('yyyy-MM-dd HH:mm');
   final formKey = GlobalKey<FormState>();
+
   late List<TodoItemData> _dataFolderInShare = [];
   late List<String> categoryList = [];
+  late List<TodoItemData> _todoDetailDataInShare = [];
 
   @override
   void initState() {
@@ -54,10 +56,10 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     edited;
 
     super.initState();
-    todoDetailData =
-        dataFolder.where((item) => item.idTodo == widget.idTodo).toList().first;
-    newTitle = TextEditingController(text: todoDetailData.title);
-    newNote = TextEditingController(text: todoDetailData.note);
+    todoDetailData = _dataFolderInShare
+        .where((item) => item.idTodo == widget.idTodo)
+        .toList()
+        .first;
 
     _updateTime();
 
@@ -82,6 +84,16 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
 
           categoryList =
               _dataFolderInShare.map((item) => item.category).toSet().toList();
+
+          _todoDetailDataInShare = _dataFolderInShare
+              .where((item) => item.idTodo == widget.idTodo)
+              .toList();
+
+          newTitle =
+              TextEditingController(text: _todoDetailDataInShare[0].title);
+
+          newNote = TextEditingController(text: _todoDetailDataInShare[0].note);
+          print(_todoDetailDataInShare[0].toString());
         },
       );
     } else {
@@ -176,18 +188,19 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
   }) {
     try {
       final index =
-          dataFolder.indexWhere((item) => item.idTodo == widget.idTodo);
+          _dataFolderInShare.indexWhere((item) => item.idTodo == widget.idTodo);
       if (index != -1) {
         setState(() {
-          dataFolder[index] = TodoItemData(
-            idTodo: dataFolder[index].idTodo,
-            title: title ?? dataFolder[index].title,
-            category: category ?? dataFolder[index].category,
-            status: status ?? dataFolder[index].status,
-            createdTime: dataFolder[index].createdTime,
-            note: note ?? dataFolder[index].note,
+          _dataFolderInShare[index] = TodoItemData(
+            idTodo: _dataFolderInShare[index].idTodo,
+            title: title ?? _dataFolderInShare[index].title,
+            category: category ?? _dataFolderInShare[index].category,
+            status: status ?? _dataFolderInShare[index].status,
+            createdTime: _dataFolderInShare[index].createdTime,
+            note: note ?? _dataFolderInShare[index].note,
             editedTime: formattedDateNow.toString(),
           );
+          _saveTodos();
         });
 
         showCupertinoDialog(

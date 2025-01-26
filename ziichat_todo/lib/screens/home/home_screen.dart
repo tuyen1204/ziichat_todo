@@ -35,7 +35,6 @@ class _HomeScreenState extends State<HomeScreen> {
   late List<String> folderNames = [];
   late List<String> folders = [];
   final int totalTask = 0;
-  late final TextEditingController folderName = TextEditingController();
   final currentDate = DateTime.now();
 
   @override
@@ -94,6 +93,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    for (var item in _dataFolderInShare) {
+      print(item.toString());
+    }
+
     final processingFolders = _dataFolderInShare
         .where((item) => item.status == ItemStatus.progressing)
         .toList()

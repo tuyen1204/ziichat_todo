@@ -42,6 +42,7 @@ class TodoItemData {
       'categoryCreateTime': categoryCreateTime,
       'createdTime': createdTime,
       'status': status.index,
+      'note': note,
     };
   }
 
@@ -53,6 +54,7 @@ class TodoItemData {
       categoryCreateTime: json['categoryCreateTime'],
       createdTime: json['createdTime'],
       status: ItemStatus.values[json['status']],
+      note: json['note'],
     );
   }
 }

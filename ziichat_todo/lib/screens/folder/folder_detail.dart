@@ -775,6 +775,7 @@ class TodoItemCard extends StatelessWidget {
                 Expanded(
                   child: InkWell(
                     onTap: () => {
+                      print(todoItem.idTodo),
                       Navigator.push(
                         context,
                         MaterialPageRoute(
