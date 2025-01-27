@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ziichat_todo/component/title_section_large.dart';
 import 'package:ziichat_todo/constants.dart';
@@ -13,10 +14,10 @@ import 'package:ziichat_todo/screens/folder/folder_detail.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
 import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
 import 'package:ziichat_todo/component/shimmer_effect.dart';
+import 'package:ziichat_todo/utils/language_notifier.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.onLanguageChanged});
-  final Function(Locale) onLanguageChanged;
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -53,42 +54,36 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadTodos() async {
     final prefs = await SharedPreferences.getInstance();
-    String? jsonString = prefs.getString('todo_data');
-    List<dynamic> jsonList = jsonDecode(jsonString!);
+    final jsonString = prefs.getString('todo_data');
+    final List<TodoItemData> defaultData = [...dataFolder];
 
-    if (jsonList.isNotEmpty) {
-      setState(
-        () {
-          _dataFolderInShare =
-              jsonList.map((item) => TodoItemData.fromJson(item)).toList();
+    final jsonList = jsonString != null
+        ? (jsonDecode(jsonString) as List).cast<Map<String, dynamic>>()
+        : [];
 
-          folderNames = _dataFolderInShare
-              .map((item) => item.category.toLowerCase())
-              .toSet()
-              .toList();
+    setState(() {
+      _dataFolderInShare = jsonList.isNotEmpty
+          ? jsonList.map((item) => TodoItemData.fromJson(item)).toList()
+          : defaultData;
 
-          folders =
-              _dataFolderInShare.map((item) => item.category).toSet().toList();
-        },
-      );
-    } else {
-      setState(
-        () {
-          _dataFolderInShare = [...dataFolder];
-          folderNames = _dataFolderInShare
-              .map((item) => item.category.toLowerCase())
-              .toSet()
-              .toList();
-        },
-      );
-    }
+      folderNames = _dataFolderInShare
+          .map((item) => item.category.toLowerCase())
+          .toSet()
+          .toList();
+
+      folders =
+          _dataFolderInShare.map((item) => item.category).toSet().toList();
+    });
+
     await _saveTodos();
   }
 
   Future<void> _saveTodos() async {
     final prefs = await SharedPreferences.getInstance();
-    String jsonString =
-        jsonEncode(_dataFolderInShare.map((item) => item.toJson()).toList());
+
+    final jsonString = jsonEncode(
+      _dataFolderInShare.map((item) => item.toJson()).toList(),
+    );
     await prefs.setString('todo_data', jsonString);
   }
 
@@ -130,7 +125,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   setState(() {
                     langSelected = index;
                   });
-                  widget.onLanguageChanged(Locale(langSelected));
+                  context
+                      .read<LanguageNotifier>()
+                      .changeLanguage(Locale(langSelected));
                 },
               );
             }).toList(),
