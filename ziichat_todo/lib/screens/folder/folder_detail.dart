@@ -98,58 +98,55 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
 
   Future<void> _loadTodos() async {
     final prefs = await SharedPreferences.getInstance();
-    String? jsonString = prefs.getString('todo_data');
+    final jsonString = prefs.getString('todo_data');
 
-    if (jsonString != null) {
-      List<dynamic> jsonList = jsonDecode(jsonString);
+    setState(() {
+      if (jsonString != null) {
+        final jsonList =
+            (jsonDecode(jsonString) as List).cast<Map<String, dynamic>>();
+        _dataFolderInShare = jsonList.map(TodoItemData.fromJson).toList();
+      } else {
+        _dataFolderInShare = [...dataFolder];
+        _saveTodos();
+      }
 
-      setState(
-        () {
-          _dataFolderInShare =
-              jsonList.map((item) => TodoItemData.fromJson(item)).toList();
+      folderNames = _dataFolderInShare
+          .map((item) => item.category.toLowerCase())
+          .toSet()
+          .toList();
 
-          folderNames = _dataFolderInShare
-              .map((item) => item.category.toLowerCase())
-              .toSet()
-              .toList();
+      sortByStatus = _dataFolderInShare;
 
-          sortByStatus = _dataFolderInShare;
+      listToDo = _filterByCategoryAndTitle(widget.currentCategory, true);
 
-          listToDo = _dataFolderInShare
-              .where((toDo) => (toDo.category == widget.currentCategory &&
-                  toDo.title.isNotEmpty))
-              .toList();
+      listToDoAll =
+          _dataFolderInShare.where((toDo) => toDo.title.isNotEmpty).toList();
 
-          listToDoAll = _dataFolderInShare
-              .where((toDo) => toDo.title.isNotEmpty)
-              .toList();
+      listToDoIsNotItem =
+          _filterByCategoryAndTitle(widget.currentCategory, false);
 
-          listToDoIsNotItem = _dataFolderInShare
-              .where((toDo) => toDo.category == widget.currentCategory)
-              .toList();
-
-          listStatus.addAll(_dataFolderInShare
-              .map((item) => item.status)
-              .toSet()
-              .where((status) => status != ItemStatus.all)
-              .toList());
-        },
-      );
-    } else {
-      setState(() {
-        _dataFolderInShare = dataFolder;
-      });
-
-      _saveTodos();
-    }
+      listStatus = _dataFolderInShare
+          .map((item) => item.status)
+          .where((status) => status != ItemStatus.all)
+          .toSet()
+          .toList();
+    });
   }
 
   Future<void> _saveTodos() async {
     final prefs = await SharedPreferences.getInstance();
-    List<Map<String, dynamic>> jsonList =
-        _dataFolderInShare.map((item) => item.toJson()).toList();
-    String jsonString = jsonEncode(jsonList);
+    final jsonList = _dataFolderInShare.map((item) => item.toJson()).toList();
+    final jsonString = jsonEncode(jsonList);
     await prefs.setString('todo_data', jsonString);
+  }
+
+  List<TodoItemData> _filterByCategoryAndTitle(
+      String category, bool mustHaveTitle) {
+    return _dataFolderInShare.where((toDo) {
+      final matchesCategory = toDo.category == category;
+      final hasTitle = toDo.title.isNotEmpty;
+      return matchesCategory && (mustHaveTitle ? hasTitle : true);
+    }).toList();
   }
 
   void handleStatusFilter() {
