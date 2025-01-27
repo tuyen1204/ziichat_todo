@@ -88,6 +88,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void dispose() {
+    folderName.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final processingFolders = _dataFolderInShare
         .where((item) => item.status == ItemStatus.progressing)
