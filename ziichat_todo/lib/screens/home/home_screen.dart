@@ -37,7 +37,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final int totalTask = 0;
   final currentDate = DateTime.now();
   late AppLocalizations localizations = AppLocalizations.of(context)!;
-  late final currentLocale = Localizations.localeOf(context);
 
   @override
   void initState() {
@@ -104,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
     for (var item in _dataFolderInShare) {
       // print(item.toString());
     }
-
+    late final currentLocale = Localizations.localeOf(context);
     final processingFolders = _dataFolderInShare
         .where((item) => item.status == ItemStatus.progressing)
         .toList()
@@ -141,8 +140,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   context
                       .read<LanguageNotifier>()
                       .changeLanguage(Locale(langSelected));
-
-                  print(langSelected);
                 },
               );
             }).toList(),
