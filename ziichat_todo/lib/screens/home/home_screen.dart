@@ -134,6 +134,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   context
                       .read<LanguageNotifier>()
                       .changeLanguage(Locale(langSelected));
+
+                  print(langSelected);
                 },
               );
             }).toList(),
