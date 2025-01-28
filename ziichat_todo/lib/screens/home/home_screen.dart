@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -35,9 +36,8 @@ class _HomeScreenState extends State<HomeScreen> {
   late List<String> folderNames = [];
   late List<String> folders = [];
   final int totalTask = 0;
+  late final TextEditingController folderName = TextEditingController();
   final currentDate = DateTime.now();
-  late AppLocalizations localizations = AppLocalizations.of(context)!;
-  late final currentLocale = Localizations.localeOf(context);
 
   @override
   void initState() {
@@ -48,12 +48,6 @@ class _HomeScreenState extends State<HomeScreen> {
     Future.delayed(Duration(milliseconds: 1000), () {
       setState(() {
         isLoading = false;
-      });
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        localizations = AppLocalizations.of(context)!;
       });
     });
   }
@@ -101,10 +95,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    for (var item in _dataFolderInShare) {
-      // print(item.toString());
-    }
-
     final processingFolders = _dataFolderInShare
         .where((item) => item.status == ItemStatus.progressing)
         .toList()
@@ -115,6 +105,9 @@ class _HomeScreenState extends State<HomeScreen> {
           .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
               .inDays
               .abs()));
+
+    final localizations = AppLocalizations.of(context)!;
+    late final currentLocale = Localizations.localeOf(context);
 
     return Scaffold(
       appBar: AppBar(

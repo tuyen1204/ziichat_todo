@@ -17,7 +17,7 @@ class TodoItemData {
 
   @override
   String toString() {
-    return 'TodoItemData(idTodo: $idTodo, title: $title, category: $category,categoryCreateTime: $categoryCreateTime, createdTime: $createdTime,  editedTime: $editedTime, status: $status)';
+    return 'TodoItemData(idTodo: $idTodo, title: $title, category: $category,categoryCreateTime: $categoryCreateTime, createdTime: $createdTime, status: $status)';
   }
 
   const TodoItemData({
@@ -41,9 +41,7 @@ class TodoItemData {
       'category': category,
       'categoryCreateTime': categoryCreateTime,
       'createdTime': createdTime,
-      'editedTime': editedTime,
       'status': status.index,
-      'note': note,
     };
   }
 
@@ -54,9 +52,7 @@ class TodoItemData {
       category: json['category'],
       categoryCreateTime: json['categoryCreateTime'],
       createdTime: json['createdTime'],
-      editedTime: json['editedTime'],
       status: ItemStatus.values[json['status']],
-      note: json['note'],
     );
   }
 }
