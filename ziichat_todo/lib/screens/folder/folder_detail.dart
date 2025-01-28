@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/i18n/app_localizations.dart';
@@ -38,52 +40,48 @@ class TodoItem {
 
 enum ActionInFolder { deleteFolder, editNameFolder }
 
+enum ActionSort { latest, oldest, alpha }
+
 class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
-  late final List<TodoItemData> listToDo;
-  late final List<TodoItemData> listToDoAll;
-  late int totals;
+  late List<TodoItemData> listToDo = [];
+  late List<TodoItemData> listToDoAll = [];
+  late final List<TodoItemData> listToDoIsNotItem;
+  final int totals = 0;
   Set<int> selectedItems = {};
   bool isLoading = true;
   final currentDate = DateTime.now();
-  Map<String, String> sortList = {
-    "latest": "Latest",
-    "oldest": "Oldest",
-    "alpha": "Alphabetically",
+
+  Map<ActionSort, String> sortListDropdown = {
+    ActionSort.latest: "Latest",
+    ActionSort.oldest: "Oldest",
+    ActionSort.alpha: "Alphabetically",
   };
-  String currentSort = "latest";
+
+  ActionSort? currentSort = ActionSort.latest;
+
   late List<ItemStatus> listStatus = [ItemStatus.all];
-  List<TodoItemData> sortByStatus = [...dataFolder];
 
   String currentStatus = statusToReadableString(ItemStatus.all);
   String categoryToDelete = "";
   late final TextEditingController newCategory;
 
-  final folderNames =
-      dataFolder.map((item) => item.category.toLowerCase()).toSet().toList();
-
-  late AppLocalizations? localizations;
-
   late DateFormat dateTimeFormat;
+
+  late List<TodoItemData> _dataFolderInShare = [];
+  late List<String> folderNames = [];
+  late List<TodoItemData> sortByStatus = [];
 
   @override
   void initState() {
     super.initState();
 
-    setState(() {
-      listToDo = dataFolder
-          .where((toDo) => toDo.category == widget.currentCategory)
-          .toList();
-      listToDoAll = List.from(dataFolder);
-      totals = dataFolder.length;
+    _loadTodos();
 
-      listStatus.addAll(dataFolder
-          .map((item) => item.status)
-          .toSet()
-          .where((status) => status != ItemStatus.all)
-          .toList());
-
-      dateTimeFormat = DateFormat('yyyy-MM-dd HH:mm');
-    });
+    setState(
+      () {
+        dateTimeFormat = DateFormat('yyyy-MM-dd HH:mm');
+      },
+    );
 
     Future.delayed(Duration(milliseconds: 1000), () {
       setState(() {
@@ -95,21 +93,83 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     newCategory = TextEditingController(text: widget.currentCategory);
   }
 
-  void handleUpdateFolders() {
-    setState(() {
-      sortByStatus = widget.currentCategory == "All"
-          ? dataFolder
-              .where((toDo) =>
-                  statusToReadableString(toDo.status) == currentStatus)
-              .toList()
-          : dataFolder
-              .where((toDo) =>
-                  (widget.currentCategory != "All"
-                      ? toDo.category == widget.currentCategory
-                      : true) &&
-                  statusToReadableString(toDo.status) == currentStatus)
+  List<String> idsToRemove = [];
+
+  Future<void> _loadTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? jsonString = prefs.getString('todo_data');
+
+    if (jsonString != null) {
+      List<dynamic> jsonList = jsonDecode(jsonString);
+
+      setState(
+        () {
+          _dataFolderInShare =
+              jsonList.map((item) => TodoItemData.fromJson(item)).toList();
+
+          folderNames = _dataFolderInShare
+              .map((item) => item.category.toLowerCase())
+              .toSet()
               .toList();
-    });
+
+          sortByStatus = _dataFolderInShare;
+
+          listToDo = _dataFolderInShare
+              .where((toDo) => (toDo.category == widget.currentCategory &&
+                  toDo.title.isNotEmpty))
+              .toList();
+
+          listToDoAll = _dataFolderInShare
+              .where((toDo) => toDo.title.isNotEmpty)
+              .toList();
+
+          listToDoIsNotItem = _dataFolderInShare
+              .where((toDo) => toDo.category == widget.currentCategory)
+              .toList();
+
+          listStatus.addAll(_dataFolderInShare
+              .map((item) => item.status)
+              .toSet()
+              .where((status) => status != ItemStatus.all)
+              .toList());
+        },
+      );
+    } else {
+      setState(() {
+        _dataFolderInShare = dataFolder;
+      });
+
+      _saveTodos();
+    }
+  }
+
+  Future<void> _saveTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<Map<String, dynamic>> jsonList =
+        _dataFolderInShare.map((item) => item.toJson()).toList();
+    String jsonString = jsonEncode(jsonList);
+    await prefs.setString('todo_data', jsonString);
+  }
+
+  void handleStatusFilter() {
+    setState(
+      () {
+        sortByStatus = widget.currentCategory == "All"
+            ? _dataFolderInShare
+                .where((toDo) =>
+                    statusToReadableString(toDo.status) == currentStatus &&
+                    toDo.title.isNotEmpty)
+                .toList()
+            : _dataFolderInShare
+                .where((toDo) =>
+                    ((widget.currentCategory != "All"
+                            ? toDo.category == widget.currentCategory
+                            : true) &&
+                        statusToReadableString(toDo.status) == currentStatus) &&
+                    toDo.title.isNotEmpty)
+                .toList();
+      },
+    );
   }
 
   void handleEditFolder(BuildContext context) {
@@ -122,7 +182,8 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
             Text(AppLocalizations.of(context)!.translate('editFolder')),
             CupertinoTextField(
               controller: newCategory,
-              placeholder: 'Enter new folder name',
+              placeholder:
+                  AppLocalizations.of(context)!.translate('enterNewFolderName'),
               padding: EdgeInsets.all(12),
             ),
           ],
@@ -133,7 +194,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.translate('cancel')),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
@@ -142,12 +203,23 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 showCupertinoDialog(
                   context: context,
                   builder: (context) => CupertinoAlertDialog(
-                    title: Text('Info'),
-                    content: Text('Folder name exists'),
+                    title:
+                        Text(AppLocalizations.of(context)!.translate('info')),
+                    content: Text(AppLocalizations.of(context)!
+                        .translate('folderNameExists')),
                     actions: <Widget>[
                       CupertinoDialogAction(
                         onPressed: () {
-                          Navigator.pop(context);
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ItemsTodoDetail(
+                                currentCategory: newCategory.text,
+                                onLanguageChanged: widget.onLanguageChanged,
+                              ),
+                            ),
+                          );
+                          Navigator.of(context).pop();
                         },
                         child: Text('Ok'),
                       ),
@@ -156,7 +228,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 );
               } else {
                 setState(() {
-                  final updatedData = dataFolder.map((item) {
+                  final updatedData = _dataFolderInShare.map((item) {
                     if (item.category == widget.currentCategory) {
                       return TodoItemData(
                         idTodo: item.idTodo,
@@ -170,9 +242,11 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                     return item;
                   }).toList();
 
-                  dataFolder.clear();
-                  dataFolder.addAll(updatedData);
+                  _dataFolderInShare.clear();
+                  _dataFolderInShare.addAll(updatedData);
+                  _saveTodos();
 
+                  Navigator.of(context).pop();
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
@@ -182,11 +256,10 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                       ),
                     ),
                   );
-                  Navigator.of(context).pop();
                 });
               }
             },
-            child: const Text('Save'),
+            child: Text(AppLocalizations.of(context)!.translate('save')),
           ),
         ],
       ),
@@ -197,30 +270,85 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     showCupertinoDialog(
       context: context,
       builder: (BuildContext context) => CupertinoAlertDialog(
-        title: const Text('You want to delete this folder'),
+        title: Text(AppLocalizations.of(context)!.translate('youDeleteFolder')),
         actions: <CupertinoDialogAction>[
           CupertinoDialogAction(
             isDefaultAction: true,
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: Text(localizations!.translate('no')),
+            child: Text(AppLocalizations.of(context)!.translate('no')),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
             onPressed: () {
               setState(() {
-                dataFolder
+                _dataFolderInShare
                     .removeWhere((item) => item.category == categoryToDelete);
               });
+              _saveTodos();
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => HomeScreen(),
+                  builder: (context) => HomeScreen(
+                    onLanguageChanged: (locale) {},
+                  ),
                 ),
               );
             },
-            child: Text(localizations!.translate('yes')),
+            child: Text(AppLocalizations.of(context)!.translate('yes')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleManyTodo(String id, BuildContext context, String itemInCategory) {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: Text(
+            "${AppLocalizations.of(context)!.translate('delete')} ${selectedItems.length} ${AppLocalizations.of(context)!.translate('todoSelected')}"),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text(AppLocalizations.of(context)!.translate('no')),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              _dataFolderInShare
+                  .removeWhere((item) => idsToRemove.contains(item.idTodo));
+
+              if (itemInCategory != "Other" || itemInCategory != "All") {
+                _dataFolderInShare.add(
+                  TodoItemData(
+                    idTodo: 'new-id-$itemInCategory',
+                    title: '',
+                    category: itemInCategory,
+                    createdTime: DateTime.now().toString(),
+                    categoryCreateTime: DateTime.now().toString(),
+                    status: ItemStatus.todo,
+                  ),
+                );
+              }
+
+              _saveTodos();
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) {
+                        return ItemsTodoDetail(
+                          currentCategory: itemInCategory,
+                          onLanguageChanged: (locale) {},
+                        );
+                      },
+                      settings: RouteSettings(arguments: itemInCategory)));
+            },
+            child: Text(AppLocalizations.of(context)!.translate('yes')),
           ),
         ],
       ),
@@ -231,13 +359,11 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   Widget build(BuildContext context) {
     final paddingNotch = MediaQuery.of(context).padding.top;
     final paddingBottom = MediaQuery.of(context).padding.bottom;
-    final sortedList = (widget.currentCategory == "All"
-        ? listToDoAll
-        : listToDo)
-      ..sort((a, b) {
-        if (currentSort == "alpha") {
-          return a.title.toLowerCase().compareTo(b.title.toLowerCase());
-        } else if (currentSort == "latest") {
+    int totals = listToDoAll.length;
+
+    sortByStatus.sort(
+      (a, b) {
+        if (currentSort == ActionSort.latest) {
           return DateTime.parse(a.createdTime)
               .difference(currentDate)
               .inDays
@@ -245,29 +371,15 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
               .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
                   .inDays
                   .abs());
-        } else if (currentSort == "oldest") {
-          return DateTime.parse(a.createdTime)
-              .compareTo(DateTime.parse(b.createdTime));
         }
         return 0;
-      });
+      },
+    );
 
     return Scaffold(
       backgroundColor: primaryColor,
       appBar: AppBar(
         leading: IconButton(
-<<<<<<< Updated upstream
-            icon: Icon(Icons.arrow_back_ios_new, color: Colors.white),
-            onPressed: () => {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          HomeScreen(onLanguageChanged: (locale) {}),
-                    ),
-                  ),
-                }),
-=======
           icon: Icon(Icons.arrow_back_ios_new, color: Colors.white),
           onPressed: () {
             if (listToDoIsNotItem.isEmpty && widget.currentCategory != "All") {
@@ -282,15 +394,16 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => HomeScreen(),
+                builder: (context) =>
+                    HomeScreen(onLanguageChanged: (locale) {}),
               ),
             );
           },
         ),
->>>>>>> Stashed changes
         backgroundColor: Colors.transparent,
         actions: [
-          widget.currentCategory == "All"
+          SizedBox(width: 16),
+          widget.currentCategory == "All" || widget.currentCategory == "Other"
               ? SizedBox()
               : PopupMenuButton<ActionInFolder>(
                   icon: Icon(Icons.more_vert, color: Colors.white),
@@ -326,7 +439,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(32),
+            padding: const EdgeInsets.only(left: 32, right: 32, bottom: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -348,7 +461,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
-                      fontWeight: FontWeight.w500),
+                      fontWeight: FontWeight.w700),
                 ),
                 Text(
                   widget.currentCategory == "All"
@@ -379,22 +492,150 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                     color: Colors.black12,
                     spreadRadius: 5,
                     blurRadius: 7,
-                    offset: Offset(0, 3), // changes position of shadow
+                    offset: Offset(0, 3),
                   ),
                 ],
               ),
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 32, bottom: 64),
+                  padding: const EdgeInsets.only(top: 12, bottom: 64),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: IconButton(
+                                icon: Icon(
+                                  selectedItems.length == sortByStatus.length &&
+                                          selectedItems.length > 1
+                                      ? Icons.check_box
+                                      : Icons.check_box_outline_blank,
+                                  color: selectedItems.length ==
+                                              sortByStatus.length &&
+                                          selectedItems.length > 1
+                                      ? primaryColor
+                                      : Colors.grey,
+                                ),
+                                onPressed: () {
+                                  if (selectedItems.length ==
+                                      sortByStatus.length) {
+                                    setState(() {
+                                      selectedItems.clear();
+                                    });
+                                  } else {
+                                    setState(() {
+                                      selectedItems = List.generate(
+                                              sortByStatus.length, (i) => i)
+                                          .toSet();
+                                      for (var item in selectedItems) {
+                                        idsToRemove
+                                            .add(sortByStatus[item].idTodo);
+                                      }
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              sortByStatus.isEmpty || selectedItems.isEmpty
+                                  ? null
+                                  : _handleManyTodo(
+                                      sortByStatus[selectedItems.first].idTodo,
+                                      context,
+                                      widget.currentCategory);
+                            },
+                            child: Text(
+                                "${AppLocalizations.of(context)!.translate('delete')} ${selectedItems.length} ${AppLocalizations.of(context)!.translate('todoSelected')}"),
+                          ),
+                          PopupMenuButton<ActionSort>(
+                            iconColor: Colors.black87,
+                            icon: Icon(Icons.filter_alt_outlined),
+                            onSelected: (ActionSort item) {
+                              setState(() {
+                                currentSort = item;
+                              });
+
+                              switch (item) {
+                                case ActionSort.latest:
+                                  setState(
+                                    () {
+                                      sortByStatus.sort(
+                                        (a, b) {
+                                          return DateTime.parse(a.createdTime)
+                                              .difference(currentDate)
+                                              .inDays
+                                              .abs()
+                                              .compareTo((DateTime.parse(
+                                                          b.createdTime)
+                                                      .difference(currentDate))
+                                                  .inDays
+                                                  .abs());
+                                        },
+                                      );
+                                    },
+                                  );
+                                  break;
+
+                                case ActionSort.oldest:
+                                  setState(
+                                    () {
+                                      sortByStatus.sort(
+                                        (a, b) {
+                                          return DateTime.parse(a.createdTime)
+                                              .compareTo(DateTime.parse(
+                                                  b.createdTime));
+                                        },
+                                      );
+                                    },
+                                  );
+                                  break;
+
+                                case ActionSort.alpha:
+                                  sortByStatus.sort(
+                                    (a, b) {
+                                      return a.title
+                                          .toLowerCase()
+                                          .compareTo(b.title.toLowerCase());
+                                    },
+                                  );
+                                  break;
+                              }
+                            },
+                            itemBuilder: (BuildContext context) {
+                              return [
+                                ...sortListDropdown.entries.map((entry) {
+                                  return PopupMenuItem<ActionSort>(
+                                    value: entry.key,
+                                    labelTextStyle: WidgetStatePropertyAll(
+                                      TextStyle(
+                                          fontFamily: 'Barlow',
+                                          fontWeight: FontWeight.w600,
+                                          color: currentSort == entry.key
+                                              ? primaryColor
+                                              : Colors.black54),
+                                    ),
+                                    child: Text(
+                                      entry.value,
+                                    ),
+                                  );
+                                }),
+                              ];
+                            },
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8),
                       if (listToDo.length > 1 ||
                           widget.currentCategory == "All")
-                        _innerSort(),
-                      _innerSortByStatus(),
-                      _innerListTodoItem(sortedList),
+                        _innerSortByStatus(),
+                      _innerListTodoItem(),
                     ],
                   ),
                 ),
@@ -411,111 +652,60 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     );
   }
 
-  Column _innerListTodoItem(List<TodoItemData> sortedList) {
-    return Column(
-      spacing: 8,
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: widget.currentCategory == "All"
-          ? List.generate(
-              currentStatus == "All" ? listToDoAll.length : sortByStatus.length,
-              (index) {
-              final todoItem = currentStatus == "All"
-                  ? listToDoAll[index]
-                  : sortByStatus[index];
-              return isLoading
-                  ? ShimmerLoading(
-                      isLoading: isLoading,
-                      child: TodoItemCard(
-                        index: index,
-                        todoItem: todoItem,
-                        isSelected: selectedItems.contains(index),
-                        onSelected: (selectedIndex) {},
-                      ),
-                    )
-                  : TodoItemCard(
-                      index: index,
-                      todoItem: todoItem,
-                      updateNameFolder: newCategory.text,
-                      isSelected: selectedItems.contains(index),
-                      onSelected: (selectedIndex) {
-                        setState(
-                          () {
-                            if (selectedItems.contains(selectedIndex)) {
-                              selectedItems.remove(selectedIndex);
-                            } else {
-                              selectedItems.add(selectedIndex);
-                            }
-                          },
-                        );
-                      },
-                    );
-            })
-          : List.generate(
-              currentStatus == "All" ? listToDo.length : sortByStatus.length,
-              (index) {
-                final todoItem = currentStatus == "All"
-                    ? listToDo[index]
-                    : sortByStatus[index];
+  Column _innerListTodoItem() {
+    sortByStatus = widget.currentCategory == "All"
+        ? (currentStatus == "All" ? listToDoAll : sortByStatus)
+        : (currentStatus == "All" ? listToDo : sortByStatus);
 
-                return isLoading
-                    ? ShimmerLoading(
-                        isLoading: isLoading,
-                        child: TodoItemCard(
-                          index: index,
-                          todoItem: todoItem,
-                          isSelected: selectedItems.contains(index),
-                          onSelected: (selectedIndex) {},
-                        ),
-                      )
-                    : TodoItemCard(
-                        index: index,
-                        todoItem: todoItem,
-                        updateNameFolder: newCategory.text,
-                        isSelected: selectedItems.contains(index),
-                        onSelected: (selectedIndex) {
-                          setState(
-                            () {
-                              if (selectedItems.contains(selectedIndex)) {
-                                selectedItems.remove(selectedIndex);
-                              } else {
-                                selectedItems.add(selectedIndex);
-                              }
-                            },
-                          );
-                        },
-                      );
-              },
-            ),
+    return Column(
+      children: [
+        sortByStatus.isEmpty
+            ? SizedBox(
+                width: double.infinity,
+                height: 100,
+                child: Center(
+                    child: Text(
+                  "Nothing",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                )),
+              )
+            : SizedBox(
+                height: 400,
+                child: ListView.builder(
+                    itemCount: sortByStatus.length,
+                    itemBuilder: (context, index) {
+                      final todoItem = sortByStatus[index];
+                      return isLoading
+                          ? ShimmerLoading(
+                              isLoading: isLoading,
+                              child: _buildTodoItemCard(index, todoItem),
+                            )
+                          : _buildTodoItemCard(index, todoItem);
+                    }),
+              ),
+      ],
     );
   }
 
-  SizedBox _innerSort() {
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: sortList.length,
-        itemBuilder: (context, index) {
-          String key = sortList.keys.elementAt(index);
-          String value = sortList[key]!;
-          return Padding(
-            padding: EdgeInsets.symmetric(horizontal: index == 0 ? 6 : 6),
-            child: ChoiceChip(
-              showCheckmark: false,
-              label: Text(value),
-              selected: currentSort == key,
-              onSelected: (value) {
-                setState(() {
-                  currentSort = key;
-                  print(currentSort);
-                });
-              },
-            ),
-          );
-        },
-      ),
+  Widget _buildTodoItemCard(int index, TodoItemData todoItem) {
+    return TodoItemCard(
+      index: index,
+      todoItem: todoItem,
+      updateNameFolder: newCategory.text,
+      isSelected: selectedItems.contains(index),
+      onSelected: (selectedIndex) {
+        setState(
+          () {
+            if (selectedItems.contains(selectedIndex)) {
+              selectedItems.remove(selectedIndex);
+              idsToRemove.remove(todoItem.idTodo);
+            } else {
+              selectedItems.add(selectedIndex);
+              idsToRemove.add(todoItem.idTodo);
+            }
+          },
+        );
+      },
     );
   }
 
@@ -538,7 +728,14 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 setState(() {
                   currentStatus = statusToReadableString(listStatus[index]);
                 });
-                handleUpdateFolders();
+
+                handleStatusFilter();
+
+                setState(() {
+                  selectedItems =
+                      List.generate(sortByStatus.length, (i) => i).toSet();
+                  selectedItems.clear();
+                });
               },
             ),
           );
@@ -553,7 +750,7 @@ class TodoItemCard extends StatelessWidget {
   final TodoItemData todoItem;
   final bool isSelected;
   final ValueChanged<int> onSelected;
-  final updateNameFolder;
+  final String? updateNameFolder;
   const TodoItemCard(
       {super.key,
       required this.index,
@@ -564,90 +761,105 @@ class TodoItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0.4,
-      color: Colors.white,
-      clipBehavior: Clip.hardEdge,
-      child: InkWell(
-        onTap: () => {
-          onSelected(index),
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) {
-                return TodoDetailScreen(
-                    idTodo: todoItem.idTodo,
-                    initStatus: todoItem.status,
-                    initCategory: updateNameFolder,
-                    onLanguageChanged: (locale) {});
-              },
-            ),
-          ),
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            spacing: 12,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      todoItem.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: isSelected ? primaryColor : Colors.black),
-                    ),
-                    Row(
+    return Column(
+      children: [
+        SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey[200]!)),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              spacing: 12,
+              children: [
+                InkWell(
+                  onTap: () => {
+                    onSelected(index),
+                  },
+                  child: Icon(
+                    isSelected
+                        ? Icons.check_box
+                        : Icons.check_box_outline_blank,
+                    size: 24,
+                    color: isSelected ? primaryColor : Colors.grey,
+                  ),
+                ),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return TodoDetailScreen(
+                                idTodo: todoItem.idTodo,
+                                initStatus: todoItem.status,
+                                initCategory: todoItem.category,
+                                onLanguageChanged: (locale) {});
+                          },
+                        ),
+                      ),
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          updateNameFolder.isNotEmpty
-                              ? '$updateNameFolder - '
-                              : '${todoItem.category} - ',
+                          todoItem.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black45,
-                              fontWeight: FontWeight.w500),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.black),
                         ),
-                        Text(
-                          todoItem.editedTime.isEmpty
-                              ? DateFormat('yyyy-MM-dd HH:mm')
-                                  .format(DateTime.parse(todoItem.createdTime))
-                              : DateFormat('yyyy-MM-dd HH:mm')
-                                  .format(DateTime.parse(todoItem.editedTime)),
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black45,
-                              fontWeight: FontWeight.w500),
+                        Row(
+                          children: [
+                            Text(
+                              '${todoItem.category} • ',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black45,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                            Text(
+                              todoItem.editedTime.isEmpty
+                                  ? DateFormat('yyyy-MM-dd HH:mm').format(
+                                      DateTime.parse(todoItem.createdTime))
+                                  : DateFormat('yyyy-MM-dd HH:mm').format(
+                                      DateTime.parse(todoItem.editedTime)),
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black45,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                            SizedBox(width: 4),
+                            if (todoItem.editedTime.isNotEmpty)
+                              Icon(
+                                Icons.edit,
+                                size: 12,
+                                color: Colors.grey,
+                              ),
+                          ],
                         ),
-                        SizedBox(width: 4),
-                        if (todoItem.editedTime.isNotEmpty)
-                          Icon(
-                            Icons.edit,
-                            size: 12,
-                            color: Colors.grey,
-                          ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: statusColor(todoItem.status), // border color
-                  shape: BoxShape.circle,
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: statusColor(todoItem.status),
+                    shape: BoxShape.circle,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

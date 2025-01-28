@@ -3,3 +3,5 @@ ziichat_todo/pubspec.lock
 .DS_Store
 /ziichat_todo/.vscode
 *.zip
+/ziichat_todo/ios
+/ziichat_todo/ios

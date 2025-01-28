@@ -1,6 +1,4 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:ziichat_todo/data/folder_data.dart';
 
 enum ItemStatus { todo, progressing, pending, done, all }
 
@@ -9,6 +7,7 @@ class TodoItemData {
   final String title;
   final int task;
   final String category;
+  final String categoryCreateTime;
   final bool isDefault;
   final String createdTime;
   final String editedTime;
@@ -16,10 +15,16 @@ class TodoItemData {
   final ItemStatus status;
   final String note;
 
+  @override
+  String toString() {
+    return 'TodoItemData(idTodo: $idTodo, title: $title, category: $category,categoryCreateTime: $categoryCreateTime, createdTime: $createdTime,  editedTime: $editedTime, status: $status)';
+  }
+
   const TodoItemData({
     required this.idTodo,
     required this.title,
     this.category = 'All',
+    this.categoryCreateTime = '',
     this.createdTime = '',
     this.editedTime = '',
     this.task = 0,
@@ -29,35 +34,30 @@ class TodoItemData {
     this.categorySlug = '',
   });
 
-  static void onCreateTodoItem(String formatDate, String nameTodo,
-      String categoryTodo, String noteTodo) async {
-    try {
-      var random = Random();
-      final idTodoRandom = 'todo-${random.nextInt(100)}';
-      final newTodoItemData = TodoItemData(
-          idTodo: idTodoRandom,
-          title: nameTodo,
-          createdTime: formatDate,
-          category: categoryTodo,
-          note: noteTodo);
-      dataFolder.add(newTodoItemData);
-      print("success");
-    } catch (error) {
-      print(error);
-    }
+  Map<String, dynamic> toJson() {
+    return {
+      'idTodo': idTodo,
+      'title': title,
+      'category': category,
+      'categoryCreateTime': categoryCreateTime,
+      'createdTime': createdTime,
+      'editedTime': editedTime,
+      'status': status.index,
+      'note': note,
+    };
   }
 
-  static void onDeleteTodoItem(String idTodo) async {
-    try {
-      final todoItemIndex =
-          dataFolder.indexWhere((item) => item.idTodo == idTodo);
-      if (todoItemIndex != -1) {
-        dataFolder.removeAt(todoItemIndex);
-        print("Deleted id: $idTodo");
-      }
-    } catch (error) {
-      print("Error");
-    }
+  factory TodoItemData.fromJson(Map<String, dynamic> json) {
+    return TodoItemData(
+      idTodo: json['idTodo'],
+      title: json['title'],
+      category: json['category'],
+      categoryCreateTime: json['categoryCreateTime'],
+      createdTime: json['createdTime'],
+      editedTime: json['editedTime'],
+      status: ItemStatus.values[json['status']],
+      note: json['note'],
+    );
   }
 }
 
@@ -74,6 +74,13 @@ String statusToReadableString(ItemStatus status) {
     case ItemStatus.done:
       return 'Done';
   }
+}
+
+String capitalizeEachWord(String text) {
+  return text.split(' ').map((word) {
+    if (word.isEmpty) return word;
+    return word[0].toUpperCase() + word.substring(1);
+  }).join(' ');
 }
 
 Color statusColor(ItemStatus status) {

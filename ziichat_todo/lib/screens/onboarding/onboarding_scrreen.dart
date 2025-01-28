@@ -13,6 +13,7 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   int currentPage = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,20 +71,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 List<Map<String, dynamic>> onboardingData = [
   {
     "image": "assets/images/onboarding-01.png",
-    "title": "Loren ipsun dolor sit anet",
+    "title": "Manage Folders Efficiently",
     "text":
-        "Loren ipsun dolor sit anet, consectetur adipisci elit, sed eiusnod tenpor incidunt ut labore et dolore nagna aliqua.",
+        "Create, edit, and organize folders to group your tasks effectively. Always have a default folder ready for uncategorized tasks.",
   },
   {
     "image": "assets/images/onboarding-02.png",
-    "title": "Loren ipsun dolor sit anet",
+    "title": "Track Your Tasks",
     "text":
-        "Loren ipsun dolor sit anet, consectetur adipisci elit, sed eiusnod tenpor incidunt ut labore et dolore nagna aliqua.",
+        "Add, edit, and track tasks with timestamps and notes. Easily update their status or move them to different folders.",
   },
   {
     "image": "assets/images/onboarding-03.png",
-    "title": "Loren ipsun dolor sit anet",
+    "title": "Advanced Features",
     "text":
-        "Loren ipsun dolor sit anet, consectetur adipisci elit, sed eiusnod tenpor incidunt ut labore et dolore nagna aliqua.",
+        "Sort tasks, paginate for better focus, and export/import your data. Fully responsive, works on desktop too!",
   },
 ];

@@ -1,9 +1,11 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ziichat_todo/component/title_section_large.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:intl/intl.dart';
-import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/i18n/app_localizations.dart';
 import 'package:ziichat_todo/screens/folder/folder_detail.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
@@ -27,24 +29,23 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
   final nameTodo = TextEditingController();
   final editedTodo = TextEditingController();
   final noteTodo = TextEditingController();
-  final listTodoItem = dataFolder;
-  final categoryList = dataFolder.map((data) => data.category).toList().toSet();
+  late List<String> categoryList = [];
   late String? categoryTodo;
-
   String? selectedCategory;
-  TextEditingController choiceCategory = TextEditingController();
-
-  late String? categorySelected = categoryTodo;
+  late String? categorySelected =
+      categoryTodo == "All" ? "Other" : categoryTodo;
   late String? statusSelected = "To Do";
-
   late AppLocalizations localizations = AppLocalizations.of(context)!;
+  late List<TodoItemData> _dataFolderInShare = [];
 
   @override
   void initState() {
     super.initState();
+
+    _loadTodos();
+
     categoryTodo = widget.showCurrentCategory;
     selectedCategory = categoryTodo;
-    choiceCategory.text = selectedCategory!;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
@@ -53,10 +54,58 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
     });
   }
 
+  Future<void> onCreateTodoItem(String formatDate, String nameTodo,
+      String categoryTodo, String noteTodo) async {
+    try {
+      var random = Random();
+      final idTodoRandom = 'todo-new-${random.nextInt(100)}';
+      final newTodoItemData = TodoItemData(
+        idTodo: idTodoRandom,
+        title: nameTodo,
+        createdTime: formatDate,
+        category: categoryTodo,
+        note: noteTodo,
+      );
+      _dataFolderInShare.add(newTodoItemData);
+      _saveTodos();
+      print("Todo item created successfully.");
+    } catch (error) {
+      print("Error creating todo item: $error");
+    }
+  }
+
+  Future<void> _loadTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? jsonString = prefs.getString('todo_data');
+    List<dynamic> jsonList = jsonDecode(jsonString!);
+
+    if (jsonList.isNotEmpty) {
+      setState(
+        () {
+          _dataFolderInShare =
+              jsonList.map((item) => TodoItemData.fromJson(item)).toList();
+
+          categoryList =
+              _dataFolderInShare.map((data) => data.category).toSet().toList();
+        },
+      );
+    }
+    await _saveTodos();
+  }
+
+  Future<void> _saveTodos() async {
+    final prefs = await SharedPreferences.getInstance();
+    String jsonString =
+        jsonEncode(_dataFolderInShare.map((item) => item.toJson()).toList());
+    await prefs.setString('todo_data', jsonString);
+  }
+
   @override
   Widget build(BuildContext context) {
     String formattedDate = DateFormat('MMM dd yyyy, HH:MM').format(currentDate);
-    final status = dataFolder.map((item) => item.status).toSet().toList();
+    final status =
+        _dataFolderInShare.map((item) => item.status).toSet().toList();
+
     return Padding(
       padding: EdgeInsets.only(bottom: widget.paddingBottom),
       child: Column(
@@ -151,9 +200,6 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                               ),
                             ),
                             keyboardType: TextInputType.multiline,
-                            onTapOutside: (event) {
-                              FocusManager.instance.primaryFocus?.unfocus();
-                            },
                           ),
                           TextFormField(
                             controller: noteTodo,
@@ -189,6 +235,17 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                                     label: Text(
                                       statusToReadableString(item),
                                     ),
+                                    labelStyle: TextStyle(
+                                      color: statusSelected !=
+                                              statusToReadableString(item)
+                                          ? Colors.grey
+                                          : null,
+                                    ),
+                                    backgroundColor: statusSelected !=
+                                            statusToReadableString(item)
+                                        ? Colors.grey[50]
+                                        : null,
+                                    showCheckmark: false,
                                     selected: statusSelected ==
                                         statusToReadableString(item),
                                     onSelected: (value) {},
@@ -209,10 +266,13 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                                 spacing: 8.0,
                                 children: categoryList.map((item) {
                                   return ChoiceChip(
-                                    label: Text(item),
+                                    showCheckmark: false,
+                                    label: Text(capitalizeEachWord(item)),
                                     selected: categorySelected == item,
                                     labelStyle: TextStyle(
-                                      color: Colors.black87,
+                                      color: categorySelected == item
+                                          ? Colors.black87
+                                          : Colors.grey,
                                     ),
                                     onSelected: (value) {
                                       setState(() {
@@ -241,9 +301,8 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                   onPressed: () => {
                     if (formKey.currentState!.validate())
                       {
-                        TodoItemData.onCreateTodoItem(currentDate.toString(),
-                            nameTodo.text, categorySelected!, noteTodo.text),
-                        setState(() {}),
+                        onCreateTodoItem(currentDate.toString(), nameTodo.text,
+                            categorySelected!, noteTodo.text),
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
