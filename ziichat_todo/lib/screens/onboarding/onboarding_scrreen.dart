@@ -71,20 +71,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 List<Map<String, dynamic>> onboardingData = [
   {
     "image": "assets/images/onboarding-01.png",
-    "title": "Manage Folders Efficiently",
+    "title": "Loren ipsun dolor sit anet",
     "text":
-        "Create, edit, and organize folders to group your tasks effectively. Always have a default folder ready for uncategorized tasks.",
+        "Loren ipsun dolor sit anet, consectetur adipisci elit, sed eiusnod tenpor incidunt ut labore et dolore nagna aliqua.",
   },
   {
     "image": "assets/images/onboarding-02.png",
-    "title": "Track Your Tasks",
+    "title": "Loren ipsun dolor sit anet",
     "text":
-        "Add, edit, and track tasks with timestamps and notes. Easily update their status or move them to different folders.",
+        "Loren ipsun dolor sit anet, consectetur adipisci elit, sed eiusnod tenpor incidunt ut labore et dolore nagna aliqua.",
   },
   {
     "image": "assets/images/onboarding-03.png",
-    "title": "Advanced Features",
+    "title": "Loren ipsun dolor sit anet",
     "text":
-        "Sort tasks, paginate for better focus, and export/import your data. Fully responsive, works on desktop too!",
+        "Loren ipsun dolor sit anet, consectetur adipisci elit, sed eiusnod tenpor incidunt ut labore et dolore nagna aliqua.",
   },
 ];

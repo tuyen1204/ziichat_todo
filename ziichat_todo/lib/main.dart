@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:provider/provider.dart';
 import 'package:ziichat_todo/i18n/app_localizations_delegate.dart';
 import 'package:ziichat_todo/screens/onboarding/onboarding_scrreen.dart';
-import 'package:ziichat_todo/utils/language_notifier.dart';
 import 'constants.dart';
 
 void main() {
-  runApp(
-    ChangeNotifierProvider(
-      create: (context) => LanguageNotifier(),
-      child: const MyApp(),
-    ),
-  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -33,7 +26,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    final languageNotifier = Provider.of<LanguageNotifier>(context);
     return MaterialApp(
       title: 'ZiiChat TodoList',
       debugShowCheckedModeBanner: false,
@@ -54,7 +46,7 @@ class _MyAppState extends State<MyApp> {
         Locale('en'),
         Locale('vi'),
       ],
-      locale: languageNotifier.locale,
+      locale: _locale,
     );
   }
 }
