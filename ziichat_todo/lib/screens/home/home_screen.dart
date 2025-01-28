@@ -12,8 +12,7 @@ import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
 import 'package:ziichat_todo/component/shimmer_effect.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.onLanguageChanged});
-  final Function(Locale) onLanguageChanged;
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();

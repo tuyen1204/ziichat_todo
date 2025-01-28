@@ -5,8 +5,7 @@ import 'package:ziichat_todo/screens/home/home_screen.dart';
 import 'components/onboard_content.dart';
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key, required this.onLanguageChanged});
-  final Function(Locale) onLanguageChanged;
+  const OnboardingScreen({super.key});
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -53,9 +52,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => HomeScreen(
-                        onLanguageChanged: widget.onLanguageChanged,
-                      ),
+                      builder: (context) => HomeScreen(),
                     ),
                   );
                 },

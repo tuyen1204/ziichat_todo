@@ -216,9 +216,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => HomeScreen(
-                    onLanguageChanged: (locale) {},
-                  ),
+                  builder: (context) => HomeScreen(),
                 ),
               );
             },
@@ -258,6 +256,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
       backgroundColor: primaryColor,
       appBar: AppBar(
         leading: IconButton(
+<<<<<<< Updated upstream
             icon: Icon(Icons.arrow_back_ios_new, color: Colors.white),
             onPressed: () => {
                   Navigator.push(
@@ -268,6 +267,27 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                     ),
                   ),
                 }),
+=======
+          icon: Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          onPressed: () {
+            if (listToDoIsNotItem.isEmpty && widget.currentCategory != "All") {
+              final newTodoItemData = TodoItemData(
+                  idTodo: "",
+                  title: "",
+                  createdTime: "formatDate",
+                  category: widget.currentCategory,
+                  note: "noteTodo");
+              _dataFolderInShare.add(newTodoItemData);
+            }
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HomeScreen(),
+              ),
+            );
+          },
+        ),
+>>>>>>> Stashed changes
         backgroundColor: Colors.transparent,
         actions: [
           widget.currentCategory == "All"

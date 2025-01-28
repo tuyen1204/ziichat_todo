@@ -8,10 +8,11 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
+<<<<<<< Updated upstream
   State<MyApp> createState() => _MyAppState();
 }
 
@@ -26,16 +27,26 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+=======
+  Widget build(BuildContext context) {
+    final languageNotifier = Provider.of<LanguageNotifier>(context);
+
+>>>>>>> Stashed changes
     return MaterialApp(
       title: 'ZiiChat TodoList',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: primaryColor),
           useMaterial3: true,
+<<<<<<< Updated upstream
           fontFamily: 'FilsonPro'),
       home: OnboardingScreen(
         onLanguageChanged: _changeLanguage,
       ),
+=======
+          fontFamily: 'Barlow'),
+      home: OnboardingScreen(),
+>>>>>>> Stashed changes
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
