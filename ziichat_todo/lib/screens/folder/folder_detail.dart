@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -323,6 +322,20 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
             onPressed: () {
               _dataFolderInShare
                   .removeWhere((item) => idsToRemove.contains(item.idTodo));
+
+              if (itemInCategory != "Other" || itemInCategory != "All") {
+                _dataFolderInShare.add(
+                  TodoItemData(
+                    idTodo: 'new-id-$itemInCategory',
+                    title: '',
+                    category: itemInCategory,
+                    createdTime: DateTime.now().toString(),
+                    categoryCreateTime: DateTime.now().toString(),
+                    status: ItemStatus.todo,
+                  ),
+                );
+              }
+
               _saveTodos();
               Navigator.push(
                   context,
@@ -490,139 +503,134 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      if (listToDo.length > 1 ||
-                          widget.currentCategory == "All")
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Expanded(
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: IconButton(
-                                  icon: Icon(
-                                    selectedItems.length ==
-                                                sortByStatus.length &&
-                                            selectedItems.length > 1
-                                        ? Icons.check_box
-                                        : Icons.check_box_outline_blank,
-                                    color: selectedItems.length ==
-                                                sortByStatus.length &&
-                                            selectedItems.length > 1
-                                        ? primaryColor
-                                        : Colors.grey,
-                                  ),
-                                  onPressed: () {
-                                    if (selectedItems.length ==
-                                        sortByStatus.length) {
-                                      setState(() {
-                                        selectedItems.clear();
-                                      });
-                                    } else {
-                                      setState(() {
-                                        selectedItems = List.generate(
-                                                sortByStatus.length, (i) => i)
-                                            .toSet();
-                                        for (var item in selectedItems) {
-                                          idsToRemove
-                                              .add(sortByStatus[item].idTodo);
-                                        }
-                                      });
-                                    }
-                                  },
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: IconButton(
+                                icon: Icon(
+                                  selectedItems.length == sortByStatus.length &&
+                                          selectedItems.length > 1
+                                      ? Icons.check_box
+                                      : Icons.check_box_outline_blank,
+                                  color: selectedItems.length ==
+                                              sortByStatus.length &&
+                                          selectedItems.length > 1
+                                      ? primaryColor
+                                      : Colors.grey,
                                 ),
+                                onPressed: () {
+                                  if (selectedItems.length ==
+                                      sortByStatus.length) {
+                                    setState(() {
+                                      selectedItems.clear();
+                                    });
+                                  } else {
+                                    setState(() {
+                                      selectedItems = List.generate(
+                                              sortByStatus.length, (i) => i)
+                                          .toSet();
+                                      for (var item in selectedItems) {
+                                        idsToRemove
+                                            .add(sortByStatus[item].idTodo);
+                                      }
+                                    });
+                                  }
+                                },
                               ),
                             ),
-                            TextButton(
-                              onPressed: () {
-                                sortByStatus.isEmpty || selectedItems.isEmpty
-                                    ? null
-                                    : _handleManyTodo(
-                                        sortByStatus[selectedItems.first]
-                                            .idTodo,
-                                        context,
-                                        widget.currentCategory);
-                              },
-                              child: Text(
-                                  "${AppLocalizations.of(context)!.translate('delete')} ${selectedItems.length} ${AppLocalizations.of(context)!.translate('todoSelected')}"),
-                            ),
-                            PopupMenuButton<ActionSort>(
-                              iconColor: Colors.black87,
-                              icon: Icon(Icons.filter_alt_outlined),
-                              onSelected: (ActionSort item) {
-                                setState(() {
-                                  currentSort = item;
-                                });
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              sortByStatus.isEmpty || selectedItems.isEmpty
+                                  ? null
+                                  : _handleManyTodo(
+                                      sortByStatus[selectedItems.first].idTodo,
+                                      context,
+                                      widget.currentCategory);
+                            },
+                            child: Text(
+                                "${AppLocalizations.of(context)!.translate('delete')} ${selectedItems.length} ${AppLocalizations.of(context)!.translate('todoSelected')}"),
+                          ),
+                          PopupMenuButton<ActionSort>(
+                            iconColor: Colors.black87,
+                            icon: Icon(Icons.filter_alt_outlined),
+                            onSelected: (ActionSort item) {
+                              setState(() {
+                                currentSort = item;
+                              });
 
-                                switch (item) {
-                                  case ActionSort.latest:
-                                    setState(
-                                      () {
-                                        sortByStatus.sort(
-                                          (a, b) {
-                                            return DateTime.parse(a.createdTime)
-                                                .difference(currentDate)
-                                                .inDays
-                                                .abs()
-                                                .compareTo((DateTime.parse(
-                                                            b.createdTime)
-                                                        .difference(
-                                                            currentDate))
-                                                    .inDays
-                                                    .abs());
-                                          },
-                                        );
-                                      },
-                                    );
-                                    break;
+                              switch (item) {
+                                case ActionSort.latest:
+                                  setState(
+                                    () {
+                                      sortByStatus.sort(
+                                        (a, b) {
+                                          return DateTime.parse(a.createdTime)
+                                              .difference(currentDate)
+                                              .inDays
+                                              .abs()
+                                              .compareTo((DateTime.parse(
+                                                          b.createdTime)
+                                                      .difference(currentDate))
+                                                  .inDays
+                                                  .abs());
+                                        },
+                                      );
+                                    },
+                                  );
+                                  break;
 
-                                  case ActionSort.oldest:
-                                    setState(
-                                      () {
-                                        sortByStatus.sort(
-                                          (a, b) {
-                                            return DateTime.parse(a.createdTime)
-                                                .compareTo(DateTime.parse(
-                                                    b.createdTime));
-                                          },
-                                        );
-                                      },
-                                    );
-                                    break;
+                                case ActionSort.oldest:
+                                  setState(
+                                    () {
+                                      sortByStatus.sort(
+                                        (a, b) {
+                                          return DateTime.parse(a.createdTime)
+                                              .compareTo(DateTime.parse(
+                                                  b.createdTime));
+                                        },
+                                      );
+                                    },
+                                  );
+                                  break;
 
-                                  case ActionSort.alpha:
-                                    sortByStatus.sort(
-                                      (a, b) {
-                                        return a.title
-                                            .toLowerCase()
-                                            .compareTo(b.title.toLowerCase());
-                                      },
-                                    );
-                                    break;
-                                }
-                              },
-                              itemBuilder: (BuildContext context) {
-                                return [
-                                  ...sortListDropdown.entries.map((entry) {
-                                    return PopupMenuItem<ActionSort>(
-                                      value: entry.key,
-                                      labelTextStyle: WidgetStatePropertyAll(
-                                        TextStyle(
-                                            fontFamily: 'Barlow',
-                                            fontWeight: FontWeight.w600,
-                                            color: currentSort == entry.key
-                                                ? primaryColor
-                                                : Colors.black54),
-                                      ),
-                                      child: Text(
-                                        entry.value,
-                                      ),
-                                    );
-                                  }),
-                                ];
-                              },
-                            ),
-                          ],
-                        ),
+                                case ActionSort.alpha:
+                                  sortByStatus.sort(
+                                    (a, b) {
+                                      return a.title
+                                          .toLowerCase()
+                                          .compareTo(b.title.toLowerCase());
+                                    },
+                                  );
+                                  break;
+                              }
+                            },
+                            itemBuilder: (BuildContext context) {
+                              return [
+                                ...sortListDropdown.entries.map((entry) {
+                                  return PopupMenuItem<ActionSort>(
+                                    value: entry.key,
+                                    labelTextStyle: WidgetStatePropertyAll(
+                                      TextStyle(
+                                          fontFamily: 'Barlow',
+                                          fontWeight: FontWeight.w600,
+                                          color: currentSort == entry.key
+                                              ? primaryColor
+                                              : Colors.black54),
+                                    ),
+                                    child: Text(
+                                      entry.value,
+                                    ),
+                                  );
+                                }),
+                              ];
+                            },
+                          ),
+                        ],
+                      ),
                       SizedBox(height: 8),
                       if (listToDo.length > 1 ||
                           widget.currentCategory == "All")
@@ -722,6 +730,12 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 });
 
                 handleStatusFilter();
+
+                setState(() {
+                  selectedItems =
+                      List.generate(sortByStatus.length, (i) => i).toSet();
+                  selectedItems.clear();
+                });
               },
             ),
           );
@@ -775,7 +789,6 @@ class TodoItemCard extends StatelessWidget {
                 Expanded(
                   child: InkWell(
                     onTap: () => {
-                      print(todoItem.idTodo),
                       Navigator.push(
                         context,
                         MaterialPageRoute(

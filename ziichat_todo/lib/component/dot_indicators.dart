@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../constants.dart';
+import 'package:ziichat_todo/constants.dart';
 
 class DotIndicator extends StatelessWidget {
   const DotIndicator({

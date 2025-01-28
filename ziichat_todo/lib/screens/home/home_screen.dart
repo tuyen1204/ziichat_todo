@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ziichat_todo/component/title_section_large.dart';
 import 'package:ziichat_todo/constants.dart';
@@ -13,6 +13,7 @@ import 'package:ziichat_todo/screens/folder/folder_detail.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
 import 'package:ziichat_todo/screens/item/todo_detail_screen.dart';
 import 'package:ziichat_todo/component/shimmer_effect.dart';
+import 'package:ziichat_todo/utils/language_notifier.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.onLanguageChanged});
@@ -36,6 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
   late List<String> folders = [];
   final int totalTask = 0;
   final currentDate = DateTime.now();
+  late AppLocalizations localizations = AppLocalizations.of(context)!;
+  late final currentLocale = Localizations.localeOf(context);
 
   @override
   void initState() {
@@ -46,6 +49,12 @@ class _HomeScreenState extends State<HomeScreen> {
     Future.delayed(Duration(milliseconds: 1000), () {
       setState(() {
         isLoading = false;
+      });
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        localizations = AppLocalizations.of(context)!;
       });
     });
   }
@@ -94,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     for (var item in _dataFolderInShare) {
-      print(item.toString());
+      // print(item.toString());
     }
 
     final processingFolders = _dataFolderInShare
@@ -107,9 +116,6 @@ class _HomeScreenState extends State<HomeScreen> {
           .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
               .inDays
               .abs()));
-
-    final localizations = AppLocalizations.of(context)!;
-    late final currentLocale = Localizations.localeOf(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -133,7 +139,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   setState(() {
                     langSelected = index;
                   });
-                  widget.onLanguageChanged(Locale(langSelected));
+                  context
+                      .read<LanguageNotifier>()
+                      .changeLanguage(Locale(langSelected));
                 },
               );
             }).toList(),
