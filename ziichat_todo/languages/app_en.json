@@ -41,5 +41,6 @@
     "addNew": "Add New",
     "delete": "Delete",
     "todoSelected": "selected item",
-    "newFolderRequired": "Folder name in required"
+    "newFolderRequired": "Folder name in required",
+    "ok": "Ok"
 }
