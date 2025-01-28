@@ -54,9 +54,9 @@ class TodoItemData {
       category: json['category'],
       categoryCreateTime: json['categoryCreateTime'],
       createdTime: json['createdTime'],
-      editedTime: json['editedTime'],
+      editedTime: json['editedTime'] ?? '',
       status: ItemStatus.values[json['status']],
-      note: json['note'],
+      note: json['note'] ?? '',
     );
   }
 }
