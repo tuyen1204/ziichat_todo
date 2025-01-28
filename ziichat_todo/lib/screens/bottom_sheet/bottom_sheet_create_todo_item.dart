@@ -1,13 +1,10 @@
 import 'dart:convert';
 import 'dart:math';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ziichat_todo/component/title_section_large.dart';
 import 'package:ziichat_todo/constants.dart';
 import 'package:intl/intl.dart';
-import 'package:ziichat_todo/data/folder_data.dart';
 import 'package:ziichat_todo/i18n/app_localizations.dart';
 import 'package:ziichat_todo/screens/folder/folder_detail.dart';
 import 'package:ziichat_todo/screens/folder/folder_item.dart';
