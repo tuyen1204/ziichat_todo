@@ -13,12 +13,11 @@ import 'package:ziichat_todo/component/shimmer_effect.dart';
 import 'folder_item.dart';
 
 class ItemsTodoDetail extends StatefulWidget {
-  const ItemsTodoDetail(
-      {super.key,
-      required this.currentCategory,
-      required this.onLanguageChanged});
+  const ItemsTodoDetail({
+    super.key,
+    required this.currentCategory,
+  });
   final String currentCategory;
-  final Function(Locale) onLanguageChanged;
 
   @override
   State<ItemsTodoDetail> createState() => _ItemsTodoDetailState();
@@ -215,7 +214,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                             MaterialPageRoute(
                               builder: (context) => ItemsTodoDetail(
                                 currentCategory: newCategory.text,
-                                onLanguageChanged: widget.onLanguageChanged,
                               ),
                             ),
                           );
@@ -252,7 +250,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                     MaterialPageRoute(
                       builder: (context) => ItemsTodoDetail(
                         currentCategory: newCategory.text,
-                        onLanguageChanged: widget.onLanguageChanged,
                       ),
                     ),
                   );
@@ -341,7 +338,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                       builder: (context) {
                         return ItemsTodoDetail(
                           currentCategory: itemInCategory,
-                          onLanguageChanged: (locale) {},
                         );
                       },
                       settings: RouteSettings(arguments: itemInCategory)));
@@ -791,10 +787,10 @@ class TodoItemCard extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (context) {
                             return TodoDetailScreen(
-                                idTodo: todoItem.idTodo,
-                                initStatus: todoItem.status,
-                                initCategory: todoItem.category,
-                                onLanguageChanged: (locale) {});
+                              idTodo: todoItem.idTodo,
+                              initStatus: todoItem.status,
+                              initCategory: todoItem.category,
+                            );
                           },
                         ),
                       ),

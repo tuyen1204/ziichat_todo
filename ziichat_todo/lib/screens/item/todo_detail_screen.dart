@@ -16,13 +16,11 @@ class TodoDetailScreen extends StatefulWidget {
     required this.idTodo,
     required this.initStatus,
     required this.initCategory,
-    required this.onLanguageChanged,
   });
 
   final String idTodo;
   final ItemStatus initStatus;
   final String initCategory;
-  final Function(Locale) onLanguageChanged;
 
   @override
   State<TodoDetailScreen> createState() => _TodoDetailScreenState();
@@ -169,7 +167,6 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       builder: (context) {
                         return ItemsTodoDetail(
                           currentCategory: itemInCategory,
-                          onLanguageChanged: (locale) {},
                         );
                       },
                       settings: RouteSettings(arguments: itemInCategory)));
@@ -258,7 +255,6 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                     builder: (context) {
                       return ItemsTodoDetail(
                         currentCategory: categorySelected.toString(),
-                        onLanguageChanged: (locale) {},
                       );
                     },
                     settings: RouteSettings(arguments: categorySelected))),

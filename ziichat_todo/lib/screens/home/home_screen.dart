@@ -23,6 +23,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  
   bool isLoading = true;
 
   List<String> languagesOption = [
@@ -36,7 +37,6 @@ class _HomeScreenState extends State<HomeScreen> {
   late List<String> folders = [];
   final int totalTask = 0;
   final currentDate = DateTime.now();
-  late AppLocalizations localizations = AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -47,12 +47,6 @@ class _HomeScreenState extends State<HomeScreen> {
     Future.delayed(Duration(milliseconds: 1000), () {
       setState(() {
         isLoading = false;
-      });
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        localizations = AppLocalizations.of(context)!;
       });
     });
   }
@@ -104,6 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // print(item.toString());
     }
     late final currentLocale = Localizations.localeOf(context);
+    final localizations = AppLocalizations.of(context)!;
     final processingFolders = _dataFolderInShare
         .where((item) => item.status == ItemStatus.progressing)
         .toList()
@@ -128,14 +123,14 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           Wrap(
             spacing: 8.0,
-            children: languagesOption.map((index) {
+            children: languagesOption.map((language) {
               return ChoiceChip(
-                label: Text(index.toUpperCase()),
+                label: Text(language.toUpperCase()),
                 showCheckmark: false,
-                selected: currentLocale.toString() == index,
+                selected: currentLocale.languageCode == language,
                 onSelected: (value) {
                   setState(() {
-                    langSelected = index;
+                    langSelected = language;
                   });
                   context
                       .read<LanguageNotifier>()
@@ -331,8 +326,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           return ItemsTodoDetail(
                             currentCategory:
                                 capitalizeEachWord(trimmedFolderName),
-                            onLanguageChanged: (locale) =>
-                                langSelected.toString(),
                           );
                         },
                         settings: RouteSettings(
@@ -386,8 +379,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       builder: (context) {
                         return ItemsTodoDetail(
                           currentCategory: category,
-                          onLanguageChanged: (locale) =>
-                              langSelected.toString(),
                         );
                       },
                       settings: RouteSettings(arguments: category)));
@@ -472,12 +463,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 MaterialPageRoute(
                   builder: (context) {
                     return TodoDetailScreen(
-                        idTodo: idTodo,
-                        initStatus: status,
-                        initCategory: category,
-                        onLanguageChanged: (locale) {
-                          currentLocale.toString();
-                        });
+                      idTodo: idTodo,
+                      initStatus: status,
+                      initCategory: category,
+                    );
                   },
                 ),
               ),
