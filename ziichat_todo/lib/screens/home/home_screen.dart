@@ -36,6 +36,8 @@ class _HomeScreenState extends State<HomeScreen> {
   late List<String> folders = [];
   final int totalTask = 0;
   final currentDate = DateTime.now();
+  late AppLocalizations localizations = AppLocalizations.of(context)!;
+  final DateFormat appDateFormat = DateFormat('yyyy MMM dd, HH:mm');
 
   @override
   void initState() {
@@ -46,6 +48,12 @@ class _HomeScreenState extends State<HomeScreen> {
     Future.delayed(Duration(milliseconds: 1000), () {
       setState(() {
         isLoading = false;
+      });
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        localizations = AppLocalizations.of(context)!;
       });
     });
   }
@@ -244,11 +252,10 @@ class _HomeScreenState extends State<HomeScreen> {
             title: Column(
               spacing: 12,
               children: [
-                Text(AppLocalizations.of(context)!.translate('newFolder')),
+                Text(localizations.translate('newFolder')),
                 CupertinoTextField(
                   controller: newFolder,
-                  placeholder: AppLocalizations.of(context)!
-                      .translate('enterNewFolderName'),
+                  placeholder: localizations.translate('enterNewFolderName'),
                   padding: EdgeInsets.all(12),
                 ),
               ],
@@ -259,7 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text(AppLocalizations.of(context)!.translate('cancel')),
+                child: Text(localizations.translate('cancel')),
               ),
               CupertinoDialogAction(
                 isDestructiveAction: true,
@@ -271,8 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     showCupertinoDialog(
                       context: context,
                       builder: (context) => CupertinoAlertDialog(
-                        title: Text(
-                            AppLocalizations.of(context)!.translate('info')),
+                        title: Text(localizations.translate('info')),
                         content: Text(AppLocalizations.of(context)!
                             .translate('newFolderRequired')),
                         actions: <Widget>[
@@ -289,8 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     showCupertinoDialog(
                       context: context,
                       builder: (context) => CupertinoAlertDialog(
-                        title: Text(
-                            AppLocalizations.of(context)!.translate('info')),
+                        title: Text(localizations.translate('info')),
                         content: Text(AppLocalizations.of(context)!
                             .translate('folderNameExists')),
                         actions: <Widget>[
@@ -333,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _saveTodos();
                 },
                 child: Text(
-                  AppLocalizations.of(context)!.translate('addNew'),
+                  localizations.translate('addNew'),
                 ),
               ),
             ],
@@ -479,7 +484,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                   ),
                   Text(
-                    '$category • ${DateFormat('yyyy MMM dd, HH:MM').format(DateTime.parse(date))}',
+                    '$category • ${appDateFormat.format(DateTime.parse(date))}',
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,

@@ -30,7 +30,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
   late String? categorySelected = "All";
   late ItemStatus? statusSelected = ItemStatus.done;
   bool edited = false;
-  late TodoItemData todoDetailData;
+
   late TextEditingController newTitle;
   late TextEditingController newNote;
   final currentDate = DateTime.now();
@@ -38,10 +38,11 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
   late AppLocalizations localizations = AppLocalizations.of(context)!;
 
   final status = dataFolder.map((item) => item.status).toSet().toList();
-  final dateTimeFormat = DateFormat('yyyy-MM-dd HH:mm');
+  final DateFormat appDateFormat = DateFormat('yyyy MMM dd, HH:mm');
   final formKey = GlobalKey<FormState>();
   late List<TodoItemData> _dataFolderInShare = [];
   late List<String> categoryList = [];
+  late List<TodoItemData> todoDetailData = [];
 
   @override
   void initState() {
@@ -52,10 +53,6 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     edited;
 
     super.initState();
-    todoDetailData =
-        dataFolder.where((item) => item.idTodo == widget.idTodo).toList().first;
-    newTitle = TextEditingController(text: todoDetailData.title);
-    newNote = TextEditingController(text: todoDetailData.note);
 
     _updateTime();
 
@@ -80,6 +77,13 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
 
           categoryList =
               _dataFolderInShare.map((item) => item.category).toSet().toList();
+
+          todoDetailData = _dataFolderInShare
+              .where((item) => item.idTodo == widget.idTodo)
+              .toList();
+
+          newTitle = TextEditingController(text: todoDetailData[0].title);
+          newNote = TextEditingController(text: todoDetailData[0].note);
         },
       );
     } else {
@@ -103,10 +107,10 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
       String id, BuildContext context, String itemInCategory) {
     String fullText = localizations.translate(
       'youDeleteTodo',
-      args: {'itemTodoName': todoDetailData.title},
+      args: {'itemTodoName': todoDetailData[0].title},
     );
 
-    final usernamePlaceholder = todoDetailData.title;
+    final usernamePlaceholder = todoDetailData[0].title;
     final usernameStart = fullText.indexOf(usernamePlaceholder);
     final usernameEnd = usernameStart + usernamePlaceholder.length;
     final textBeforeUsername = fullText.substring(0, usernameStart);
@@ -173,16 +177,16 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
   }) {
     try {
       final index =
-          dataFolder.indexWhere((item) => item.idTodo == widget.idTodo);
+          _dataFolderInShare.indexWhere((item) => item.idTodo == widget.idTodo);
       if (index != -1) {
         setState(() {
-          dataFolder[index] = TodoItemData(
-            idTodo: dataFolder[index].idTodo,
-            title: title ?? dataFolder[index].title,
-            category: category ?? dataFolder[index].category,
-            status: status ?? dataFolder[index].status,
-            createdTime: dataFolder[index].createdTime,
-            note: note ?? dataFolder[index].note,
+          _dataFolderInShare[index] = TodoItemData(
+            idTodo: _dataFolderInShare[index].idTodo,
+            title: title ?? _dataFolderInShare[index].title,
+            category: category ?? _dataFolderInShare[index].category,
+            status: status ?? _dataFolderInShare[index].status,
+            createdTime: _dataFolderInShare[index].createdTime,
+            note: note ?? _dataFolderInShare[index].note,
             editedTime: formattedDateNow.toString(),
           );
         });
@@ -190,9 +194,6 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
         showCupertinoDialog(
             context: context,
             builder: (BuildContext context) {
-              Future.delayed(Duration(milliseconds: 1000), () {
-                Navigator.of(context).pop();
-              });
               return CupertinoAlertDialog(
                 title: Text(localizations.translate('todoUpdateSuccessfully')),
                 actions: <CupertinoDialogAction>[
@@ -213,6 +214,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
         print('ID Todo not found');
       }
       print('Success');
+      _saveTodos();
     } catch (e) {
       return;
     }
@@ -222,7 +224,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     Timer.periodic(Duration(seconds: 1), (Timer t) {
       setState(() {
         DateTime now = DateTime.now();
-        formattedDateNow = dateTimeFormat.format(now);
+        formattedDateNow = appDateFormat.format(now);
       });
     });
   }
@@ -313,8 +315,8 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       ),
                       TextFormField(
                         readOnly: true,
-                        initialValue: dateTimeFormat
-                            .format(DateTime.parse(todoDetailData.createdTime)),
+                        initialValue: appDateFormat.format(
+                            DateTime.parse(todoDetailData[0].createdTime)),
                         cursorColor: primaryColor,
                         decoration: InputDecoration(
                           labelText: localizations.translate('createdDate'),
@@ -329,10 +331,10 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                           FocusManager.instance.primaryFocus?.unfocus();
                         },
                       ),
-                      if (todoDetailData.editedTime.isNotEmpty)
+                      if (todoDetailData[0].editedTime.isNotEmpty)
                         TextFormField(
                           readOnly: true,
-                          initialValue: todoDetailData.editedTime,
+                          initialValue: todoDetailData[0].editedTime,
                           cursorColor: primaryColor,
                           decoration: InputDecoration(
                             labelText: localizations.translate('editedDate'),
@@ -444,16 +446,20 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                   children: [
                     Expanded(
                       child: TextButton(
-                        onPressed: () {
-                          if (formKey.currentState!.validate()) {
-                            _handleEditTodo(
-                              title: newTitle.text,
-                              currentTodo: todoDetailData,
-                              note: newNote.text,
-                              status: statusSelected,
-                              category: categorySelected,
-                            );
-                          }
+                        onPressed: () => {
+                          if (edited == true)
+                            {
+                              if (formKey.currentState!.validate())
+                                {
+                                  _handleEditTodo(
+                                    title: newTitle.text,
+                                    currentTodo: todoDetailData[0],
+                                    note: newNote.text,
+                                    status: statusSelected,
+                                    category: categorySelected,
+                                  )
+                                }
+                            }
                         },
                         style: ButtonStyle(
                           backgroundColor: edited == true
@@ -475,8 +481,10 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       ),
                     ),
                     IconButton(
-                      onPressed: () => _handleDeleteTodo(todoDetailData.idTodo,
-                          context, todoDetailData.category),
+                      onPressed: () => _handleDeleteTodo(
+                          todoDetailData[0].idTodo,
+                          context,
+                          todoDetailData[0].category),
                       style: IconButton.styleFrom(backgroundColor: Colors.red),
                       icon: Icon(
                         Icons.delete_outline,

@@ -101,7 +101,7 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
 
   @override
   Widget build(BuildContext context) {
-    String formattedDate = DateFormat('MMM dd yyyy, HH:MM').format(currentDate);
+    String appDateFormat = DateFormat('yyyy MMM dd, HH:mm').format(currentDate);
     final status =
         _dataFolderInShare.map((item) => item.status).toSet().toList();
 
@@ -188,7 +188,7 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                             },
                           ),
                           TextFormField(
-                            initialValue: formattedDate,
+                            initialValue: appDateFormat,
                             cursorColor: primaryColor,
                             decoration: InputDecoration(
                               labelText: localizations.translate('createdDate'),
