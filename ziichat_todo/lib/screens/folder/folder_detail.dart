@@ -49,26 +49,16 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   Set<int> selectedItems = {};
   bool isLoading = true;
   final currentDate = DateTime.now();
-
-  Map<ActionSort, String> sortListDropdown = {
-    ActionSort.latest: "Latest",
-    ActionSort.oldest: "Oldest",
-    ActionSort.alpha: "Alphabetically",
-  };
-
-  ActionSort? currentSort = ActionSort.latest;
-
   late List<ItemStatus> listStatus = [ItemStatus.all];
-
   String currentStatus = statusToReadableString(ItemStatus.all);
   String categoryToDelete = "";
   late final TextEditingController newCategory;
-
   late DateFormat dateTimeFormat;
-
   late List<TodoItemData> _dataFolderInShare = [];
   late List<String> folderNames = [];
   late List<TodoItemData> sortByStatus = [];
+  late AppLocalizations localizations = AppLocalizations.of(context)!;
+  ActionSort? currentSort = ActionSort.latest;
 
   @override
   void initState() {
@@ -90,6 +80,12 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
 
     categoryToDelete = widget.currentCategory;
     newCategory = TextEditingController(text: widget.currentCategory);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        localizations = AppLocalizations.of(context)!;
+      });
+    });
   }
 
   List<String> idsToRemove = [];
@@ -178,11 +174,10 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
         title: Column(
           spacing: 12,
           children: [
-            Text(AppLocalizations.of(context)!.translate('editFolder')),
+            Text(localizations.translate('editFolder')),
             CupertinoTextField(
               controller: newCategory,
-              placeholder:
-                  AppLocalizations.of(context)!.translate('enterNewFolderName'),
+              placeholder: localizations.translate('enterNewFolderName'),
               padding: EdgeInsets.all(12),
             ),
           ],
@@ -193,7 +188,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: Text(AppLocalizations.of(context)!.translate('cancel')),
+            child: Text(localizations.translate('cancel')),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
@@ -202,8 +197,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 showCupertinoDialog(
                   context: context,
                   builder: (context) => CupertinoAlertDialog(
-                    title:
-                        Text(AppLocalizations.of(context)!.translate('info')),
+                    title: Text(localizations.translate('info')),
                     content: Text(AppLocalizations.of(context)!
                         .translate('folderNameExists')),
                     actions: <Widget>[
@@ -256,7 +250,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 });
               }
             },
-            child: Text(AppLocalizations.of(context)!.translate('save')),
+            child: Text(localizations.translate('save')),
           ),
         ],
       ),
@@ -267,14 +261,14 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     showCupertinoDialog(
       context: context,
       builder: (BuildContext context) => CupertinoAlertDialog(
-        title: Text(AppLocalizations.of(context)!.translate('youDeleteFolder')),
+        title: Text(localizations.translate('youDeleteFolder')),
         actions: <CupertinoDialogAction>[
           CupertinoDialogAction(
             isDefaultAction: true,
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: Text(AppLocalizations.of(context)!.translate('no')),
+            child: Text(localizations.translate('no')),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
@@ -291,7 +285,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 ),
               );
             },
-            child: Text(AppLocalizations.of(context)!.translate('yes')),
+            child: Text(localizations.translate('yes')),
           ),
         ],
       ),
@@ -303,14 +297,14 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
       context: context,
       builder: (BuildContext context) => CupertinoAlertDialog(
         title: Text(
-            "${AppLocalizations.of(context)!.translate('delete')} ${selectedItems.length} ${AppLocalizations.of(context)!.translate('todoSelected')}"),
+            "${localizations.translate('delete')} ${selectedItems.length} ${localizations.translate('todoSelected')}"),
         actions: <CupertinoDialogAction>[
           CupertinoDialogAction(
             isDefaultAction: true,
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: Text(AppLocalizations.of(context)!.translate('no')),
+            child: Text(localizations.translate('no')),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
@@ -342,7 +336,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                       },
                       settings: RouteSettings(arguments: itemInCategory)));
             },
-            child: Text(AppLocalizations.of(context)!.translate('yes')),
+            child: Text(localizations.translate('yes')),
           ),
         ],
       ),
@@ -354,6 +348,12 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     final paddingNotch = MediaQuery.of(context).padding.top;
     final paddingBottom = MediaQuery.of(context).padding.bottom;
     int totals = listToDoAll.length;
+
+    final Map<ActionSort, String> sortListDropdown = {
+      ActionSort.latest: localizations.translate("latest"),
+      ActionSort.oldest: localizations.translate("oldest"),
+      ActionSort.alpha: localizations.translate("alphabetically"),
+    };
 
     sortByStatus.sort(
       (a, b) {
@@ -415,14 +415,12 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                       <PopupMenuEntry<ActionInFolder>>[
                     PopupMenuItem<ActionInFolder>(
                       value: ActionInFolder.editNameFolder,
-                      child: Text(AppLocalizations.of(context)!
-                          .translate('editFolder')),
+                      child: Text(localizations.translate('editFolder')),
                     ),
                     if (listToDo.isEmpty)
                       PopupMenuItem<ActionInFolder>(
                         value: ActionInFolder.deleteFolder,
-                        child: Text(AppLocalizations.of(context)!
-                            .translate('deleteFolder')),
+                        child: Text(localizations.translate('deleteFolder')),
                       )
                   ],
                 ),
@@ -491,7 +489,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
               ),
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 12, bottom: 64),
+                  padding: const EdgeInsets.only(top: 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -545,7 +543,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                                       widget.currentCategory);
                             },
                             child: Text(
-                                "${AppLocalizations.of(context)!.translate('delete')} ${selectedItems.length} ${AppLocalizations.of(context)!.translate('todoSelected')}"),
+                                "${localizations.translate('delete')} ${selectedItems.length} ${localizations.translate('todoSelected')}"),
                           ),
                           PopupMenuButton<ActionSort>(
                             iconColor: Colors.black87,
@@ -658,7 +656,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
                 height: 100,
                 child: Center(
                     child: Text(
-                  "Nothing",
+                  localizations.translate('nothing'),
                   style: TextStyle(fontWeight: FontWeight.w600),
                 )),
               )

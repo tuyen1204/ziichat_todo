@@ -42,5 +42,6 @@
   "delete": "Xóa",
   "todoSelected": "mục đã chọn",
   "newFolderRequired": "Tiêu thư mục là bắt buộc",
-  "ok": "Ok"
+  "ok": "Ok",
+  "nothing": "Không có gì"
 }

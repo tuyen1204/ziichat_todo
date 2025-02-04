@@ -23,7 +23,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  
   bool isLoading = true;
 
   List<String> languagesOption = [
@@ -94,9 +93,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    for (var item in _dataFolderInShare) {
-      // print(item.toString());
-    }
     late final currentLocale = Localizations.localeOf(context);
     final localizations = AppLocalizations.of(context)!;
     final processingFolders = _dataFolderInShare
@@ -142,94 +138,94 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(width: 16),
         ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: SizedBox(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: defaultPadding),
-                  child: TitleSectionLarge(
-                      title: localizations.translate('folders')),
-                ),
-                SizedBox(height: defaultPadding),
-                SizedBox(
-                  width: double.infinity,
-                  height: 180,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: folders.length + 1,
-                    itemBuilder: (context, index) {
-                      folders.sort(
-                        (a, b) {
-                          if (a == "All") return -1;
-                          if (b == "All") return 1;
-                          if (a == "Other") return -1;
-                          if (b == "Other") return 1;
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+              child:
+                  TitleSectionLarge(title: localizations.translate('folders')),
+            ),
+            SizedBox(height: defaultPadding),
+            SizedBox(
+              width: double.infinity,
+              height: 180,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: folders.length + 1,
+                itemBuilder: (context, index) {
+                  folders.sort(
+                    (a, b) {
+                      if (a == "All") return -1;
+                      if (b == "All") return 1;
+                      if (a == "Other") return -1;
+                      if (b == "Other") return 1;
 
-                          return a.compareTo(b);
-                        },
-                      );
-
-                      if (index == 0) {
-                        final allTask = _dataFolderInShare
-                            .where((item) => (item.title.isNotEmpty))
-                            .length;
-                        return isLoading
-                            ? ShimmerLoading(
-                                isLoading: isLoading,
-                                child: _innerFolderItem(
-                                    context, index, "All", 1, allTask, folders),
-                              )
-                            : _innerFolderItem(
-                                context, index, "All", 1, allTask, folders);
-                      } else {
-                        final category = folders[index - 1];
-                        final taskCount = _dataFolderInShare
-                            .where((item) => (item.category == category &&
-                                item.title.isNotEmpty))
-                            .length;
-                        return isLoading
-                            ? ShimmerLoading(
-                                isLoading: isLoading,
-                                child: _innerFolderItem(context, index,
-                                    category, taskCount, totalTask, folders),
-                              )
-                            : _innerFolderItem(context, index, category,
-                                taskCount, totalTask, folders);
-                      }
+                      return a.compareTo(b);
                     },
-                  ),
-                ),
-                SizedBox(height: 32),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: defaultPadding),
-                  child: TitleSectionLarge(
-                      title: localizations.translate('processingTasks')),
-                ),
-                SizedBox(height: defaultPadding),
-                ListView.builder(
-                  scrollDirection: Axis.vertical,
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: processingFolders.length,
-                  itemBuilder: (context, index) {
+                  );
+
+                  if (index == 0) {
+                    final allTask = _dataFolderInShare
+                        .where((item) => (item.title.isNotEmpty))
+                        .length;
                     return isLoading
                         ? ShimmerLoading(
                             isLoading: isLoading,
-                            child: _innerTodoItem(context, index,
-                                currentLocale.toString(), processingFolders))
-                        : _innerTodoItem(context, index,
-                            currentLocale.toString(), processingFolders);
-                  },
+                            child: _innerFolderItem(
+                                context, index, "All", 1, allTask, folders),
+                          )
+                        : _innerFolderItem(
+                            context, index, "All", 1, allTask, folders);
+                  } else {
+                    final category = folders[index - 1];
+                    final taskCount = _dataFolderInShare
+                        .where((item) => (item.category == category &&
+                            item.title.isNotEmpty))
+                        .length;
+                    return isLoading
+                        ? ShimmerLoading(
+                            isLoading: isLoading,
+                            child: _innerFolderItem(context, index, category,
+                                taskCount, totalTask, folders),
+                          )
+                        : _innerFolderItem(context, index, category, taskCount,
+                            totalTask, folders);
+                  }
+                },
+              ),
+            ),
+            SizedBox(height: 32),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+              child: TitleSectionLarge(
+                  title: localizations.translate('processingTasks')),
+            ),
+            SizedBox(height: defaultPadding),
+            Column(
+              children: [
+                SizedBox(
+                  height: 450,
+                  child: ListView.builder(
+                    scrollDirection: Axis.vertical,
+                    shrinkWrap: true,
+                    itemCount: processingFolders.length,
+                    itemBuilder: (context, index) {
+                      return isLoading
+                          ? ShimmerLoading(
+                              isLoading: isLoading,
+                              child: _innerTodoItem(context, index,
+                                  currentLocale.toString(), processingFolders))
+                          : _innerTodoItem(context, index,
+                              currentLocale.toString(), processingFolders);
+                    },
+                  ),
                 ),
               ],
             ),
-          ),
+          ],
         ),
       ),
       floatingActionButton: _floatingNewFolder(context),
