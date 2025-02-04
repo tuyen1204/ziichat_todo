@@ -2,7 +2,7 @@
     "folders": "Folders",
     "tasks": "tasks",
     "task": "task",
-    "processingTasks": "Proccessing tasks",
+    "processingTasks": "Processing tasks",
     "todoDetail": "Todo detail",
     "title": "Title",
     "date": "Date",
@@ -41,5 +41,9 @@
     "addNew": "Add New",
     "delete": "Delete",
     "todoSelected": "selected item",
-    "newFolderRequired": "Folder name in required"
+    "newFolderRequired": "Folder name in required",
+    "ok": "Ok",
+    "nothing": "Nothing"
+
+
 }

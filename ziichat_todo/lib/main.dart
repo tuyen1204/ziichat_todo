@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:ziichat_todo/i18n/app_localizations.dart';
 import 'package:ziichat_todo/i18n/app_localizations_delegate.dart';
 import 'package:ziichat_todo/screens/onboarding/onboarding_scrreen.dart';
 import 'package:ziichat_todo/utils/language_notifier.dart';
@@ -21,6 +22,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final languageNotifier = Provider.of<LanguageNotifier>(context);
+
     return MaterialApp(
       title: 'ZiiChat TodoList',
       debugShowCheckedModeBanner: false,

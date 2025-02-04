@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ziichat_todo/i18n/app_localizations.dart';
 
 class LanguageNotifier extends ChangeNotifier {
   Locale _locale = const Locale('en');

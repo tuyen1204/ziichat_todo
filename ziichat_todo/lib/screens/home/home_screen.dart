@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -36,7 +35,6 @@ class _HomeScreenState extends State<HomeScreen> {
   late List<String> folderNames = [];
   late List<String> folders = [];
   final int totalTask = 0;
-  late final TextEditingController folderName = TextEditingController();
   final currentDate = DateTime.now();
 
   @override
@@ -95,6 +93,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    late final currentLocale = Localizations.localeOf(context);
+    final localizations = AppLocalizations.of(context)!;
     final processingFolders = _dataFolderInShare
         .where((item) => item.status == ItemStatus.progressing)
         .toList()
@@ -105,9 +105,6 @@ class _HomeScreenState extends State<HomeScreen> {
           .compareTo((DateTime.parse(b.createdTime).difference(currentDate))
               .inDays
               .abs()));
-
-    final localizations = AppLocalizations.of(context)!;
-    late final currentLocale = Localizations.localeOf(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -122,20 +119,18 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           Wrap(
             spacing: 8.0,
-            children: languagesOption.map((index) {
+            children: languagesOption.map((language) {
               return ChoiceChip(
-                label: Text(index.toUpperCase()),
+                label: Text(language.toUpperCase()),
                 showCheckmark: false,
-                selected: currentLocale.toString() == index,
+                selected: currentLocale.languageCode == language,
                 onSelected: (value) {
                   setState(() {
-                    langSelected = index;
+                    langSelected = language;
                   });
                   context
                       .read<LanguageNotifier>()
                       .changeLanguage(Locale(langSelected));
-
-                  print(langSelected);
                 },
               );
             }).toList(),
@@ -143,94 +138,94 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(width: 16),
         ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: SizedBox(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: defaultPadding),
-                  child: TitleSectionLarge(
-                      title: localizations.translate('folders')),
-                ),
-                SizedBox(height: defaultPadding),
-                SizedBox(
-                  width: double.infinity,
-                  height: 180,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: folders.length + 1,
-                    itemBuilder: (context, index) {
-                      folders.sort(
-                        (a, b) {
-                          if (a == "All") return -1;
-                          if (b == "All") return 1;
-                          if (a == "Other") return -1;
-                          if (b == "Other") return 1;
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+              child:
+                  TitleSectionLarge(title: localizations.translate('folders')),
+            ),
+            SizedBox(height: defaultPadding),
+            SizedBox(
+              width: double.infinity,
+              height: 180,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: folders.length + 1,
+                itemBuilder: (context, index) {
+                  folders.sort(
+                    (a, b) {
+                      if (a == "All") return -1;
+                      if (b == "All") return 1;
+                      if (a == "Other") return -1;
+                      if (b == "Other") return 1;
 
-                          return a.compareTo(b);
-                        },
-                      );
-
-                      if (index == 0) {
-                        final allTask = _dataFolderInShare
-                            .where((item) => (item.title.isNotEmpty))
-                            .length;
-                        return isLoading
-                            ? ShimmerLoading(
-                                isLoading: isLoading,
-                                child: _innerFolderItem(
-                                    context, index, "All", 1, allTask, folders),
-                              )
-                            : _innerFolderItem(
-                                context, index, "All", 1, allTask, folders);
-                      } else {
-                        final category = folders[index - 1];
-                        final taskCount = _dataFolderInShare
-                            .where((item) => (item.category == category &&
-                                item.title.isNotEmpty))
-                            .length;
-                        return isLoading
-                            ? ShimmerLoading(
-                                isLoading: isLoading,
-                                child: _innerFolderItem(context, index,
-                                    category, taskCount, totalTask, folders),
-                              )
-                            : _innerFolderItem(context, index, category,
-                                taskCount, totalTask, folders);
-                      }
+                      return a.compareTo(b);
                     },
-                  ),
-                ),
-                SizedBox(height: 32),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: defaultPadding),
-                  child: TitleSectionLarge(
-                      title: localizations.translate('processingTasks')),
-                ),
-                SizedBox(height: defaultPadding),
-                ListView.builder(
-                  scrollDirection: Axis.vertical,
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: processingFolders.length,
-                  itemBuilder: (context, index) {
+                  );
+
+                  if (index == 0) {
+                    final allTask = _dataFolderInShare
+                        .where((item) => (item.title.isNotEmpty))
+                        .length;
                     return isLoading
                         ? ShimmerLoading(
                             isLoading: isLoading,
-                            child: _innerTodoItem(context, index,
-                                currentLocale.toString(), processingFolders))
-                        : _innerTodoItem(context, index,
-                            currentLocale.toString(), processingFolders);
-                  },
+                            child: _innerFolderItem(
+                                context, index, "All", 1, allTask, folders),
+                          )
+                        : _innerFolderItem(
+                            context, index, "All", 1, allTask, folders);
+                  } else {
+                    final category = folders[index - 1];
+                    final taskCount = _dataFolderInShare
+                        .where((item) => (item.category == category &&
+                            item.title.isNotEmpty))
+                        .length;
+                    return isLoading
+                        ? ShimmerLoading(
+                            isLoading: isLoading,
+                            child: _innerFolderItem(context, index, category,
+                                taskCount, totalTask, folders),
+                          )
+                        : _innerFolderItem(context, index, category, taskCount,
+                            totalTask, folders);
+                  }
+                },
+              ),
+            ),
+            SizedBox(height: 32),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+              child: TitleSectionLarge(
+                  title: localizations.translate('processingTasks')),
+            ),
+            SizedBox(height: defaultPadding),
+            Column(
+              children: [
+                SizedBox(
+                  height: 450,
+                  child: ListView.builder(
+                    scrollDirection: Axis.vertical,
+                    shrinkWrap: true,
+                    itemCount: processingFolders.length,
+                    itemBuilder: (context, index) {
+                      return isLoading
+                          ? ShimmerLoading(
+                              isLoading: isLoading,
+                              child: _innerTodoItem(context, index,
+                                  currentLocale.toString(), processingFolders))
+                          : _innerTodoItem(context, index,
+                              currentLocale.toString(), processingFolders);
+                    },
+                  ),
                 ),
               ],
             ),
-          ),
+          ],
         ),
       ),
       floatingActionButton: _floatingNewFolder(context),
@@ -327,8 +322,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           return ItemsTodoDetail(
                             currentCategory:
                                 capitalizeEachWord(trimmedFolderName),
-                            onLanguageChanged: (locale) =>
-                                langSelected.toString(),
                           );
                         },
                         settings: RouteSettings(
@@ -382,8 +375,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       builder: (context) {
                         return ItemsTodoDetail(
                           currentCategory: category,
-                          onLanguageChanged: (locale) =>
-                              langSelected.toString(),
                         );
                       },
                       settings: RouteSettings(arguments: category)));
@@ -468,12 +459,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 MaterialPageRoute(
                   builder: (context) {
                     return TodoDetailScreen(
-                        idTodo: idTodo,
-                        initStatus: status,
-                        initCategory: category,
-                        onLanguageChanged: (locale) {
-                          currentLocale.toString();
-                        });
+                      idTodo: idTodo,
+                      initStatus: status,
+                      initCategory: category,
+                    );
                   },
                 ),
               ),

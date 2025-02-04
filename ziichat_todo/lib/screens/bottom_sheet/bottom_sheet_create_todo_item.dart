@@ -305,7 +305,6 @@ class _BottomSheetCreateTodoItemState extends State<BottomSheetCreateTodoItem> {
                           MaterialPageRoute(
                             builder: (context) => ItemsTodoDetail(
                               currentCategory: categorySelected!,
-                              onLanguageChanged: (local) {},
                             ),
                           ),
                         ),
