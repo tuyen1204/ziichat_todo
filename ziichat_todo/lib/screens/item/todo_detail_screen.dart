@@ -28,34 +28,30 @@ class TodoDetailScreen extends StatefulWidget {
 
 class _TodoDetailScreenState extends State<TodoDetailScreen> {
   late String? categorySelected = "All";
-  late ItemStatus? statusSelected = ItemStatus.done;
+  late ItemStatus? statusSelected;
   bool edited = false;
-  late TodoItemData todoDetailData;
+
   late TextEditingController newTitle;
   late TextEditingController newNote;
-  final currentDate = DateTime.now();
-  String formattedDateNow = '';
+  String getDateNow = '';
   late AppLocalizations localizations = AppLocalizations.of(context)!;
 
-  final status = dataFolder.map((item) => item.status).toSet().toList();
-  final dateTimeFormat = DateFormat('yyyy-MM-dd HH:mm');
+  final DateFormat appDateFormat = DateFormat('yyyy MMM dd, HH:mm');
   final formKey = GlobalKey<FormState>();
   late List<TodoItemData> _dataFolderInShare = [];
   late List<String> categoryList = [];
+  late List<TodoItemData> todoDetailData = [];
+  late List<ItemStatus> status = [];
 
   @override
   void initState() {
+    super.initState();
+
     _loadTodos();
 
     statusSelected = widget.initStatus;
     categorySelected = widget.initCategory;
     edited;
-
-    super.initState();
-    todoDetailData =
-        dataFolder.where((item) => item.idTodo == widget.idTodo).toList().first;
-    newTitle = TextEditingController(text: todoDetailData.title);
-    newNote = TextEditingController(text: todoDetailData.note);
 
     _updateTime();
 
@@ -80,6 +76,16 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
 
           categoryList =
               _dataFolderInShare.map((item) => item.category).toSet().toList();
+
+          todoDetailData = _dataFolderInShare
+              .where((item) => item.idTodo == widget.idTodo)
+              .toList();
+
+          newTitle = TextEditingController(text: todoDetailData[0].title);
+          newNote = TextEditingController(text: todoDetailData[0].note);
+
+          status =
+              _dataFolderInShare.map((item) => item.status).toSet().toList();
         },
       );
     } else {
@@ -103,10 +109,10 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
       String id, BuildContext context, String itemInCategory) {
     String fullText = localizations.translate(
       'youDeleteTodo',
-      args: {'itemTodoName': todoDetailData.title},
+      args: {'itemTodoName': todoDetailData[0].title},
     );
 
-    final usernamePlaceholder = todoDetailData.title;
+    final usernamePlaceholder = todoDetailData[0].title;
     final usernameStart = fullText.indexOf(usernamePlaceholder);
     final usernameEnd = usernameStart + usernamePlaceholder.length;
     final textBeforeUsername = fullText.substring(0, usernameStart);
@@ -143,9 +149,10 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
           CupertinoDialogAction(
             isDestructiveAction: true,
             onPressed: () {
-              dataFolder.removeWhere((item) {
+              _dataFolderInShare.removeWhere((item) {
                 return item.idTodo == id;
               });
+              _saveTodos();
               Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -173,26 +180,23 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
   }) {
     try {
       final index =
-          dataFolder.indexWhere((item) => item.idTodo == widget.idTodo);
+          _dataFolderInShare.indexWhere((item) => item.idTodo == widget.idTodo);
       if (index != -1) {
         setState(() {
-          dataFolder[index] = TodoItemData(
-            idTodo: dataFolder[index].idTodo,
-            title: title ?? dataFolder[index].title,
-            category: category ?? dataFolder[index].category,
-            status: status ?? dataFolder[index].status,
-            createdTime: dataFolder[index].createdTime,
-            note: note ?? dataFolder[index].note,
-            editedTime: formattedDateNow.toString(),
+          _dataFolderInShare[index] = TodoItemData(
+            idTodo: _dataFolderInShare[index].idTodo,
+            title: title ?? _dataFolderInShare[index].title,
+            category: category ?? _dataFolderInShare[index].category,
+            status: status ?? _dataFolderInShare[index].status,
+            createdTime: _dataFolderInShare[index].createdTime,
+            note: note ?? _dataFolderInShare[index].note,
+            editedTime: getDateNow.toString(),
           );
         });
 
         showCupertinoDialog(
             context: context,
             builder: (BuildContext context) {
-              Future.delayed(Duration(milliseconds: 1000), () {
-                Navigator.of(context).pop();
-              });
               return CupertinoAlertDialog(
                 title: Text(localizations.translate('todoUpdateSuccessfully')),
                 actions: <CupertinoDialogAction>[
@@ -213,6 +217,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
         print('ID Todo not found');
       }
       print('Success');
+      _saveTodos();
     } catch (e) {
       return;
     }
@@ -222,7 +227,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     Timer.periodic(Duration(seconds: 1), (Timer t) {
       setState(() {
         DateTime now = DateTime.now();
-        formattedDateNow = dateTimeFormat.format(now);
+        getDateNow = appDateFormat.format(now);
       });
     });
   }
@@ -313,8 +318,8 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       ),
                       TextFormField(
                         readOnly: true,
-                        initialValue: dateTimeFormat
-                            .format(DateTime.parse(todoDetailData.createdTime)),
+                        initialValue: appDateFormat.format(
+                            DateTime.parse(todoDetailData[0].createdTime)),
                         cursorColor: primaryColor,
                         decoration: InputDecoration(
                           labelText: localizations.translate('createdDate'),
@@ -329,10 +334,10 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                           FocusManager.instance.primaryFocus?.unfocus();
                         },
                       ),
-                      if (todoDetailData.editedTime.isNotEmpty)
+                      if (todoDetailData[0].editedTime.isNotEmpty)
                         TextFormField(
                           readOnly: true,
-                          initialValue: todoDetailData.editedTime,
+                          initialValue: todoDetailData[0].editedTime,
                           cursorColor: primaryColor,
                           decoration: InputDecoration(
                             labelText: localizations.translate('editedDate'),
@@ -383,6 +388,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                                 label: Text(
                                   statusToReadableString(item),
                                 ),
+                                showCheckmark: false,
                                 labelStyle: TextStyle(
                                   color: statusSelected == item
                                       ? Colors.white
@@ -393,11 +399,11 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                                     : Colors.grey,
                                 selectedColor: statusColor(item),
                                 selected: statusSelected == item,
-                                onSelected: (value) {
+                                onSelected: (bool selected) {
                                   setState(() {
-                                    edited == true
-                                        ? statusSelected = item
-                                        : null;
+                                    if (edited) {
+                                      statusSelected = item;
+                                    }
                                   });
                                 },
                               );
@@ -418,15 +424,16 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                             children: categoryList.map((item) {
                               return ChoiceChip(
                                 label: Text(item),
+                                showCheckmark: false,
                                 selected: categorySelected == item,
                                 labelStyle: TextStyle(
                                   color: Colors.black87,
                                 ),
-                                onSelected: (value) {
+                                onSelected: (bool selected) {
                                   setState(() {
-                                    edited == true
-                                        ? categorySelected = item
-                                        : null;
+                                    if (edited) {
+                                      categorySelected = item;
+                                    }
                                   });
                                 },
                               );
@@ -444,16 +451,20 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                   children: [
                     Expanded(
                       child: TextButton(
-                        onPressed: () {
-                          if (formKey.currentState!.validate()) {
-                            _handleEditTodo(
-                              title: newTitle.text,
-                              currentTodo: todoDetailData,
-                              note: newNote.text,
-                              status: statusSelected,
-                              category: categorySelected,
-                            );
-                          }
+                        onPressed: () => {
+                          if (edited == true)
+                            {
+                              if (formKey.currentState!.validate())
+                                {
+                                  _handleEditTodo(
+                                    title: newTitle.text,
+                                    currentTodo: todoDetailData[0],
+                                    note: newNote.text,
+                                    status: statusSelected,
+                                    category: categorySelected,
+                                  )
+                                }
+                            }
                         },
                         style: ButtonStyle(
                           backgroundColor: edited == true
@@ -475,8 +486,10 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                       ),
                     ),
                     IconButton(
-                      onPressed: () => _handleDeleteTodo(todoDetailData.idTodo,
-                          context, todoDetailData.category),
+                      onPressed: () => _handleDeleteTodo(
+                          todoDetailData[0].idTodo,
+                          context,
+                          todoDetailData[0].category),
                       style: IconButton.styleFrom(backgroundColor: Colors.red),
                       icon: Icon(
                         Icons.delete_outline,

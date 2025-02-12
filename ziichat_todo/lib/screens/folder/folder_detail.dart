@@ -41,6 +41,8 @@ enum ActionInFolder { deleteFolder, editNameFolder }
 
 enum ActionSort { latest, oldest, alpha }
 
+final DateFormat appDateFormat = DateFormat('yyyy MMM dd, HH:mm');
+
 class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   late List<TodoItemData> listToDo = [];
   late List<TodoItemData> listToDoAll = [];
@@ -53,7 +55,7 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
   String currentStatus = statusToReadableString(ItemStatus.all);
   String categoryToDelete = "";
   late final TextEditingController newCategory;
-  late DateFormat dateTimeFormat;
+
   late List<TodoItemData> _dataFolderInShare = [];
   late List<String> folderNames = [];
   late List<TodoItemData> sortByStatus = [];
@@ -65,12 +67,6 @@ class _ItemsTodoDetailState extends State<ItemsTodoDetail> {
     super.initState();
 
     _loadTodos();
-
-    setState(
-      () {
-        dateTimeFormat = DateFormat('yyyy-MM-dd HH:mm');
-      },
-    );
 
     Future.delayed(Duration(milliseconds: 1000), () {
       setState(() {
@@ -816,10 +812,9 @@ class TodoItemCard extends StatelessWidget {
                             ),
                             Text(
                               todoItem.editedTime.isEmpty
-                                  ? DateFormat('yyyy-MM-dd HH:mm').format(
+                                  ? appDateFormat.format(
                                       DateTime.parse(todoItem.createdTime))
-                                  : DateFormat('yyyy-MM-dd HH:mm').format(
-                                      DateTime.parse(todoItem.editedTime)),
+                                  : todoItem.editedTime,
                               style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.black45,
