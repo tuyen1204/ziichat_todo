@@ -28,31 +28,30 @@ class TodoDetailScreen extends StatefulWidget {
 
 class _TodoDetailScreenState extends State<TodoDetailScreen> {
   late String? categorySelected = "All";
-  late ItemStatus? statusSelected = ItemStatus.done;
+  late ItemStatus? statusSelected;
   bool edited = false;
 
   late TextEditingController newTitle;
   late TextEditingController newNote;
-  final currentDate = DateTime.now();
-  String formattedDateNow = '';
+  String getDateNow = '';
   late AppLocalizations localizations = AppLocalizations.of(context)!;
 
-  final status = dataFolder.map((item) => item.status).toSet().toList();
   final DateFormat appDateFormat = DateFormat('yyyy MMM dd, HH:mm');
   final formKey = GlobalKey<FormState>();
   late List<TodoItemData> _dataFolderInShare = [];
   late List<String> categoryList = [];
   late List<TodoItemData> todoDetailData = [];
+  late List<ItemStatus> status = [];
 
   @override
   void initState() {
+    super.initState();
+
     _loadTodos();
 
     statusSelected = widget.initStatus;
     categorySelected = widget.initCategory;
     edited;
-
-    super.initState();
 
     _updateTime();
 
@@ -84,6 +83,9 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
 
           newTitle = TextEditingController(text: todoDetailData[0].title);
           newNote = TextEditingController(text: todoDetailData[0].note);
+
+          status =
+              _dataFolderInShare.map((item) => item.status).toSet().toList();
         },
       );
     } else {
@@ -147,9 +149,10 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
           CupertinoDialogAction(
             isDestructiveAction: true,
             onPressed: () {
-              dataFolder.removeWhere((item) {
+              _dataFolderInShare.removeWhere((item) {
                 return item.idTodo == id;
               });
+              _saveTodos();
               Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -187,7 +190,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
             status: status ?? _dataFolderInShare[index].status,
             createdTime: _dataFolderInShare[index].createdTime,
             note: note ?? _dataFolderInShare[index].note,
-            editedTime: formattedDateNow.toString(),
+            editedTime: getDateNow.toString(),
           );
         });
 
@@ -224,7 +227,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
     Timer.periodic(Duration(seconds: 1), (Timer t) {
       setState(() {
         DateTime now = DateTime.now();
-        formattedDateNow = appDateFormat.format(now);
+        getDateNow = appDateFormat.format(now);
       });
     });
   }
@@ -385,6 +388,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                                 label: Text(
                                   statusToReadableString(item),
                                 ),
+                                showCheckmark: false,
                                 labelStyle: TextStyle(
                                   color: statusSelected == item
                                       ? Colors.white
@@ -395,11 +399,11 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                                     : Colors.grey,
                                 selectedColor: statusColor(item),
                                 selected: statusSelected == item,
-                                onSelected: (value) {
+                                onSelected: (bool selected) {
                                   setState(() {
-                                    edited == true
-                                        ? statusSelected = item
-                                        : null;
+                                    if (edited) {
+                                      statusSelected = item;
+                                    }
                                   });
                                 },
                               );
@@ -420,15 +424,16 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                             children: categoryList.map((item) {
                               return ChoiceChip(
                                 label: Text(item),
+                                showCheckmark: false,
                                 selected: categorySelected == item,
                                 labelStyle: TextStyle(
                                   color: Colors.black87,
                                 ),
-                                onSelected: (value) {
+                                onSelected: (bool selected) {
                                   setState(() {
-                                    edited == true
-                                        ? categorySelected = item
-                                        : null;
+                                    if (edited) {
+                                      categorySelected = item;
+                                    }
                                   });
                                 },
                               );
